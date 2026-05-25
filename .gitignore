@@ -1,0 +1,13 @@
+# docs
+docs/
+
+# macOS
+.DS_Store
+
+# IDE
+.idea/
+.vscode/
+
+# env
+.env
+.env.*
