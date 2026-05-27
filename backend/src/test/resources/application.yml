@@ -35,3 +35,7 @@ cloud:
     credentials:
       access-key: test-access-key
       secret-key: test-secret-key
+
+app:
+  cors:
+    allowed-origins: http://localhost:5173
