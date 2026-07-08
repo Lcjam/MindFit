@@ -12,6 +12,7 @@ public enum ErrorCode {
 
     // Authorization
     ACCESS_DENIED(HttpStatus.FORBIDDEN, "접근 권한이 없습니다."),
+    FORBIDDEN_ROLE(HttpStatus.FORBIDDEN, "허용되지 않은 역할입니다."),
 
     // Common
     NOT_FOUND(HttpStatus.NOT_FOUND, "요청한 리소스를 찾을 수 없습니다."),

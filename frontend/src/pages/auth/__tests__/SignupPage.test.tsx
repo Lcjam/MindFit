@@ -1,6 +1,8 @@
 import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { http, HttpResponse } from 'msw'
 import { renderWithProviders } from '../../../test/utils'
+import { server } from '../../../test/mocks/server'
 import SignupPage from '../SignupPage'
 import { useAuthStore } from '../../../store/authStore'
 
@@ -50,6 +52,23 @@ describe('SignupPage', () => {
     await userEvent.type(screen.getByLabelText(/이름/i), '홍길동')
     await userEvent.click(screen.getByRole('button', { name: /회원가입/i }))
     expect(await screen.findByText(/8자 이상/i)).toBeInTheDocument()
+  })
+
+  it('이메일 중복(409)으로 회원가입 실패 시 에러 문구를 표시하고 인증되지 않는다', async () => {
+    server.use(
+      http.post('*/auth/signup', () =>
+        HttpResponse.json(
+          { success: false, message: '이미 사용 중인 이메일입니다.' },
+          { status: 409 }
+        )
+      )
+    )
+    renderWithProviders(<SignupPage />)
+    await fillAndSubmit({ email: 'duplicate@example.com' })
+    expect(
+      await screen.findByText(/회원가입 중 오류가 발생했습니다\. 다시 시도해주세요\./i)
+    ).toBeInTheDocument()
+    expect(useAuthStore.getState().isAuthenticated).toBe(false)
   })
 
   it('로그인 링크가 렌더링된다', () => {

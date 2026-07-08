@@ -108,6 +108,51 @@ class AuthServiceTest {
 
             verify(userRepository, never()).save(any(User.class));
         }
+
+        @Test
+        @DisplayName("ROLE_COUNSELOR로 가입하면 사용자를 저장하고 TokenResponse를 반환한다")
+        void signup_roleCounselor_returnsTokenResponse() {
+            SignupRequest request = SignupRequest.builder()
+                    .email("counselor@mindfit.com")
+                    .password("password123")
+                    .name("홍길동")
+                    .birthDate(LocalDate.of(1990, 1, 1))
+                    .role(Role.ROLE_COUNSELOR)
+                    .build();
+
+            given(userRepository.existsByEmail("counselor@mindfit.com")).willReturn(false);
+            given(passwordEncoder.encode("password123")).willReturn("encoded-password");
+            given(userRepository.save(any(User.class)))
+                    .willReturn(buildUser(5L, "counselor@mindfit.com", "encoded-password", Role.ROLE_COUNSELOR));
+            given(jwtTokenProvider.generateAccessToken(5L, "ROLE_COUNSELOR")).willReturn("access-token");
+            given(jwtTokenProvider.generateRefreshToken(5L)).willReturn("refresh-token");
+
+            TokenResponse response = authService.signup(request);
+
+            assertThat(response.getAccessToken()).isNotBlank();
+            assertThat(response.getRefreshToken()).isNotBlank();
+            assertThat(response.getUserId()).isEqualTo(5L);
+            assertThat(response.getRole()).isEqualTo("ROLE_COUNSELOR");
+        }
+
+        @Test
+        @DisplayName("ROLE_ADMIN으로 자가가입을 시도하면 FORBIDDEN_ROLE 예외를 던진다")
+        void signup_roleAdmin_throwsForbiddenRole() {
+            SignupRequest request = SignupRequest.builder()
+                    .email("admin@mindfit.com")
+                    .password("password123")
+                    .name("홍길동")
+                    .birthDate(LocalDate.of(1990, 1, 1))
+                    .role(Role.ROLE_ADMIN)
+                    .build();
+
+            assertThatThrownBy(() -> authService.signup(request))
+                    .isInstanceOf(BusinessException.class)
+                    .extracting("errorCode")
+                    .isEqualTo(ErrorCode.FORBIDDEN_ROLE);
+
+            verify(userRepository, never()).save(any(User.class));
+        }
     }
 
     // ──────────────── login ────────────────
@@ -180,8 +225,8 @@ class AuthServiceTest {
     class Refresh {
 
         @Test
-        @DisplayName("유효한 토큰이고 저장된 토큰과 일치하면 새 accessToken을 담은 TokenResponse를 반환한다")
-        void refresh_validToken_returnsNewAccessToken() {
+        @DisplayName("유효한 토큰이고 저장된 토큰과 일치하면 새 access·refresh 토큰을 회전 발급한다")
+        void refresh_validToken_rotatesBothTokens() {
             String storedRefreshToken = "stored-refresh-token";
             User user = buildUser(3L, "user@mindfit.com", "encoded-password", Role.ROLE_CLIENT);
             user.updateRefreshToken(storedRefreshToken);
@@ -190,13 +235,19 @@ class AuthServiceTest {
             given(jwtTokenProvider.getUserIdFromToken(storedRefreshToken)).willReturn(3L);
             given(userRepository.findById(3L)).willReturn(Optional.of(user));
             given(jwtTokenProvider.generateAccessToken(3L, "ROLE_CLIENT")).willReturn("new-access-token");
+            given(jwtTokenProvider.generateRefreshToken(3L)).willReturn("new-refresh-token");
 
             TokenResponse response = authService.refresh(storedRefreshToken);
 
             assertThat(response.getAccessToken()).isEqualTo("new-access-token");
-            assertThat(response.getRefreshToken()).isEqualTo(storedRefreshToken);
+            // refresh token rotation: 입력 토큰을 재사용하지 않고 새 토큰을 발급한다
+            assertThat(response.getRefreshToken()).isNotEqualTo(storedRefreshToken);
+            assertThat(response.getRefreshToken()).isEqualTo("new-refresh-token");
             assertThat(response.getUserId()).isEqualTo(3L);
             assertThat(response.getRole()).isEqualTo("ROLE_CLIENT");
+            // 회전된 새 토큰으로 사용자 상태가 갱신되어 저장된다
+            assertThat(user.getRefreshToken()).isEqualTo("new-refresh-token");
+            verify(userRepository, times(1)).save(user);
         }
 
         @Test
