@@ -1,0 +1,1273 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>P1 인증 코드 리뷰 — MindFit</title>
+  <style>
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d27;
+      --surface2: #22263a;
+      --border: #2e3250;
+      --accent: #6c8bff;
+      --accent2: #a78bfa;
+      --green: #34d399;
+      --yellow: #fbbf24;
+      --red: #f87171;
+      --orange: #fb923c;
+      --text: #e2e8f0;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Pretendard', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    /* ── 레이아웃 ── */
+    .layout { display: flex; min-height: 100vh; }
+
+    nav {
+      width: 240px;
+      min-width: 240px;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: 24px 0;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+    }
+
+    nav .logo {
+      padding: 0 20px 20px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 16px;
+    }
+    nav .logo h1 { font-size: 16px; font-weight: 700; color: var(--accent); }
+    nav .logo p { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+
+    nav a {
+      display: block;
+      padding: 6px 20px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 12px;
+      transition: color 0.15s;
+    }
+    nav a:hover { color: var(--text); }
+    nav .nav-section {
+      padding: 12px 20px 4px;
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-dim);
+    }
+
+    main {
+      flex: 1;
+      padding: 40px 48px;
+      max-width: 960px;
+    }
+
+    /* ── 헤더 ── */
+    .page-header { margin-bottom: 40px; }
+    .page-header h1 { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+    .meta { display: flex; gap: 16px; flex-wrap: wrap; }
+    .meta-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-muted); }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .badge-blue { background: rgba(108,139,255,0.15); color: var(--accent); }
+    .badge-green { background: rgba(52,211,153,0.15); color: var(--green); }
+    .badge-yellow { background: rgba(251,191,36,0.15); color: var(--yellow); }
+    .badge-red { background: rgba(248,113,113,0.15); color: var(--red); }
+    .badge-orange { background: rgba(251,146,60,0.15); color: var(--orange); }
+
+    /* ── 섹션 ── */
+    section { margin-bottom: 48px; }
+    h2 {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text);
+    }
+    h3 {
+      font-size: 15px;
+      font-weight: 600;
+      margin: 24px 0 12px;
+      color: var(--accent2);
+    }
+    h4 { font-size: 13px; font-weight: 600; margin: 16px 0 8px; color: var(--text); }
+
+    p { margin-bottom: 10px; color: var(--text-muted); }
+
+    /* ── 종합 표 ── */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+      margin-bottom: 32px;
+    }
+    .summary-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+    }
+    .summary-card .agent { font-size: 11px; color: var(--text-dim); margin-bottom: 6px; }
+    .summary-card .grade {
+      font-size: 28px;
+      font-weight: 800;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+    .grade-A { color: var(--green); }
+    .grade-B { color: var(--accent); }
+    .grade-Bp { color: #7dd3fc; }
+    .grade-C { color: var(--yellow); }
+    .grade-D { color: var(--red); }
+    .summary-card .desc { font-size: 11px; color: var(--text-muted); }
+
+    /* ── Critical 테이블 ── */
+    .critical-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+    .critical-item {
+      background: rgba(248,113,113,0.06);
+      border: 1px solid rgba(248,113,113,0.25);
+      border-left: 3px solid var(--red);
+      border-radius: 6px;
+      padding: 12px 16px;
+    }
+    .critical-item .label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--red);
+      margin-bottom: 4px;
+    }
+    .critical-item .title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+    .critical-item .detail { font-size: 12px; color: var(--text-muted); }
+    .critical-item code {
+      background: rgba(255,255,255,0.06);
+      border-radius: 3px;
+      padding: 1px 5px;
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      font-size: 11px;
+      color: #e2e8f0;
+    }
+
+    /* ── 에이전트 리뷰 카드 ── */
+    .agent-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+    .agent-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      background: var(--surface2);
+      border-bottom: 1px solid var(--border);
+    }
+    .agent-header .name { font-size: 14px; font-weight: 700; }
+    .agent-header .grade-badge {
+      font-size: 18px;
+      font-weight: 800;
+      width: 36px;
+      height: 36px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .agent-body { padding: 20px; }
+
+    /* ── 점수 그리드 ── */
+    .score-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .score-item { background: var(--bg); border-radius: 6px; padding: 10px 12px; }
+    .score-item .label { font-size: 11px; color: var(--text-dim); margin-bottom: 4px; }
+    .score-bar-wrap { height: 4px; background: var(--border); border-radius: 2px; margin-bottom: 4px; }
+    .score-bar { height: 4px; border-radius: 2px; }
+    .score-item .value { font-size: 12px; font-weight: 600; color: var(--text); }
+
+    /* ── 이슈 / 권고 ── */
+    .issue-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+    .issue-item {
+      display: flex;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+    }
+    .issue-item.critical {
+      background: rgba(248,113,113,0.08);
+      border: 1px solid rgba(248,113,113,0.2);
+    }
+    .issue-item.warning {
+      background: rgba(251,191,36,0.06);
+      border: 1px solid rgba(251,191,36,0.15);
+    }
+    .issue-item.info {
+      background: rgba(108,139,255,0.06);
+      border: 1px solid rgba(108,139,255,0.15);
+    }
+    .issue-icon { font-size: 13px; flex-shrink: 0; margin-top: 1px; }
+    .issue-content { flex: 1; }
+    .issue-content strong { display: block; color: var(--text); margin-bottom: 2px; }
+    .issue-content span { color: var(--text-muted); }
+    .issue-content code {
+      background: rgba(255,255,255,0.07);
+      border-radius: 3px;
+      padding: 1px 5px;
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      font-size: 11px;
+      color: #cbd5e1;
+    }
+
+    /* ── 코드 블록 ── */
+    pre {
+      background: #0d1117;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 14px 16px;
+      overflow-x: auto;
+      margin: 8px 0 12px;
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      font-size: 12px;
+      line-height: 1.6;
+      color: #e2e8f0;
+    }
+
+    /* ── 구분자 ── */
+    hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
+
+    /* ── 수정 상태 ── */
+    .issue-item.partial {
+      background: rgba(251,191,36,0.06);
+      border: 1px solid rgba(251,191,36,0.18);
+    }
+    .issue-item.resolved {
+      background: rgba(52,211,153,0.05);
+      border: 1px solid rgba(52,211,153,0.18);
+    }
+    .critical-item.partial {
+      background: rgba(251,191,36,0.05);
+      border-color: rgba(251,191,36,0.2);
+      border-left-color: var(--yellow);
+    }
+    .critical-item.resolved {
+      background: rgba(52,211,153,0.04);
+      border-color: rgba(52,211,153,0.18);
+      border-left-color: var(--green);
+    }
+    .fix-badge {
+      display: inline-flex;
+      align-items: center;
+      font-size: 10px;
+      font-weight: 600;
+      padding: 1px 6px;
+      border-radius: 3px;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+    .fix-partial { background: rgba(251,191,36,0.15); color: var(--yellow); }
+    .fix-done    { background: rgba(52,211,153,0.15);  color: var(--green);  }
+
+    /* ── 변경 이력 ── */
+    .changelog { display: flex; flex-direction: column; gap: 10px; }
+    .cl-item {
+      display: flex;
+      gap: 12px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 12px 16px;
+      font-size: 12px;
+    }
+    .cl-date { color: var(--text-dim); white-space: nowrap; min-width: 80px; }
+    .cl-body { flex: 1; }
+    .cl-body strong { color: var(--text); display: block; margin-bottom: 3px; }
+    .cl-body span { color: var(--text-muted); }
+
+    /* ── 스크롤바 ── */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  </style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- 사이드 네비게이션 -->
+  <nav>
+    <div class="logo">
+      <h1>MindFit</h1>
+      <p>P1 인증 코드 리뷰</p>
+    </div>
+    <div class="nav-section">개요</div>
+    <a href="#changelog">변경 이력</a>
+    <a href="#summary">종합 평가</a>
+    <a href="#critical">Critical 이슈</a>
+    <div class="nav-section">백엔드</div>
+    <a href="#be-security">BE-Security</a>
+    <a href="#be-auth">BE-Auth</a>
+    <a href="#be-domain">BE-Domain</a>
+    <div class="nav-section">프론트엔드</div>
+    <a href="#fe-api">FE-API</a>
+    <a href="#fe-store">FE-Store</a>
+    <a href="#fe-pages">FE-Pages</a>
+    <a href="#fe-routing">FE-Routing</a>
+  </nav>
+
+  <!-- 메인 콘텐츠 -->
+  <main>
+
+    <!-- 페이지 헤더 -->
+    <div class="page-header">
+      <h1>P1 인증 코드 리뷰</h1>
+      <div class="meta">
+        <div class="meta-item">
+          <span class="badge badge-blue">Phase 1</span>
+        </div>
+        <div class="meta-item">
+          <span class="badge badge-blue">feat/p1-be-jwt-auth</span>
+        </div>
+        <div class="meta-item">
+          <span class="badge badge-blue">feat/p1-fe-login-page</span>
+        </div>
+        <div class="meta-item" style="color: var(--text-dim);">최초 작성 2026-05-27</div>
+        <div class="meta-item" style="color: var(--text-dim);">최종 업데이트 2026-05-27</div>
+      </div>
+    </div>
+
+    <!-- 변경 이력 -->
+    <section id="changelog">
+      <h2>변경 이력</h2>
+      <div class="changelog">
+
+        <div class="cl-item">
+          <div class="cl-date">2026-05-27</div>
+          <div class="cl-body">
+            <strong>test(fe): auth API 에러 케이스 추가 및 MSW URL base 오염 방지
+              <span class="fix-badge fix-partial">부분수정</span>
+            </strong>
+            <span>
+              <code>auth.test.ts</code> — login 401, signup 409, refresh 401 에러 케이스 3개 추가.
+              axios interceptor가 <code>window.location.href = '/login'</code> 실행 시 MSW URL base가 오염되는 문제를
+              <code>href</code> setter no-op으로 해결. <code>beforeEach</code>에서 authStore 초기화 추가.
+              인터셉터 재진입 흐름(401→갱신→재시도, 갱신 실패→로그아웃) 테스트는 미완.
+              커밋 <code>76d813a</code>
+            </span>
+          </div>
+        </div>
+
+        <div class="cl-item">
+          <div class="cl-date">2026-05-27</div>
+          <div class="cl-body">
+            <strong>test(be): JwtAuthFilterTest 보호 엔드포인트 경로 수정
+              <span class="fix-badge fix-done">수정완료</span>
+            </strong>
+            <span>
+              <code>JwtAuthFilterTest.java</code> — 가상 경로 <code>/api/v1/protected</code>를
+              <code>/api/v1/users/me</code>로 교체.
+              <code>/api/v1/auth/**</code>는 <code>permitAll()</code> 범위이므로 auth 네임스페이스 밖 경로 사용.
+              커밋 <code>b87d6a3</code>
+            </span>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 종합 평가 -->
+    <section id="summary">
+      <h2>종합 평가</h2>
+      <div class="summary-grid">
+        <div class="summary-card">
+          <div class="agent">BE-Security</div>
+          <div class="grade grade-Bp">B+</div>
+          <div class="desc">구조 견고, CORS 하드코딩 수정 필요</div>
+        </div>
+        <div class="summary-card">
+          <div class="agent">BE-Auth</div>
+          <div class="grade grade-B">B</div>
+          <div class="desc">ROLE_ADMIN 권한상승, Token Rotation 미적용</div>
+        </div>
+        <div class="summary-card">
+          <div class="agent">BE-Domain</div>
+          <div class="grade grade-B">B</div>
+          <div class="desc">GrantedAuthority 미구현, VARCHAR 초과 위험</div>
+        </div>
+        <div class="summary-card">
+          <div class="agent">FE-API</div>
+          <div class="grade grade-B">B</div>
+          <div class="desc">재진입 루프, 동시 401 버그, 인터셉터 테스트 없음</div>
+        </div>
+        <div class="summary-card">
+          <div class="agent">FE-Store</div>
+          <div class="grade grade-B">B</div>
+          <div class="desc">localStorage 예외 처리 불일치</div>
+        </div>
+        <div class="summary-card">
+          <div class="agent">FE-Pages</div>
+          <div class="grade grade-B">B</div>
+          <div class="desc" style="color: var(--red);">역할 리다이렉트 없음, 에러 테스트 전무</div>
+        </div>
+        <div class="summary-card">
+          <div class="agent">FE-Routing</div>
+          <div class="grade grade-C">C</div>
+          <div class="desc" style="color: var(--yellow);">RBAC 미구현, 만료 미검증, thresholds 없음</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Critical 이슈 전체 목록 -->
+    <section id="critical">
+      <h2>Critical 이슈 — 즉시 수정 필요</h2>
+      <ul class="critical-list">
+
+        <li class="critical-item">
+          <div class="label">BE · 보안 · 권한상승</div>
+          <div class="title">ROLE_ADMIN 자유 할당 — 누구나 관리자 계정 생성 가능</div>
+          <div class="detail">
+            <code>AuthService.java:37</code> 에서 <code>request.getRole()</code> 를 검증 없이 그대로 저장.
+            <code>SignupRequest.java:35</code> 의 <code>Role role</code> 필드에 서버 제약 없음.
+            수정: <code>role</code> 필드를 제거하고 서비스에서 <code>ROLE_CLIENT</code> 기본값 고정.
+          </div>
+        </li>
+
+        <li class="critical-item">
+          <div class="label">BE · 보안 · 토큰</div>
+          <div class="title">Refresh Token Rotation 미적용</div>
+          <div class="detail">
+            <code>AuthService.java:75</code> — 갱신 응답에 기존 refreshToken 재사용.
+            탈취 시 무기한 access token 발급 가능. 갱신마다 새 refreshToken 발급 후 DB 덮어쓰기 필요.
+          </div>
+        </li>
+
+        <li class="critical-item">
+          <div class="label">BE · 보안 · CORS</div>
+          <div class="title">CORS allowedOrigins 하드코딩</div>
+          <div class="detail">
+            <code>SecurityConfig.java:51</code> — <code>http://localhost:5173</code> 고정.
+            프로덕션 배포 즉시 CORS 오류. <code>@Value("${app.cors.allowed-origins}")</code> 로 환경별 분리 필요.
+          </div>
+        </li>
+
+        <li class="critical-item">
+          <div class="label">BE · 설계</div>
+          <div class="title">Role enum GrantedAuthority 미구현</div>
+          <div class="detail">
+            <code>Role.java:3-7</code> — <code>GrantedAuthority</code> 미구현으로 <code>UserDetails.getAuthorities()</code> 에 직접 사용 불가.
+            <code>implements GrantedAuthority</code> + <code>getAuthority() { return name(); }</code> 추가 필요.
+          </div>
+        </li>
+
+        <li class="critical-item">
+          <div class="label">BE · 데이터</div>
+          <div class="title">refreshToken 컬럼 VARCHAR 255 초과 위험</div>
+          <div class="detail">
+            <code>User.java:41</code> — <code>@Column</code> 없음, JPA 기본 VARCHAR 255 적용.
+            JWT refresh token은 300-400자에 달할 수 있어 DataTruncation 오류 발생 가능.
+            <code>@Column(length = 512)</code> 명시 필요.
+          </div>
+        </li>
+
+        <li class="critical-item">
+          <div class="label">BE · 보안</div>
+          <div class="title">logout 엔드포인트가 permitAll 범위에 포함</div>
+          <div class="detail">
+            <code>SecurityConfig.java:37</code> — <code>/api/v1/auth/**</code> 전체 permitAll 처리.
+            <code>/api/v1/auth/logout</code> 도 포함되어 미인증 요청이 Security 레이어를 통과함.
+            <code>logout</code> 경로를 <code>authenticated()</code> 로 분리 필요.
+          </div>
+        </li>
+
+        <li class="critical-item">
+          <div class="label">FE · 보안 · 토큰</div>
+          <div class="title">refresh() 공개 함수의 인터셉터 재진입 위험</div>
+          <div class="detail">
+            <code>auth.ts:19</code> — 공개 <code>refresh()</code> 가 <code>apiClient</code> 사용.
+            401 응답 시 인터셉터가 재진입하여 무한루프 가능.
+            <code>plainAxios</code> 를 named export 후 <code>refresh()</code> 에서 사용해야 함.
+          </div>
+        </li>
+
+        <li class="critical-item">
+          <div class="label">FE · 동시성</div>
+          <div class="title">동시 401 발생 시 갱신 요청 중복 실행</div>
+          <div class="detail">
+            <code>axios.ts:30</code> — <code>isRefreshing</code> 플래그 및 <code>failedQueue</code> 없음.
+            여러 요청이 동시에 401 수신 시 각각 독립적으로 갱신 시도 → 첫 갱신 이후 나머지 모두 실패.
+          </div>
+        </li>
+
+        <li class="critical-item">
+          <div class="label">FE · 라우팅 · 보안</div>
+          <div class="title">RBAC 미구현 — 역할 무관 경로 접근 가능</div>
+          <div class="detail">
+            <code>PrivateRoute.tsx:4-7</code> — <code>allowedRoles</code> prop 없음.
+            <code>ROLE_CLIENT</code> 가 <code>/counselor/*</code> 직접 URL 입력 시 차단 불가.
+            문진표 접근 등 핵심 비즈니스 보안 규칙이 라우트 레벨에서 보호되지 않음.
+          </div>
+        </li>
+
+        <li class="critical-item">
+          <div class="label">FE · 라우팅</div>
+          <div class="title">만료 토큰 검증 없이 보호 라우트 통과</div>
+          <div class="detail">
+            <code>PrivateRoute.tsx:5</code> + <code>authStore.ts:22</code> — localStorage 키 존재 여부만 확인.
+            만료된 JWT도 <code>isAuthenticated: true</code> 반환 → 보호 라우트 진입 후 API 401에서야 감지.
+          </div>
+        </li>
+
+        <li class="critical-item">
+          <div class="label">FE · 비즈니스 로직</div>
+          <div class="title">역할별 리다이렉트 없음</div>
+          <div class="detail">
+            <code>LoginPage.tsx:29</code>, <code>SignupPage.tsx:33</code> — 성공 후 무조건 <code>navigate('/')</code>.
+            ROLE_COUNSELOR, ROLE_ADMIN 도 동일 경로 착지.
+          </div>
+        </li>
+
+        <li class="critical-item partial">
+          <div class="label">FE · 테스트 <span class="fix-badge fix-partial">부분수정 2026-05-27</span></div>
+          <div class="title">인터셉터 및 에러 케이스 테스트 전무</div>
+          <div class="detail">
+            <strong style="color:var(--green);display:block;margin-bottom:4px;">✓ 수정됨: </strong>
+            <code>auth.test.ts</code> — login 401, signup 409, refresh 401 에러 케이스 추가 (커밋 <code>76d813a</code>).
+            MSW URL base 오염 방지 처리 포함.<br><br>
+            <strong style="color:var(--yellow);display:block;margin-top:4px;margin-bottom:4px;">△ 잔여: </strong>
+            인터셉터 흐름(401→갱신→재시도, 갱신 실패→로그아웃) 미검증.
+            <code>LoginPage.test.tsx</code>, <code>SignupPage.test.tsx</code> — API 에러 응답 렌더링 케이스 없음.
+          </div>
+        </li>
+
+        <li class="critical-item">
+          <div class="label">FE · 테스트</div>
+          <div class="title">vitest thresholds 미설정 — 커버리지 강제 없음</div>
+          <div class="detail">
+            <code>vitest.config.ts:10-14</code> — <code>thresholds</code> 없음. 커버리지 0%여도 CI 통과.
+            <code>App.tsx</code>, <code>PrivateRoute.tsx</code> 테스트 파일 자체 없음 (TDD 사이클 미준수).
+          </div>
+        </li>
+
+      </ul>
+    </section>
+
+    <hr />
+
+    <!-- BE-Security -->
+    <section id="be-security">
+      <h2>BE-Security — JwtTokenProvider · JwtAuthFilter · SecurityConfig</h2>
+      <div class="agent-card">
+        <div class="agent-header">
+          <div>
+            <div class="name">BE-Security</div>
+            <div style="font-size:11px;color:var(--text-dim);margin-top:2px;">구조는 견고하나 deprecated API 사용과 CORS 하드코딩 수정 필요</div>
+          </div>
+          <div class="grade-badge grade-Bp" style="background:rgba(125,211,252,0.1);">B+</div>
+        </div>
+        <div class="agent-body">
+          <div class="score-grid">
+            <div class="score-item">
+              <div class="label">JWT 보안</div>
+              <div class="score-bar-wrap"><div class="score-bar" style="width:70%;background:var(--yellow);"></div></div>
+              <div class="value">7 / 10</div>
+            </div>
+            <div class="score-item">
+              <div class="label">Filter 구현</div>
+              <div class="score-bar-wrap"><div class="score-bar" style="width:90%;background:var(--green);"></div></div>
+              <div class="value">9 / 10</div>
+            </div>
+            <div class="score-item">
+              <div class="label">SecurityConfig</div>
+              <div class="score-bar-wrap"><div class="score-bar" style="width:70%;background:var(--yellow);"></div></div>
+              <div class="value">7 / 10</div>
+            </div>
+            <div class="score-item">
+              <div class="label">테스트 품질</div>
+              <div class="score-bar-wrap"><div class="score-bar" style="width:70%;background:var(--yellow);"></div></div>
+              <div class="value">7 / 10</div>
+            </div>
+          </div>
+
+          <h4>잘된 점</h4>
+          <ul class="issue-list">
+            <li class="issue-item info">
+              <div class="issue-icon">✓</div>
+              <div class="issue-content">
+                <strong>Keys.hmacShaKeyFor() 올바른 사용</strong>
+                <span>raw String 직접 전달 없이 SecretKey 객체 생성. parseClaims() 단일 경로로 검증과 파싱 통일.</span>
+              </div>
+            </li>
+            <li class="issue-item info">
+              <div class="issue-icon">✓</div>
+              <div class="issue-content">
+                <strong>OncePerRequestFilter + StringUtils.hasText()</strong>
+                <span>요청당 1회 보장, null·공백 문자열 한 번에 처리.</span>
+              </div>
+            </li>
+            <li class="issue-item info">
+              <div class="issue-icon">✓</div>
+              <div class="issue-content">
+                <strong>JwtTokenProviderTest 단위 테스트 품질</strong>
+                <span>만료 케이스(1ms expiry 실제 생성), 변조 케이스(서명 불일치 유발) 모두 포함.</span>
+              </div>
+            </li>
+          </ul>
+
+          <h4>Critical 이슈</h4>
+          <ul class="issue-list">
+            <li class="issue-item critical">
+              <div class="issue-icon">✕</div>
+              <div class="issue-content">
+                <strong>JwtAuthFilterTest — SecurityContext 설정 미검증</strong>
+                <span><code>JwtAuthFilterTest.java:29-35</code> — permitAll 경로(<code>/api/v1/health</code>)로 유효한 토큰 테스트. 토큰이 없어도 200 반환되므로 SecurityContext 설정 여부를 전혀 검증하지 못함.</span>
+              </div>
+            </li>
+            <li class="issue-item resolved">
+              <div class="issue-icon">✓</div>
+              <div class="issue-content">
+                <strong>JwtAuthFilterTest — 유효하지 않은 토큰 테스트에 가상 경로 사용 <span class="fix-badge fix-done">수정완료 2026-05-27</span></strong>
+                <span><code>JwtAuthFilterTest.java:44</code> — <code>/api/v1/protected</code>(가상 경로) → <code>/api/v1/users/me</code>로 교체. <code>/api/v1/auth/**</code>는 <code>permitAll()</code> 범위이므로 auth 네임스페이스 밖 경로 사용. 커밋 <code>b87d6a3</code></span>
+              </div>
+            </li>
+            <li class="issue-item critical">
+              <div class="issue-icon">✕</div>
+              <div class="issue-content">
+                <strong>CORS allowedOrigins 하드코딩</strong>
+                <span><code>SecurityConfig.java:51</code> — <code>http://localhost:5173</code> 고정. 프로덕션 배포 즉시 CORS 오류.</span>
+              </div>
+            </li>
+          </ul>
+
+          <h4>개선 권고</h4>
+          <ul class="issue-list">
+            <li class="issue-item warning">
+              <div class="issue-icon">△</div>
+              <div class="issue-content">
+                <strong>SignatureAlgorithm.HS256 deprecated</strong>
+                <span><code>JwtTokenProvider.java:51,66</code> — <code>.signWith(secretKey)</code> 단일 인수로 교체 또는 jjwt 0.12.x 업그레이드.</span>
+              </div>
+            </li>
+            <li class="issue-item warning">
+              <div class="issue-icon">△</div>
+              <div class="issue-content">
+                <strong>accessDeniedHandler 미설정</strong>
+                <span><code>SecurityConfig.java</code> — 403 응답이 ApiResponse&lt;T&gt; 형식과 불일치. authenticationEntryPoint 패턴과 동일하게 추가 필요.</span>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- BE-Auth -->
+    <section id="be-auth">
+      <h2>BE-Auth — AuthService · AuthController · DTO</h2>
+      <div class="agent-card">
+        <div class="agent-header">
+          <div>
+            <div class="name">BE-Auth</div>
+            <div style="font-size:11px;color:var(--text-dim);margin-top:2px;">핵심 구조 견고, Critical 보안 결함 2건 + Spring 패턴 위반 3건</div>
+          </div>
+          <div class="grade-badge grade-B" style="background:rgba(108,139,255,0.1);">B</div>
+        </div>
+        <div class="agent-body">
+          <div class="score-grid">
+            <div class="score-item">
+              <div class="label">비즈니스 로직</div>
+              <div class="score-bar-wrap"><div class="score-bar" style="width:60%;background:var(--orange);"></div></div>
+              <div class="value">6 / 10</div>
+            </div>
+            <div class="score-item">
+              <div class="label">API 설계 준수</div>
+              <div class="score-bar-wrap"><div class="score-bar" style="width:90%;background:var(--green);"></div></div>
+              <div class="value">9 / 10</div>
+            </div>
+            <div class="score-item">
+              <div class="label">Spring 패턴</div>
+              <div class="score-bar-wrap"><div class="score-bar" style="width:60%;background:var(--orange);"></div></div>
+              <div class="value">6 / 10</div>
+            </div>
+            <div class="score-item">
+              <div class="label">테스트 품질</div>
+              <div class="score-bar-wrap"><div class="score-bar" style="width:70%;background:var(--yellow);"></div></div>
+              <div class="value">7 / 10</div>
+            </div>
+          </div>
+
+          <h4>잘된 점</h4>
+          <ul class="issue-list">
+            <li class="issue-item info">
+              <div class="issue-icon">✓</div>
+              <div class="issue-content">
+                <strong>API 설계 원칙 완전 준수</strong>
+                <span>/api/v1/ prefix, ApiResponse&lt;T&gt; 래퍼, 컨트롤러 내부 try-catch 없음, @Valid 전체 적용, signup 201 상태코드 정확.</span>
+              </div>
+            </li>
+            <li class="issue-item info">
+              <div class="issue-icon">✓</div>
+              <div class="issue-content">
+                <strong>이메일 중복 방어 + Refresh Token DB 일치 검증</strong>
+                <span>existsByEmail() 사전 확인, refreshToken.equals() 탈취 토큰 재사용 방지.</span>
+              </div>
+            </li>
+          </ul>
+
+          <h4>Critical 이슈</h4>
+          <ul class="issue-list">
+            <li class="issue-item critical">
+              <div class="issue-icon">✕</div>
+              <div class="issue-content">
+                <strong>ROLE_ADMIN 자유 할당 가능</strong>
+                <span><code>AuthService.java:37</code> + <code>SignupRequest.java:35</code> — 서버 검증 없이 request.getRole() 그대로 저장.</span>
+                <pre>// 수정: role 필드 제거 후 서비스에서 기본값 고정
+.role(Role.ROLE_CLIENT)</pre>
+              </div>
+            </li>
+            <li class="issue-item critical">
+              <div class="issue-icon">✕</div>
+              <div class="issue-content">
+                <strong>Refresh Token Rotation 미적용</strong>
+                <span><code>AuthService.java:75</code> — 기존 refreshToken 재사용. 탈취 후 무기한 access token 발급 가능.</span>
+              </div>
+            </li>
+          </ul>
+
+          <h4>개선 권고</h4>
+          <ul class="issue-list">
+            <li class="issue-item warning">
+              <div class="issue-icon">△</div>
+              <div class="issue-content">
+                <strong>@Transactional 내 불필요한 save() 제거</strong>
+                <span><code>AuthService.java:85,93</code> — JPA dirty checking으로 자동 반영되므로 명시적 save() 불필요. signup()의 line 41만 유지.</span>
+              </div>
+            </li>
+            <li class="issue-item warning">
+              <div class="issue-icon">△</div>
+              <div class="issue-content">
+                <strong>SecurityContextHolder 직접 접근 → @AuthenticationPrincipal</strong>
+                <span><code>AuthController.java:50</code> — logout 파라미터를 <code>@AuthenticationPrincipal Long userId</code> 로 교체.</span>
+              </div>
+            </li>
+            <li class="issue-item warning">
+              <div class="issue-icon">△</div>
+              <div class="issue-content">
+                <strong>Bean Validation 메시지 한국어화</strong>
+                <span>@NotBlank(message="이메일은 필수입니다.") 형식으로 SignupRequest 각 필드에 한국어 메시지 추가.</span>
+              </div>
+            </li>
+            <li class="issue-item warning">
+              <div class="issue-icon">△</div>
+              <div class="issue-content">
+                <strong>AuthServiceTest — save() 호출 횟수 검증 제거</strong>
+                <span><code>AuthServiceTest.java:89</code> — 구현 세부사항 결합 테스트. 비즈니스 결과(TokenResponse 내용) 검증으로 대체.</span>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- BE-Domain -->
+    <section id="be-domain">
+      <h2>BE-Domain — User · UserRepository · 공통 인프라</h2>
+      <div class="agent-card">
+        <div class="agent-header">
+          <div>
+            <div class="name">BE-Domain</div>
+            <div style="font-size:11px;color:var(--text-dim);margin-top:2px;">전반적으로 안정적, 보안·설계 결함 2건 수정 필요</div>
+          </div>
+          <div class="grade-badge grade-B" style="background:rgba(108,139,255,0.1);">B</div>
+        </div>
+        <div class="agent-body">
+          <div class="score-grid">
+            <div class="score-item">
+              <div class="label">User 엔티티</div>
+              <div class="score-bar-wrap"><div class="score-bar" style="width:70%;background:var(--yellow);"></div></div>
+              <div class="value">7 / 10</div>
+            </div>
+            <div class="score-item">
+              <div class="label">Role 열거형</div>
+              <div class="score-bar-wrap"><div class="score-bar" style="width:80%;background:var(--accent);"></div></div>
+              <div class="value">8 / 10</div>
+            </div>
+            <div class="score-item">
+              <div class="label">공통 인프라</div>
+              <div class="score-bar-wrap"><div class="score-bar" style="width:80%;background:var(--accent);"></div></div>
+              <div class="value">8 / 10</div>
+            </div>
+            <div class="score-item">
+              <div class="label">테스트 품질</div>
+              <div class="score-bar-wrap"><div class="score-bar" style="width:80%;background:var(--accent);"></div></div>
+              <div class="value">8 / 10</div>
+            </div>
+          </div>
+
+          <h4>Critical 이슈</h4>
+          <ul class="issue-list">
+            <li class="issue-item critical">
+              <div class="issue-icon">✕</div>
+              <div class="issue-content">
+                <strong>refreshToken 컬럼 VARCHAR 255 초과 위험</strong>
+                <span><code>User.java:41</code> — @Column 없음, JWT refresh token은 300-400자에 달할 수 있음.</span>
+                <pre>@Column(length = 512)
+private String refreshToken;</pre>
+              </div>
+            </li>
+            <li class="issue-item critical">
+              <div class="issue-icon">✕</div>
+              <div class="issue-content">
+                <strong>Role enum GrantedAuthority 미구현</strong>
+                <span><code>Role.java:3-7</code> — UserDetails.getAuthorities() 에 직접 사용 불가.</span>
+                <pre>public enum Role implements GrantedAuthority {
+    ROLE_CLIENT, ROLE_COUNSELOR, ROLE_ADMIN;
+    @Override
+    public String getAuthority() { return name(); }
+}</pre>
+              </div>
+            </li>
+          </ul>
+
+          <h4>개선 권고</h4>
+          <ul class="issue-list">
+            <li class="issue-item warning">
+              <div class="issue-icon">△</div>
+              <div class="issue-content">
+                <strong>GlobalExceptionHandler 유효성 오류에 필드명 포함</strong>
+                <span><code>GlobalExceptionHandler.java:26-28</code> — error.getField() 포함하여 어느 필드 오류인지 프론트가 식별 가능하게.</span>
+              </div>
+            </li>
+            <li class="issue-item warning">
+              <div class="issue-icon">△</div>
+              <div class="issue-content">
+                <strong>UserRepositoryTest — verifyEmail(), updateRefreshToken() 영속화 검증 추가</strong>
+                <span>도메인 메서드 호출 후 flush → findById 재조회로 DB 레벨 검증 필요.</span>
+              </div>
+            </li>
+            <li class="issue-item warning">
+              <div class="issue-icon">△</div>
+              <div class="issue-content">
+                <strong>emailVerifyToken 만료 시각 필드 추가</strong>
+                <span><code>User.java:39</code> — emailVerifyTokenExpiry: LocalDateTime 없으면 토큰 재사용 공격 노출.</span>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <hr />
+
+    <!-- FE-API -->
+    <section id="fe-api">
+      <h2>FE-API — axios · auth · types</h2>
+      <div class="agent-card">
+        <div class="agent-header">
+          <div>
+            <div class="name">FE-API</div>
+            <div style="font-size:11px;color:var(--text-dim);margin-top:2px;">기본 흐름 동작, 재진입 버그·타입 약화·테스트 커버리지 누락</div>
+          </div>
+          <div class="grade-badge grade-B" style="background:rgba(108,139,255,0.1);">B</div>
+        </div>
+        <div class="agent-body">
+          <div class="score-grid">
+            <div class="score-item">
+              <div class="label">axios 인스턴스</div>
+              <div class="score-bar-wrap"><div class="score-bar" style="width:60%;background:var(--orange);"></div></div>
+              <div class="value">6 / 10</div>
+            </div>
+            <div class="score-item">
+              <div class="label">auth API 함수</div>
+              <div class="score-bar-wrap"><div class="score-bar" style="width:50%;background:var(--red);"></div></div>
+              <div class="value">5 / 10</div>
+            </div>
+            <div class="score-item">
+              <div class="label">TypeScript 타입</div>
+              <div class="score-bar-wrap"><div class="score-bar" style="width:70%;background:var(--yellow);"></div></div>
+              <div class="value">7 / 10</div>
+            </div>
+            <div class="score-item">
+              <div class="label">테스트 품질</div>
+              <div class="score-bar-wrap"><div class="score-bar" style="width:60%;background:var(--orange);"></div></div>
+              <div class="value">6 / 10 <span style="font-size:10px;color:var(--green);">↑ (4→6)</span></div>
+            </div>
+          </div>
+
+          <h4>Critical 이슈</h4>
+          <ul class="issue-list">
+            <li class="issue-item critical">
+              <div class="issue-icon">✕</div>
+              <div class="issue-content">
+                <strong>refresh() 공개 함수 — 인터셉터 재진입 무한루프 위험</strong>
+                <span><code>auth.ts:19</code> — apiClient 사용. 401 응답 시 인터셉터가 재진입. plainAxios를 named export 후 사용해야 함.</span>
+                <pre>// axios.ts에 추가
+export { plainAxios }
+
+// auth.ts 수정
+import { plainAxios } from './axios'
+const res = await plainAxios.post('/auth/refresh', { refreshToken })</pre>
+              </div>
+            </li>
+            <li class="issue-item critical">
+              <div class="issue-icon">✕</div>
+              <div class="issue-content">
+                <strong>동시 401 발생 시 갱신 요청 중복 실행</strong>
+                <span><code>axios.ts:30</code> — isRefreshing 플래그 + failedQueue 패턴 없음. 첫 갱신 후 나머지 모두 실패.</span>
+              </div>
+            </li>
+            <li class="issue-item partial">
+              <div class="issue-icon">◑</div>
+              <div class="issue-content">
+                <strong>인터셉터 동작 테스트 전무 <span class="fix-badge fix-partial">부분수정 2026-05-27</span></strong>
+                <span>
+                  <strong style="color:var(--green);">✓ 완료:</strong> <code>auth.test.ts</code> — login 401, signup 409, refresh 401 에러 케이스 추가. MSW URL base 오염 방지.<br>
+                  <strong style="color:var(--yellow);">△ 잔여:</strong> 401→갱신→재시도, 갱신 실패→로그아웃 인터셉터 흐름 미검증.
+                </span>
+              </div>
+            </li>
+          </ul>
+
+          <h4>개선 권고</h4>
+          <ul class="issue-list">
+            <li class="issue-item warning">
+              <div class="issue-icon">△</div>
+              <div class="issue-content">
+                <strong>TokenResponse.role, AuthUser.role → UserRole 타입으로 교체</strong>
+                <span><code>types/auth.ts:24,29</code> — string 대신 UserRole 유니온 타입으로 역할 분기 컴파일 시 오류 감지.</span>
+              </div>
+            </li>
+            <li class="issue-item warning">
+              <div class="issue-icon">△</div>
+              <div class="issue-content">
+                <strong>window.location.href 대신 커스텀 이벤트 dispatch</strong>
+                <span><code>axios.ts:37</code> — <code>new CustomEvent('auth:unauthorized')</code> dispatch → App 레벨에서 navigate('/login') 처리.</span>
+              </div>
+            </li>
+            <li class="issue-item warning">
+              <div class="issue-icon">△</div>
+              <div class="issue-content">
+                <strong>logout() 서버 오류 시에도 clearAuth() 보장</strong>
+                <span><code>auth.ts:14-16</code> — 서버 500 시에도 로컬 상태 정리가 보장되어야 함.</span>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- FE-Store -->
+    <section id="fe-store">
+      <h2>FE-Store — authStore · MSW 인프라</h2>
+      <div class="agent-card">
+        <div class="agent-header">
+          <div>
+            <div class="name">FE-Store</div>
+            <div style="font-size:11px;color:var(--text-dim);margin-top:2px;">구조 건실, 보안 이슈 1건 + 상태 동기화 버그 1건 + 테스트 공백</div>
+          </div>
+          <div class="grade-badge grade-B" style="background:rgba(108,139,255,0.1);">B</div>
+        </div>
+        <div class="agent-body">
+          <div class="score-grid">
+            <div class="score-item">
+              <div class="label">Zustand 스토어</div>
+              <div class="score-bar-wrap"><div class="score-bar" style="width:60%;background:var(--orange);"></div></div>
+              <div class="value">6 / 10</div>
+            </div>
+            <div class="score-item">
+              <div class="label">스토어 테스트</div>
+              <div class="score-bar-wrap"><div class="score-bar" style="width:60%;background:var(--orange);"></div></div>
+              <div class="value">6 / 10</div>
+            </div>
+            <div class="score-item">
+              <div class="label">MSW 핸들러</div>
+              <div class="score-bar-wrap"><div class="score-bar" style="width:70%;background:var(--yellow);"></div></div>
+              <div class="value">7 / 10</div>
+            </div>
+            <div class="score-item">
+              <div class="label">테스트 인프라</div>
+              <div class="score-bar-wrap"><div class="score-bar" style="width:90%;background:var(--green);"></div></div>
+              <div class="value">9 / 10</div>
+            </div>
+          </div>
+
+          <h4>잘된 점</h4>
+          <ul class="issue-list">
+            <li class="issue-item info">
+              <div class="issue-icon">✓</div>
+              <div class="issue-content">
+                <strong>MSW 인프라 품질 우수</strong>
+                <span>beforeAll/afterEach/afterAll 생명주기 정확, onUnhandledRequest: 'warn', retry: false, 매 렌더마다 QueryClient 새로 생성으로 캐시 오염 없음.</span>
+              </div>
+            </li>
+          </ul>
+
+          <h4>Critical 이슈</h4>
+          <ul class="issue-list">
+            <li class="issue-item critical">
+              <div class="issue-icon">✕</div>
+              <div class="issue-content">
+                <strong>localStorage 예외 처리 불일치</strong>
+                <span><code>authStore.ts:14-15,22</code> — authUser 파싱만 try-catch, accessToken/refreshToken 읽기는 예외 처리 없음. Safari Private Mode 등에서 SecurityError 발생 시 스토어 초기화 전체 중단.</span>
+                <pre>const safeGet = (key: string): string | null => {
+  try { return localStorage.getItem(key) } catch { return null }
+}</pre>
+              </div>
+            </li>
+            <li class="issue-item critical">
+              <div class="issue-icon">✕</div>
+              <div class="issue-content">
+                <strong>clearAuth 테스트에서 refreshToken 검증 누락</strong>
+                <span><code>authStore.test.ts:39-47</code> — state.refreshToken, localStorage.getItem('refreshToken') 검증 없음. 회귀 발생 시 테스트 통과.</span>
+              </div>
+            </li>
+          </ul>
+
+          <h4>개선 권고</h4>
+          <ul class="issue-list">
+            <li class="issue-item warning">
+              <div class="issue-icon">△</div>
+              <div class="issue-content">
+                <strong>MSW 에러 핸들러 export 추가</strong>
+                <span><code>handlers.ts</code> — 401(잘못된 자격증명), 409(이메일 중복) 핸들러를 errorHandlers 배열로 export해 페이지 테스트에서 재사용.</span>
+              </div>
+            </li>
+            <li class="issue-item warning">
+              <div class="issue-icon">△</div>
+              <div class="issue-content">
+                <strong>QueryClient gcTime: 0 추가</strong>
+                <span><code>utils.tsx:6-9</code> — 동일 컴포넌트 반복 렌더 테스트 시 stale 데이터 오염 방지.</span>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- FE-Pages -->
+    <section id="fe-pages">
+      <h2>FE-Pages — LoginPage · SignupPage</h2>
+      <div class="agent-card">
+        <div class="agent-header">
+          <div>
+            <div class="name">FE-Pages</div>
+            <div style="font-size:11px;color:var(--red);margin-top:2px;">Not Approved — Critical 2건 해결 후 재검토 필요</div>
+          </div>
+          <div class="grade-badge grade-B" style="background:rgba(108,139,255,0.1);">B</div>
+        </div>
+        <div class="agent-body">
+          <div class="score-grid">
+            <div class="score-item">
+              <div class="label">비즈니스 로직</div>
+              <div class="score-bar-wrap"><div class="score-bar" style="width:50%;background:var(--red);"></div></div>
+              <div class="value">5 / 10</div>
+            </div>
+            <div class="score-item">
+              <div class="label">RHF + Zod</div>
+              <div class="score-bar-wrap"><div class="score-bar" style="width:80%;background:var(--accent);"></div></div>
+              <div class="value">8 / 10</div>
+            </div>
+            <div class="score-item">
+              <div class="label">UI 상태 처리</div>
+              <div class="score-bar-wrap"><div class="score-bar" style="width:70%;background:var(--yellow);"></div></div>
+              <div class="value">7 / 10</div>
+            </div>
+            <div class="score-item">
+              <div class="label">테스트 품질</div>
+              <div class="score-bar-wrap"><div class="score-bar" style="width:60%;background:var(--orange);"></div></div>
+              <div class="value">6 / 10</div>
+            </div>
+          </div>
+
+          <h4>잘된 점</h4>
+          <ul class="issue-list">
+            <li class="issue-item info">
+              <div class="issue-icon">✓</div>
+              <div class="issue-content">
+                <strong>"치료" 단어 사용 없음 — 규칙 준수</strong>
+                <span>"상담사", "내담자" 표현 올바르게 사용.</span>
+              </div>
+            </li>
+            <li class="issue-item info">
+              <div class="issue-icon">✓</div>
+              <div class="issue-content">
+                <strong>로딩 상태 처리 완전 구현</strong>
+                <span>isPending 시 버튼 비활성화 + 텍스트 변경. 중복 제출 방지.</span>
+              </div>
+            </li>
+          </ul>
+
+          <h4>Critical 이슈</h4>
+          <ul class="issue-list">
+            <li class="issue-item critical">
+              <div class="issue-icon">✕</div>
+              <div class="issue-content">
+                <strong>역할별 리다이렉트 없음</strong>
+                <span><code>LoginPage.tsx:29</code>, <code>SignupPage.tsx:33</code> — 모든 역할이 navigate('/') 착지.</span>
+                <pre>const destination =
+  response.role === 'ROLE_COUNSELOR' ? '/counselor/dashboard' :
+  response.role === 'ROLE_ADMIN'     ? '/admin/dashboard' :
+                                       '/client/home'
+navigate(destination)</pre>
+              </div>
+            </li>
+            <li class="issue-item critical">
+              <div class="issue-icon">✕</div>
+              <div class="issue-content">
+                <strong>API 에러 케이스 테스트 전무</strong>
+                <span>LoginPage.test.tsx, SignupPage.test.tsx — 401/409 응답 시 에러 메시지 렌더링, 리다이렉트 경로 단언 없음.</span>
+              </div>
+            </li>
+          </ul>
+
+          <h4>개선 권고</h4>
+          <ul class="issue-list">
+            <li class="issue-item warning">
+              <div class="issue-icon">△</div>
+              <div class="issue-content">
+                <strong>Zod enum error 옵션 버전 확인</strong>
+                <span><code>SignupPage.tsx:15</code> — <code>{ error: '...' }</code> 는 Zod v4 전용. v3이면 <code>{ required_error: '...' }</code> 로 교체.</span>
+              </div>
+            </li>
+            <li class="issue-item warning">
+              <div class="issue-icon">△</div>
+              <div class="issue-content">
+                <strong>에러 메시지에 서버 응답 활용</strong>
+                <span><code>LoginPage.tsx:62</code>, <code>SignupPage.tsx:109</code> — 고정 문자열 대신 <code>(error as AxiosError)?.response?.data?.message</code> 활용.</span>
+              </div>
+            </li>
+            <li class="issue-item warning">
+              <div class="issue-icon">△</div>
+              <div class="issue-content">
+                <strong>SignupPage.test.tsx — queryByRole → getByRole 교체</strong>
+                <span><code>SignupPage.test.tsx:18</code> — null이면 조용히 스킵되는 버그. getByRole 사용 시 없으면 명시적 실패.</span>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- FE-Routing -->
+    <section id="fe-routing">
+      <h2>FE-Routing — App · PrivateRoute · vitest 설정</h2>
+      <div class="agent-card">
+        <div class="agent-header">
+          <div>
+            <div class="name">FE-Routing</div>
+            <div style="font-size:11px;color:var(--yellow);margin-top:2px;">RBAC 미구현, 만료 토큰 미검증, thresholds 없음 — 구조적 결함 3건</div>
+          </div>
+          <div class="grade-badge grade-C" style="background:rgba(251,191,36,0.1);">C</div>
+        </div>
+        <div class="agent-body">
+          <div class="score-grid">
+            <div class="score-item">
+              <div class="label">App.tsx 라우팅</div>
+              <div class="score-bar-wrap"><div class="score-bar" style="width:50%;background:var(--red);"></div></div>
+              <div class="value">5 / 10</div>
+            </div>
+            <div class="score-item">
+              <div class="label">PrivateRoute</div>
+              <div class="score-bar-wrap"><div class="score-bar" style="width:40%;background:var(--red);"></div></div>
+              <div class="value">4 / 10</div>
+            </div>
+            <div class="score-item">
+              <div class="label">main.tsx</div>
+              <div class="score-bar-wrap"><div class="score-bar" style="width:80%;background:var(--accent);"></div></div>
+              <div class="value">8 / 10</div>
+            </div>
+            <div class="score-item">
+              <div class="label">테스트·빌드 설정</div>
+              <div class="score-bar-wrap"><div class="score-bar" style="width:30%;background:var(--red);"></div></div>
+              <div class="value">3 / 10</div>
+            </div>
+          </div>
+
+          <h4>Critical 이슈</h4>
+          <ul class="issue-list">
+            <li class="issue-item critical">
+              <div class="issue-icon">✕</div>
+              <div class="issue-content">
+                <strong>RBAC 미구현</strong>
+                <span><code>PrivateRoute.tsx:4-7</code> — allowedRoles prop 없음. 역할 무관 모든 보호 경로 접근 가능.</span>
+                <pre>interface Props { allowedRoles?: UserRole[] }
+export default function PrivateRoute({ allowedRoles }: Props) {
+  const { isAuthenticated, user } = useAuthStore(...)
+  if (!isAuthenticated) return &lt;Navigate to="/login" replace /&gt;
+  if (allowedRoles &amp;&amp; user &amp;&amp; !allowedRoles.includes(user.role as UserRole))
+    return &lt;Navigate to="/unauthorized" replace /&gt;
+  return &lt;Outlet /&gt;
+}</pre>
+              </div>
+            </li>
+            <li class="issue-item critical">
+              <div class="issue-icon">✕</div>
+              <div class="issue-content">
+                <strong>만료 토큰 검증 없이 보호 라우트 통과</strong>
+                <span><code>PrivateRoute.tsx:5</code> + <code>authStore.ts:22</code> — localStorage 키 존재 여부만 확인. 만료 JWT도 isAuthenticated: true.</span>
+              </div>
+            </li>
+            <li class="issue-item critical">
+              <div class="issue-icon">✕</div>
+              <div class="issue-content">
+                <strong>vitest thresholds 미설정</strong>
+                <span><code>vitest.config.ts:10-14</code> — 커버리지 0%여도 CI 통과. App.tsx, PrivateRoute.tsx 테스트 파일 없음.</span>
+                <pre>thresholds: {
+  statements: 70,
+  branches: 70,
+  functions: 70,
+  lines: 70,
+}</pre>
+              </div>
+            </li>
+          </ul>
+
+          <h4>개선 권고</h4>
+          <ul class="issue-list">
+            <li class="issue-item warning">
+              <div class="issue-icon">△</div>
+              <div class="issue-content">
+                <strong>App.tsx * 경로 — 인증 여부에 따른 분기</strong>
+                <span><code>App.tsx:15</code> — 로그인 상태에서 잘못된 URL 입력 시 /login으로 강제 이동하는 문제. 별도 NotFoundPage로 분기.</span>
+              </div>
+            </li>
+            <li class="issue-item warning">
+              <div class="issue-icon">△</div>
+              <div class="issue-content">
+                <strong>App.tsx 역할별 라우트 구조 추가</strong>
+                <span>/client/*, /counselor/*, /admin/* 경로를 allowedRoles와 함께 선언. Provider 계층을 main.tsx에 일관되게 모을 것.</span>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+</body>
+</html>

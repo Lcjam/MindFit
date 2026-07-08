@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MindFit — ERD 확정 (13)</title>
+<style>
+:root {
+  --primary: #2563EB; --primary-dark: #1E40AF; --primary-light: #EFF6FF;
+  --green: #16A34A; --green-light: #F0FDF4;
+  --red: #DC2626; --red-light: #FEF2F2;
+  --amber: #D97706; --amber-light: #FFFBEB;
+  --violet: #7C3AED; --violet-light: #F5F3FF;
+  --gray-50: #F9FAFB; --gray-100: #F3F4F6; --gray-200: #E5E7EB; --gray-300: #D1D5DB;
+  --gray-400: #9CA3AF; --gray-500: #6B7280; --gray-600: #4B5563; --gray-700: #374151;
+  --gray-800: #1F2937; --gray-900: #111827;
+  --radius-sm: 6px; --radius-md: 10px; --radius-lg: 16px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.05);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif; background: var(--gray-50); color: var(--gray-800); line-height: 1.65; font-size: 15px; }
+.doc-header { background: linear-gradient(135deg, #1E3A8A 0%, #3730A3 50%, #5B21B6 100%); color: #fff; padding: 56px 40px 48px; }
+.doc-header-inner { max-width: 1100px; margin: 0 auto; }
+.doc-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.25); border-radius: 20px; padding: 4px 14px; font-size: 12px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; margin-bottom: 18px; }
+.doc-header h1 { font-size: 34px; font-weight: 800; letter-spacing: -.02em; margin-bottom: 10px; }
+.doc-header p { font-size: 16px; opacity: .82; max-width: 720px; }
+.header-meta { display: flex; gap: 24px; margin-top: 28px; flex-wrap: wrap; }
+.header-meta-item { display: flex; flex-direction: column; gap: 2px; }
+.header-meta-item .label { font-size: 11px; opacity: .65; text-transform: uppercase; letter-spacing: .06em; }
+.header-meta-item .value { font-size: 14px; font-weight: 700; }
+.container { max-width: 1100px; margin: 0 auto; padding: 48px 40px; }
+section { margin-bottom: 48px; }
+.section-title { font-size: 22px; font-weight: 800; color: var(--gray-900); margin-bottom: 8px; letter-spacing: -.02em; }
+.section-desc { font-size: 14px; color: var(--gray-500); margin-bottom: 24px; }
+h3 { font-size: 16px; font-weight: 700; color: var(--gray-900); margin: 0 0 4px; }
+h4 { font-size: 14px; font-weight: 700; color: var(--gray-700); margin: 18px 0 8px; }
+p { margin-bottom: 10px; }
+ul, ol { padding-left: 22px; margin-bottom: 12px; }
+li { margin-bottom: 4px; }
+table { width: 100%; border-collapse: collapse; background: #fff; font-size: 13px; }
+th { background: var(--gray-100); text-align: left; padding: 7px 12px; font-weight: 700; color: var(--gray-700); border-bottom: 1px solid var(--gray-200); white-space: nowrap; }
+td { padding: 6px 12px; border-bottom: 1px solid var(--gray-100); vertical-align: top; }
+tr:last-child td { border-bottom: none; }
+code { font-family: 'SF Mono', Menlo, Consolas, monospace; font-size: 12.5px; background: var(--gray-100); padding: 1px 5px; border-radius: 4px; color: var(--primary-dark); }
+pre { background: #1E293B; color: #E2E8F0; padding: 16px 20px; border-radius: var(--radius-md); font-family: 'SF Mono', Menlo, Consolas, monospace; font-size: 12.5px; line-height: 1.6; overflow-x: auto; margin-bottom: 18px; }
+pre code { background: none; color: inherit; padding: 0; }
+.card { background: #fff; border: 1px solid var(--gray-200); border-radius: var(--radius-lg); padding: 18px 22px; box-shadow: var(--shadow-sm); margin-bottom: 16px; }
+.card .e-meta { font-size: 12px; color: var(--gray-500); margin-bottom: 10px; }
+.badge { display: inline-block; padding: 2px 9px; border-radius: 12px; font-size: 11.5px; font-weight: 700; }
+.badge-new { background: var(--violet-light); color: var(--violet); }
+.badge-existing { background: var(--gray-100); color: var(--gray-600); }
+.callout { border-radius: var(--radius-md); padding: 14px 18px; margin-bottom: 16px; font-size: 14px; }
+.callout-info { background: var(--primary-light); border: 1px solid #BFDBFE; color: var(--primary-dark); }
+.callout-warn { background: var(--amber-light); border: 1px solid #FDE68A; color: #92400E; }
+.entity-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 800px) { .entity-grid { grid-template-columns: 1fr; } }
+.footer { border-top: 1px solid var(--gray-200); padding: 24px 40px; text-align: center; font-size: 12.5px; color: var(--gray-400); }
+.toc { background: #fff; border: 1px solid var(--gray-200); border-radius: var(--radius-lg); padding: 20px 28px; margin-bottom: 40px; }
+.toc ol { columns: 2; margin-bottom: 0; }
+.toc a { color: var(--primary); text-decoration: none; font-size: 14px; }
+.toc a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+
+<header class="doc-header">
+  <div class="doc-header-inner">
+    <span class="doc-badge">🗂️ 기획 문서 13 · ERD 확정</span>
+    <h1>ERD 확정 — P1.5 게이트</h1>
+    <p><a href="../planning/12_master-plan.html" style="color:#fff">12번 마스터 플랜</a> §4의 데이터 모델을 확정 문서로 정리. 08 시스템 아키텍처의 JSON 컬럼 설계(specialties·approach_types·session_types)를 대체한다.</p>
+    <div class="header-meta">
+      <div class="header-meta-item"><span class="label">기준일</span><span class="value">2026-07-08</span></div>
+      <div class="header-meta-item"><span class="label">엔티티 수</span><span class="value">19</span></div>
+      <div class="header-meta-item"><span class="label">근거</span><span class="value">12_master-plan.html §3(ADR) · §4</span></div>
+      <div class="header-meta-item"><span class="label">마이그레이션</span><span class="value">Flyway 도입 (P2 시작 시)</span></div>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+
+<div class="toc">
+  <ol>
+    <li><a href="#s1">개요 · 08 대체 범위</a></li>
+    <li><a href="#s2">엔티티 관계 개요</a></li>
+    <li><a href="#s3">엔티티 상세</a></li>
+    <li><a href="#s4">설계 원칙 · 패턴 준수</a></li>
+  </ol>
+</div>
+
+<!-- ============================================================ -->
+<section id="s1">
+  <h2 class="section-title">1. 개요 · 08 대체 범위</h2>
+  <p class="section-desc">이 문서는 <code>docs/architecture/08_system-architecture.html</code>의 스키마 섹션을 대체한다. 08 문서 본문은 이력 보존을 위해 남기되, 상단에 이 문서로의 대체 안내 배너를 추가한다 (§12 후속 문서 갱신).</p>
+  <div class="callout callout-warn">
+    <b>08 대비 변경점 3가지</b><br>
+    ① <code>specialties</code>·<code>approach_types</code>·<code>session_types</code> JSON 컬럼 → 마스터+매핑 테이블로 정규화 (ADR-1)<br>
+    ② 예약 동시성 제어: <code>sessions</code>에 <code>active_slot</code> NULL 트릭 + 유니크 제약 추가 (ADR-2)<br>
+    ③ 신규 엔티티 6종: <code>refunds</code>·<code>counselor_penalties</code>·<code>disputes</code> 및 정규화 매핑 테이블 3종
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section id="s2">
+  <h2 class="section-title">2. 엔티티 관계 개요</h2>
+  <p class="section-desc">Phase별 소유 도메인과 핵심 관계. 화살표는 FK 방향(N → 1).</p>
+<pre><code>users 1─1 counselor_profiles
+counselor_profiles N─N specialties      (경유: counselor_specialties)      ADR-1
+counselor_profiles N─N approach_types   (경유: counselor_approach_types)   ADR-1
+counselor_profiles 1─N counselor_session_types                            ADR-1
+counselor_profiles 1─N counselor_credentials
+counselor_profiles 1─N counselor_availabilities
+counselor_profiles 1─N counselor_penalties                                ADR-7
+
+sessions N─1 counselor_profiles · N─1 users(client)
+sessions 1─1 questionnaires
+sessions 1─1 payments
+sessions 1─1 chat_rooms
+sessions 1─1 disputes (nullable)
+sessions 1─1 reviews (nullable, COMPLETED 이후)
+
+payments 1─N refunds                                                      ADR-5
+chat_rooms 1─N messages                                                   ADR-9/10
+users 1─N notifications</code></pre>
+</section>
+
+<!-- ============================================================ -->
+<section id="s3">
+  <h2 class="section-title">3. 엔티티 상세</h2>
+
+  <div class="card">
+    <h3>users <span class="badge badge-existing">기존 유지</span></h3>
+    <div class="e-meta">P1 구현 완료</div>
+    <table>
+      <tr><th>컬럼</th><th>제약/타입</th><th>설명</th></tr>
+      <tr><td>id</td><td>PK</td><td></td></tr>
+      <tr><td>email</td><td>UQ</td><td></td></tr>
+      <tr><td>password</td><td></td><td>BCrypt 해시</td></tr>
+      <tr><td>name</td><td></td><td></td></tr>
+      <tr><td>birth_date</td><td>nullable</td><td></td></tr>
+      <tr><td>role</td><td>ENUM(CLIENT\|COUNSELOR\|ADMIN)</td><td>GrantedAuthority 구현 (ROLE_ 접두 — 세션 참고: PR#4 하드닝)</td></tr>
+      <tr><td>email_verified</td><td></td><td>V1: 이메일 인증 Must (§12 04 문서 갱신)</td></tr>
+      <tr><td>email_verify_token</td><td></td><td></td></tr>
+      <tr><td>refresh_token</td><td>VARCHAR(512)</td><td>P1 리뷰에서 길이 512로 확정 (JWT 길이 여유)</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h3>counselor_profiles</h3>
+    <table>
+      <tr><th>컬럼</th><th>제약/타입</th><th>설명</th></tr>
+      <tr><td>id</td><td>PK</td><td></td></tr>
+      <tr><td>user_id</td><td>FK · UQ (1:1)</td><td></td></tr>
+      <tr><td>bio</td><td>TEXT</td><td>ADR-8 금칙어 하드 블록 대상</td></tr>
+      <tr><td>photo_url</td><td></td><td>S3</td></tr>
+      <tr><td>price_per_session</td><td>INT</td><td>결제 initialize 금액 계산 기준</td></tr>
+      <tr><td>status</td><td>ENUM(PENDING\|APPROVED\|REJECTED)</td><td>프로필 편집은 APPROVED만 허용</td></tr>
+      <tr><td>approved_at</td><td>nullable</td><td></td></tr>
+      <tr><td>penalty_count</td><td>INT DEFAULT 0</td><td>ADR-7 — 30일 3회 누적 시 노출 제외</td></tr>
+      <tr><td>is_listed</td><td>BOOLEAN DEFAULT true</td><td>ADR-7 — 검색 노출 플래그만 off, 계정 유지</td></tr>
+    </table>
+    <p style="margin-top:8px;font-size:12.5px;color:var(--gray-500)">IX (status, price_per_session) — 탐색 필터</p>
+  </div>
+
+  <div class="entity-grid">
+    <div class="card">
+      <h3>specialties <span class="badge badge-new">신규</span></h3>
+      <div class="e-meta">ADR-1 — 마스터, 시드 데이터</div>
+      <table>
+        <tr><th>컬럼</th><th>제약</th></tr>
+        <tr><td>id</td><td>PK</td></tr>
+        <tr><td>name</td><td>UQ</td></tr>
+        <tr><td>is_active</td><td>관리자 확장 가능</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <h3>counselor_specialties <span class="badge badge-new">신규</span></h3>
+      <div class="e-meta">N:M 매핑 — JSON 컬럼 대체</div>
+      <table>
+        <tr><th>컬럼</th><th>제약</th></tr>
+        <tr><td>counselor_id, specialty_id</td><td>PK(복합)</td></tr>
+        <tr><td colspan="2">IX (specialty_id, counselor_id) — 검색 역방향</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <h3>approach_types <span class="badge badge-new">신규</span></h3>
+      <div class="e-meta">마스터, 시드 (CBT/ACT/DBT 등)</div>
+      <table>
+        <tr><th>컬럼</th><th>제약</th></tr>
+        <tr><td>id</td><td>PK</td></tr>
+        <tr><td>name</td><td>UQ</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <h3>counselor_approach_types <span class="badge badge-new">신규</span></h3>
+      <div class="e-meta">N:M 매핑</div>
+      <table>
+        <tr><th>컬럼</th><th>제약</th></tr>
+        <tr><td>counselor_id, approach_type_id</td><td>PK(복합)</td></tr>
+        <tr><td colspan="2">IX 역방향</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>counselor_session_types <span class="badge badge-new">신규</span></h3>
+    <div class="e-meta">값이 CHAT/VIDEO_LINK 2개뿐이라 마스터 테이블 없이 ENUM 매핑만 (ADR-1 — 과설계 회피)</div>
+    <table>
+      <tr><th>컬럼</th><th>제약</th></tr>
+      <tr><td>counselor_id, session_type</td><td>PK(복합) · ENUM(CHAT\|VIDEO_LINK)</td></tr>
+      <tr><td colspan="2">IX 역방향</td></tr>
+    </table>
+  </div>
+
+  <div class="entity-grid">
+    <div class="card">
+      <h3>counselor_credentials</h3>
+      <table>
+        <tr><th>컬럼</th><th>제약/타입</th></tr>
+        <tr><td>id</td><td>PK</td></tr>
+        <tr><td>counselor_id</td><td>FK</td></tr>
+        <tr><td>type</td><td>ENUM(ENROLLMENT\|DEGREE\|LICENSE\|ID)</td></tr>
+        <tr><td>file_url</td><td>S3, presigned로 노출</td></tr>
+        <tr><td>status</td><td>ENUM(PENDING\|APPROVED\|REJECTED)</td></tr>
+        <tr><td>reviewed_at, reject_reason</td><td>nullable</td></tr>
+      </table>
+      <p style="margin-top:8px;font-size:12.5px;color:var(--gray-500)">IX (status, created_at) — 심사 대기열</p>
+    </div>
+    <div class="card">
+      <h3>counselor_availabilities</h3>
+      <table>
+        <tr><th>컬럼</th><th>제약/타입</th></tr>
+        <tr><td>id</td><td>PK</td></tr>
+        <tr><td>counselor_id</td><td>FK</td></tr>
+        <tr><td>type</td><td>ENUM(WEEKLY\|SPECIFIC)</td></tr>
+        <tr><td>day_of_week, date</td><td>type에 따라 택1 사용</td></tr>
+        <tr><td>start_time, end_time, is_blocked</td><td></td></tr>
+      </table>
+      <p style="margin-top:8px;font-size:12.5px;color:var(--gray-500)">UQ (counselor_id, type, day_of_week, date, start_time)</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>sessions</h3>
+    <div class="e-meta">ADR-0(상태머신) · ADR-2(동시성) 반영 — 이 프로젝트의 핵심 상태 엔티티</div>
+    <table>
+      <tr><th>컬럼</th><th>제약/타입</th><th>설명</th></tr>
+      <tr><td>id</td><td>PK</td><td></td></tr>
+      <tr><td>counselor_id, client_id</td><td>FK</td><td></td></tr>
+      <tr><td>scheduled_at</td><td></td><td></td></tr>
+      <tr><td>duration_min</td><td></td><td></td></tr>
+      <tr><td>session_type</td><td>ENUM(CHAT\|VIDEO_LINK)</td><td></td></tr>
+      <tr><td>status</td><td>ENUM(PENDING_PAYMENT\|AWAITING_CONFIRM\|CONFIRMED\|COMPLETED\|REJECTED\|CANCELLED_BY_CLIENT\|CANCELLED_BY_COUNSELOR\|NO_SHOW)</td><td>ADR-0 전이 규칙은 12번 §3 참조</td></tr>
+      <tr><td>reject_reason</td><td>nullable</td><td></td></tr>
+      <tr><td>active_slot</td><td>CHAR(1) NULL</td><td>활성 예약='Y', 취소/거절 시 NULL — MySQL 유니크 인덱스는 NULL 중복 허용 (ADR-2)</td></tr>
+      <tr><td>paid_at</td><td>nullable</td><td>24h 자동거절 스케줄러 기준</td></tr>
+    </table>
+    <p style="margin-top:8px;font-size:12.5px;color:var(--gray-500)">
+      UQ <code>uq_counselor_slot (counselor_id, scheduled_at, active_slot)</code> — 동시 예약 레이스 차단 (ADR-2)<br>
+      IX (client_id, status) · IX (counselor_id, status, scheduled_at) · IX (status, paid_at) — 자동거절 배치
+    </p>
+  </div>
+
+  <div class="card">
+    <h3>questionnaires</h3>
+    <table>
+      <tr><th>컬럼</th><th>제약/타입</th><th>설명</th></tr>
+      <tr><td>id</td><td>PK</td><td></td></tr>
+      <tr><td>session_id</td><td>FK · UQ (1:1)</td><td></td></tr>
+      <tr><td>client_id</td><td>FK</td><td></td></tr>
+      <tr><td>main_concern</td><td>최대 1000자</td><td></td></tr>
+      <tr><td>severity</td><td>1~5</td><td></td></tr>
+      <tr><td>duration_text, prior_experience, goal, additional_note</td><td></td><td></td></tr>
+      <tr><td>is_accessible</td><td>BOOLEAN DEFAULT false</td><td>ADR-3 — COUNSELOR 경로에만 적용되는 게이트. CLIENT/ADMIN은 이 플래그 무관하게 조회 가능</td></tr>
+      <tr><td>submitted_at</td><td></td><td></td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h3>payments</h3>
+    <table>
+      <tr><th>컬럼</th><th>제약/타입</th><th>설명</th></tr>
+      <tr><td>id</td><td>PK</td><td></td></tr>
+      <tr><td>session_id</td><td>FK</td><td></td></tr>
+      <tr><td>order_id</td><td>UQ</td><td></td></tr>
+      <tr><td>amount</td><td>INT</td><td>ADR-4 이중 검증 대조 기준값</td></tr>
+      <tr><td>commission_rate, commission_amount, net_amount</td><td></td><td>정산 시점 수수료 스냅샷 — 의도적 비정규화 (수수료율 변경에도 과거 정산 불변)</td></tr>
+      <tr><td>status</td><td>ENUM(PENDING\|COMPLETED\|REFUNDED\|PARTIAL_REFUNDED\|FAILED)</td><td></td></tr>
+      <tr><td>payment_key</td><td>UQ</td><td>웹훅·confirm 교차 멱등 판별 (ADR-4)</td></tr>
+      <tr><td>pg_transaction_id</td><td>UQ</td><td></td></tr>
+      <tr><td>paid_at</td><td>nullable</td><td></td></tr>
+    </table>
+    <p style="margin-top:8px;font-size:12.5px;color:var(--gray-500)">IX (status, created_at) — PaymentReconciliationScheduler 폴링 배치</p>
+  </div>
+
+  <div class="entity-grid">
+    <div class="card">
+      <h3>refunds <span class="badge badge-new">신규 · ADR-5</span></h3>
+      <div class="e-meta">상태머신 테이블이 곧 재시도 큐 겸 감사 로그</div>
+      <table>
+        <tr><th>컬럼</th><th>제약/타입</th></tr>
+        <tr><td>id</td><td>PK</td></tr>
+        <tr><td>payment_id</td><td>FK</td></tr>
+        <tr><td>amount</td><td></td></tr>
+        <tr><td>reason</td><td>ENUM(CLIENT_CANCEL_FULL\|CLIENT_CANCEL_HALF\|COUNSELOR_REJECT\|COUNSELOR_CANCEL\|AUTO_REJECT\|ADMIN_FORCE)</td></tr>
+        <tr><td>status</td><td>ENUM(REQUESTED\|IN_PROGRESS\|COMPLETED\|FAILED_RETRYABLE\|FAILED_MANUAL)</td></tr>
+        <tr><td>attempt_count, next_retry_at</td><td>지수 백오프, 최대 5회</td></tr>
+        <tr><td>idempotency_key</td><td>UQ · 토스 Idempotency-Key 전달값</td></tr>
+        <tr><td>fail_reason</td><td>nullable</td></tr>
+      </table>
+      <p style="margin-top:8px;font-size:12.5px;color:var(--gray-500)">IX (status, next_retry_at) — RefundRetryScheduler</p>
+    </div>
+    <div class="card">
+      <h3>counselor_penalties <span class="badge badge-new">신규 · ADR-7</span></h3>
+      <div class="e-meta">B안 — 전액환불 + 페널티 누적 (금전 페널티 없음)</div>
+      <table>
+        <tr><th>컬럼</th><th>제약/타입</th></tr>
+        <tr><td>id</td><td>PK</td></tr>
+        <tr><td>counselor_id</td><td>FK</td></tr>
+        <tr><td>session_id</td><td>FK</td></tr>
+        <tr><td>type</td><td>ENUM(SAME_DAY_CANCEL\|NO_SHOW)</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>disputes <span class="badge badge-new">신규</span></h3>
+    <div class="e-meta">노쇼 신고 → 관리자 해결 경로 (§5 P6)</div>
+    <table>
+      <tr><th>컬럼</th><th>제약/타입</th></tr>
+      <tr><td>id</td><td>PK</td></tr>
+      <tr><td>session_id</td><td>FK · UQ (세션당 1건)</td></tr>
+      <tr><td>reporter_id</td><td>FK (client)</td></tr>
+      <tr><td>description</td><td></td></tr>
+      <tr><td>status</td><td>ENUM(OPEN\|RESOLVED_REFUND\|RESOLVED_REJECT)</td></tr>
+      <tr><td>resolution_note</td><td>nullable</td></tr>
+    </table>
+    <p style="margin-top:8px;font-size:12.5px;color:var(--gray-500)">IX (status, created_at)</p>
+  </div>
+
+  <div class="entity-grid">
+    <div class="card">
+      <h3>chat_rooms</h3>
+      <table>
+        <tr><th>컬럼</th><th>제약</th></tr>
+        <tr><td>session_id</td><td>UQ</td></tr>
+        <tr><td>counselor_id, client_id</td><td></td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <h3>messages</h3>
+      <table>
+        <tr><th>컬럼</th><th>제약/타입</th></tr>
+        <tr><td>id</td><td>PK</td></tr>
+        <tr><td>chat_room_id</td><td>FK</td></tr>
+        <tr><td>sender_id, content</td><td></td></tr>
+        <tr><td>message_type</td><td>ENUM(TEXT\|IMAGE\|LINK)</td></tr>
+        <tr><td>client_message_id</td><td>VARCHAR(36) — ADR-9 중복 제거</td></tr>
+      </table>
+      <p style="margin-top:8px;font-size:12.5px;color:var(--gray-500)">IX (chat_room_id, id) — 커서 페이징 (ADR-10)</p>
+    </div>
+  </div>
+
+  <div class="entity-grid">
+    <div class="card">
+      <h3>reviews</h3>
+      <table>
+        <tr><th>컬럼</th><th>제약</th></tr>
+        <tr><td>session_id</td><td>UQ — 1세션 1리뷰 DB 보장</td></tr>
+        <tr><td>rating</td><td>1~5</td></tr>
+        <tr><td>content, is_anonymous</td><td>content는 ADR-8 금칙어 하드 블록</td></tr>
+      </table>
+      <p style="margin-top:8px;font-size:12.5px;color:var(--gray-500)">IX (counselor_id, created_at)</p>
+    </div>
+    <div class="card">
+      <h3>notifications</h3>
+      <table>
+        <tr><th>컬럼</th><th>제약</th></tr>
+        <tr><td>user_id, is_read</td><td>IX (user_id, is_read)</td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section id="s4">
+  <h2 class="section-title">4. 설계 원칙 · 패턴 준수</h2>
+  <ul>
+    <li>기존 패턴 유지: <code>BusinessException</code> + <code>ErrorCode</code>, <code>ApiResponse&lt;T&gt;</code>, <code>@PrePersist</code> 타임스탬프</li>
+    <li>수수료 스냅샷(<code>payments.commission_rate/amount/net_amount</code>)은 의도적 비정규화 — 요약 재계산 대신 정산 시점 값 고정</li>
+    <li>예약 동시성은 락이 아닌 DB 유니크 제약(ADR-2) — 코드 0줄로 레이스 차단, 서버 스케일아웃에도 유효</li>
+    <li>정규화는 다대다 관계에만 적용(ADR-1) — 값이 2개뿐인 session_types까지 마스터 테이블화하는 과설계는 기각</li>
+    <li>P2 시작 시 Flyway 도입 — 매핑 테이블·제약·시드 데이터 증가로 <code>ddl-auto</code> 의존 한계 도달</li>
+  </ul>
+</section>
+
+</div>
+
+<footer class="footer">
+  MindFit — 기획 문서 13 / ERD 확정 · 기준일 2026-07-08 · 근거: 12_master-plan.html §4
+</footer>
+
+</body>
+</html>
