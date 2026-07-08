@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MindFit — 시장 분석 (Market Analysis)</title>
+  <style>
+    :root {
+      --primary:   #4F6EF7;
+      --primary-dk:#3751D4;
+      --accent:    #6EDDC6;
+      --warn:      #F5A623;
+      --danger:    #E05C5C;
+      --success:   #4CAF82;
+      --bg:        #F4F6FB;
+      --surface:   #FFFFFF;
+      --border:    #E2E8F0;
+      --text:      #1A202C;
+      --muted:     #718096;
+      --tag-bg:    #EEF2FF;
+      --tag-color: #4F6EF7;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      font-size: 15px;
+    }
+
+    /* ── Header ── */
+    header {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dk) 100%);
+      color: #fff;
+      padding: 56px 40px 48px;
+    }
+    header .badge {
+      display: inline-block;
+      background: rgba(255,255,255,0.18);
+      border: 1px solid rgba(255,255,255,0.35);
+      border-radius: 20px;
+      padding: 4px 14px;
+      font-size: 12px;
+      letter-spacing: 0.06em;
+      margin-bottom: 18px;
+    }
+    header h1 { font-size: 32px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 10px; }
+    header p  { font-size: 15px; opacity: 0.82; max-width: 620px; }
+    header .meta {
+      margin-top: 24px;
+      display: flex;
+      gap: 24px;
+      font-size: 13px;
+      opacity: 0.72;
+    }
+    header .meta span::before { content: "· "; }
+
+    /* ── Layout ── */
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 48px 24px 80px;
+    }
+
+    /* ── Section title ── */
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+      margin-top: 56px;
+    }
+    .section-title:first-child { margin-top: 0; }
+    .section-icon {
+      width: 42px; height: 42px;
+      background: var(--primary);
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+    .section-title h2 { font-size: 22px; font-weight: 700; }
+    .section-title p  { font-size: 13px; color: var(--muted); margin-top: 2px; }
+
+    /* ── Cards ── */
+    .card {
+      background: var(--surface);
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      padding: 28px 32px;
+      margin-bottom: 20px;
+    }
+    .card h3 { font-size: 17px; font-weight: 700; margin-bottom: 10px; }
+
+    /* ── Stat grid ── */
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 22px 24px;
+      text-align: center;
+    }
+    .stat-card .num {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--primary);
+      line-height: 1.1;
+    }
+    .stat-card .unit { font-size: 14px; color: var(--muted); margin-top: 4px; }
+    .stat-card .label { font-size: 13px; color: var(--text); margin-top: 8px; font-weight: 600; }
+    .stat-card .src   { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+    /* ── Trend bullets ── */
+    .trend-list { list-style: none; }
+    .trend-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 14px;
+    }
+    .trend-list li:last-child { border-bottom: none; }
+    .trend-list li .icon {
+      font-size: 20px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .trend-list li strong { display: block; font-weight: 700; margin-bottom: 2px; }
+
+    /* ── Competitor table ── */
+    .table-wrap {
+      overflow-x: auto;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+    thead tr { background: var(--primary); color: #fff; }
+    thead th {
+      padding: 14px 16px;
+      text-align: left;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    tbody tr { border-bottom: 1px solid var(--border); transition: background 0.15s; }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: #F7F9FF; }
+    tbody td { padding: 13px 16px; vertical-align: top; }
+    tbody td:first-child { font-weight: 700; color: var(--primary); }
+    .tag {
+      display: inline-block;
+      background: var(--tag-bg);
+      color: var(--tag-color);
+      border-radius: 6px;
+      padding: 2px 8px;
+      font-size: 12px;
+      font-weight: 600;
+      white-space: nowrap;
+      margin: 2px 2px 2px 0;
+    }
+    .tag.green  { background: #EDFAF4; color: #2E8A5C; }
+    .tag.orange { background: #FFF5E6; color: #C07A00; }
+    .tag.red    { background: #FFF0F0; color: #C0392B; }
+    .tag.gray   { background: #F1F3F5; color: #555; }
+
+    /* ── MindFit 차별점 ── */
+    .diff-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+    }
+    .diff-card {
+      background: var(--surface);
+      border: 2px solid var(--primary);
+      border-radius: 16px;
+      padding: 28px;
+      position: relative;
+      overflow: hidden;
+    }
+    .diff-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+    }
+    .diff-card .num-badge {
+      width: 36px; height: 36px;
+      background: var(--primary);
+      color: #fff;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; font-weight: 800;
+      margin-bottom: 14px;
+    }
+    .diff-card h3 { font-size: 16px; font-weight: 700; color: var(--primary); margin-bottom: 8px; }
+    .diff-card p  { font-size: 14px; color: var(--muted); line-height: 1.65; }
+
+    /* ── Go-to-market ── */
+    .gtm-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    .gtm-step {
+      display: flex;
+      gap: 20px;
+      padding: 24px 0;
+      border-bottom: 1px solid var(--border);
+      align-items: flex-start;
+    }
+    .gtm-step:last-child { border-bottom: none; }
+    .gtm-step .step-num {
+      width: 44px; height: 44px; flex-shrink: 0;
+      background: var(--primary);
+      color: #fff;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 17px;
+    }
+    .gtm-step h4 { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+    .gtm-step p  { font-size: 13.5px; color: var(--muted); line-height: 1.6; }
+    .gtm-step .phase-tag {
+      display: inline-block;
+      background: var(--accent);
+      color: #1a6b5a;
+      border-radius: 6px;
+      padding: 2px 10px;
+      font-size: 11px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    /* ── Korea context ── */
+    .korea-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+    }
+    .korea-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 22px 24px;
+    }
+    .korea-card .emoji { font-size: 28px; margin-bottom: 10px; }
+    .korea-card h4 { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+    .korea-card p  { font-size: 13px; color: var(--muted); line-height: 1.6; }
+
+    /* ── Highlight box ── */
+    .highlight-box {
+      background: linear-gradient(135deg, #EEF2FF 0%, #E8FDF6 100%);
+      border: 1px solid #C7D7FD;
+      border-radius: 14px;
+      padding: 24px 28px;
+      margin-top: 24px;
+    }
+    .highlight-box h4 { font-size: 15px; font-weight: 700; color: var(--primary); margin-bottom: 8px; }
+    .highlight-box p  { font-size: 13.5px; color: #3a4a70; line-height: 1.65; }
+
+    /* ── Footer ── */
+    footer {
+      text-align: center;
+      padding: 32px;
+      font-size: 12px;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+    }
+
+    @media (max-width: 680px) {
+      header { padding: 36px 20px 32px; }
+      header h1 { font-size: 24px; }
+      main { padding: 32px 16px 60px; }
+      .diff-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="badge">RESEARCH · DOCUMENT 02</div>
+  <h1>시장 분석 (Market Analysis)</h1>
+  <p>국내 정신건강 시장 현황, 경쟁사 비교, MindFit 차별화 전략 및 시장 진입 방안</p>
+  <div class="meta">
+    <span>MindFit 심리상담 마켓플레이스</span>
+    <span>작성일: 2026년 5월</span>
+    <span>버전: v1.0</span>
+  </div>
+</header>
+
+<main>
+
+  <!-- ══════════════════════════════════════════
+       1. 시장 규모 및 성장 추세
+  ══════════════════════════════════════════ -->
+  <div class="section-title">
+    <div class="section-icon">📊</div>
+    <div>
+      <h2>1. 국내 정신건강 시장 규모 및 성장 추세</h2>
+      <p>MZ세대 중심 심리상담 수요 급증 — 팬데믹 이후 가속화</p>
+    </div>
+  </div>
+
+  <div class="stat-grid">
+    <div class="stat-card">
+      <div class="num">1.4조</div>
+      <div class="unit">원 (2023년 추정)</div>
+      <div class="label">국내 심리상담 시장 규모</div>
+      <div class="src">출처: 한국심리학회 추정치</div>
+    </div>
+    <div class="stat-card">
+      <div class="num">12%+</div>
+      <div class="unit">연평균 성장률 (CAGR)</div>
+      <div class="label">2023–2027년 예측</div>
+      <div class="src">출처: 보건복지부 정신건강통계</div>
+    </div>
+    <div class="stat-card">
+      <div class="num">36.8%</div>
+      <div class="unit">경험률</div>
+      <div class="label">MZ세대 정신건강 서비스 이용 의향</div>
+      <div class="src">출처: 대한신경정신의학회 (2023)</div>
+    </div>
+    <div class="stat-card">
+      <div class="num">4배</div>
+      <div class="unit">증가</div>
+      <div class="label">2019→2023년 온라인 심리상담 검색량</div>
+      <div class="src">출처: 네이버 트렌드 데이터</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>핵심 성장 동인 (Growth Drivers)</h3>
+    <ul class="trend-list">
+      <li>
+        <span class="icon">🔥</span>
+        <div>
+          <strong>번아웃·직장 스트레스 급증</strong>
+          OECD 국가 중 최장 노동시간 국가 중 하나인 한국에서, 특히 2030 직장인의 번아웃 증후군이 사회적 이슈로 부상. 2023년 직장인 10명 중 6명이 번아웃 경험을 보고함.
+        </div>
+      </li>
+      <li>
+        <span class="icon">📱</span>
+        <div>
+          <strong>온라인·비대면 서비스 수용성 확대</strong>
+          코로나19 이후 비대면 의료·상담 서비스에 대한 거부감이 급격히 감소. 특히 MZ세대는 앱 기반 멘탈케어 서비스를 자연스럽게 수용.
+        </div>
+      </li>
+      <li>
+        <span class="icon">🏢</span>
+        <div>
+          <strong>ESG·직원 복지 트렌드</strong>
+          대기업·스타트업을 중심으로 EAP(Employee Assistance Program) 도입이 확산. B2B 상담 서비스 수요도 동반 성장.
+        </div>
+      </li>
+      <li>
+        <span class="icon">🌐</span>
+        <div>
+          <strong>정부 정신건강 지원 확대</strong>
+          보건복지부 정신건강 복지서비스 예산 증가, 청년 마음건강 바우처 정책 시행 등 공공 인식 개선과 함께 민간 시장도 수혜.
+        </div>
+      </li>
+      <li>
+        <span class="icon">✨</span>
+        <div>
+          <strong>낙인(stigma) 감소 — 세대별 차이</strong>
+          Z세대·밀레니얼 세대는 자기계발의 일환으로 상담을 인식하는 경향이 강해짐. "나 상담받아"가 부끄러운 고백이 아닌 자기관리 발언으로 변화 중.
+        </div>
+      </li>
+    </ul>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       2. 경쟁사 비교
+  ══════════════════════════════════════════ -->
+  <div class="section-title">
+    <div class="section-icon">⚔️</div>
+    <div>
+      <h2>2. 경쟁사 상세 비교</h2>
+      <p>국내 주요 플레이어 4종 분석 — MindFit 포지셔닝 근거 도출</p>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>비교 항목</th>
+          <th>마인드카페</th>
+          <th>트로스트</th>
+          <th>눈바디</th>
+          <th>오프라인 상담센터</th>
+          <th>MindFit (목표)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>핵심 포지셔닝</td>
+          <td>콘텐츠·커뮤니티 기반 멘탈케어</td>
+          <td>채팅 상담 전문 플랫폼</td>
+          <td>자가진단·정신건강 앱</td>
+          <td>전통 오프라인 심리상담</td>
+          <td><span class="tag">심리상담 마켓플레이스</span></td>
+        </tr>
+        <tr>
+          <td>상담사 자격 기준</td>
+          <td><span class="tag red">낮음</span> 코치·카운슬러 포함, 자격 검증 불명확</td>
+          <td><span class="tag orange">중간</span> 자격증 보유 전문가 위주, 일부 검증</td>
+          <td><span class="tag gray">해당 없음</span> 상담사 매칭 미제공</td>
+          <td><span class="tag green">높음</span> 센터별 상이, 박사·석사 위주</td>
+          <td><span class="tag green">높음 (강제)</span> 석사 이상 + 관련 자격증 필수, 서류 검증</td>
+        </tr>
+        <tr>
+          <td>가격대</td>
+          <td>월 구독 9,900원~19,900원<br/>(콘텐츠 이용료)</td>
+          <td>건당 30,000~80,000원</td>
+          <td>무료~경량 유료</td>
+          <td>건당 80,000~150,000원</td>
+          <td>건당 30,000~100,000원<br/>(상담사 자율 책정)</td>
+        </tr>
+        <tr>
+          <td>상담 방식</td>
+          <td>콘텐츠(명상, 글쓰기) 중심<br/>채팅 상담은 보조적</td>
+          <td>채팅 메시지 중심<br/>실시간 + 비동기 혼합</td>
+          <td>자가진단·AI 기반<br/>상담사 연결 없음</td>
+          <td>대면 세션 중심<br/>화상 일부 가능</td>
+          <td>채팅(실시간) + Zoom 링크 공유<br/>상담사·내담자 협의</td>
+        </tr>
+        <tr>
+          <td>예약 방법</td>
+          <td>앱 내 즉시 배정</td>
+          <td>앱 내 상담사 선택</td>
+          <td>해당 없음</td>
+          <td>전화·이메일·직접 방문</td>
+          <td>마켓플레이스 검색·필터 → 직접 선택</td>
+        </tr>
+        <tr>
+          <td>익명성</td>
+          <td><span class="tag orange">부분적</span> 닉네임 사용 가능</td>
+          <td><span class="tag green">높음</span> 익명 채팅 지원</td>
+          <td><span class="tag green">높음</span> 앱 자체 이용</td>
+          <td><span class="tag red">낮음</span> 실명·대면 필수</td>
+          <td><span class="tag green">높음</span> 닉네임 + 익명 채팅, 내담자 정보 상담사만 열람</td>
+        </tr>
+        <tr>
+          <td>마켓플레이스 구조</td>
+          <td><span class="tag red">없음</span> 콘텐츠 구독 모델</td>
+          <td><span class="tag orange">부분적</span> 상담사 리스트 제공, 비교는 제한적</td>
+          <td><span class="tag red">없음</span></td>
+          <td><span class="tag red">없음</span> 단일 센터 직접 예약</td>
+          <td><span class="tag green">완전한 양면 마켓</span> 가격·후기·필터 비교 선택</td>
+        </tr>
+        <tr>
+          <td>문진표 시스템</td>
+          <td>없음</td>
+          <td>간단 설문</td>
+          <td>자가진단 도구</td>
+          <td>센터 자체 양식</td>
+          <td>결제 후 상담사 전용 열람, 연속 케어 기반</td>
+        </tr>
+        <tr>
+          <td>수익 모델</td>
+          <td>월 구독료 + 광고</td>
+          <td>건당 수수료</td>
+          <td>프리미엄 구독</td>
+          <td>세션 직접 수익</td>
+          <td>건당 거래 수수료 (플랫폼 운영)</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="highlight-box">
+    <h4>경쟁 분석 인사이트</h4>
+    <p>마인드카페는 콘텐츠 기반으로 상담의 대체재를 제공하며, 트로스트는 채팅 상담에 특화되어 있으나 상담사 자격 기준과 비교 선택의 투명성이 낮습니다. 오프라인 센터는 신뢰도는 높으나 접근성이 낮고 가격 장벽이 큽니다. <strong>MindFit은 "신뢰(고자격)+ 접근성(온라인 마켓)+ 연속성(문진표·채팅)"을 동시에 제공하는 공백 포지션을 공략합니다.</strong></p>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       3. MindFit 차별점
+  ══════════════════════════════════════════ -->
+  <div class="section-title">
+    <div class="section-icon">🚀</div>
+    <div>
+      <h2>3. MindFit 핵심 차별점 3가지</h2>
+      <p>경쟁사 대비 명확한 포지셔닝 — WHY MINDFIT</p>
+    </div>
+  </div>
+
+  <div class="diff-grid">
+    <div class="diff-card">
+      <div class="num-badge">1</div>
+      <h3>석사 이상 자격 강제 검증 — 신뢰</h3>
+      <p>
+        임상·상담심리 석사 학위 이상을 필수 요건으로 설정하고, 자격증·학위 서류를 직접 업로드 후 관리자가 검토·승인합니다. 이를 통해 내담자는 "이 플랫폼의 상담사는 검증된 전문가"라는 신뢰를 갖고 서비스를 이용할 수 있습니다. 경쟁사가 자격 기준을 낮게 설정하거나 불명확하게 유지하는 것과 달리, MindFit은 높은 진입 장벽을 오히려 브랜드 강점으로 활용합니다.
+      </p>
+    </div>
+    <div class="diff-card">
+      <div class="num-badge">2</div>
+      <h3>마켓플레이스 구조 — 비교 선택과 가격 투명성</h3>
+      <p>
+        내담자가 상담사의 전문 분야, 가격, 경력, 리뷰를 한눈에 비교하고 직접 선택합니다. 배달의민족이 음식 주문 방식을 혁신했듯, MindFit은 심리상담 예약 방식을 혁신합니다. 상담사는 자신의 가격을 자율적으로 설정하고, 내담자는 예산에 맞는 상담사를 투명하게 탐색할 수 있습니다. 이는 기존 오프라인 센터의 불투명한 가격과 마인드카페의 배정 방식을 뛰어넘는 UX입니다.
+      </p>
+    </div>
+    <div class="diff-card">
+      <div class="num-badge">3</div>
+      <h3>채팅 + 문진표 시스템 — 연속성 있는 케어</h3>
+      <p>
+        상담 신청 시 작성한 문진표 데이터는 결제 완료 후 해당 상담사만 열람할 수 있습니다. 이로써 첫 회기부터 내담자의 상태를 파악한 상태에서 상담을 시작할 수 있어, 단순한 일회성 대화가 아닌 연속적이고 맥락 있는 케어를 제공합니다. 자체 채팅 시스템은 상담 기록의 연속성을 보장하며, Zoom 연동을 통한 화상 옵션도 지원합니다.
+      </p>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       4. 시장 진입 전략
+  ══════════════════════════════════════════ -->
+  <div class="section-title">
+    <div class="section-icon">🗺️</div>
+    <div>
+      <h2>4. 시장 진입 전략 — 치킨앤에그 해결</h2>
+      <p>공급(상담사) 선행 확보 → 수요(내담자) 유입 단계적 실행</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="gtm-steps">
+      <div class="gtm-step">
+        <div class="step-num">1</div>
+        <div>
+          <div class="phase-tag">Phase 1 · 공급 확보 (0–3개월)</div>
+          <h4>상담사 커뮤니티 직접 침투 — 초기 수련생 집중 모집</h4>
+          <p>
+            상담심리학과 석·박사 과정생이 밀집된 학회(한국상담심리학회, 한국임상심리학회)와 연계합니다. 수련 시간(임상 시간) 충족이 필요한 수련생은 낮은 세션 가격(30,000~50,000원)으로도 기꺼이 플랫폼에 참여합니다. 초기 30~50명의 상담사를 무수수료 또는 최저 수수료로 온보딩하여 공급 기반을 형성합니다.
+          </p>
+        </div>
+      </div>
+      <div class="gtm-step">
+        <div class="step-num">2</div>
+        <div>
+          <div class="phase-tag">Phase 2 · 검색 SEO + 커뮤니티 마케팅 (3–6개월)</div>
+          <h4>수요 유입 채널 구축 — 직장인 커뮤니티·검색 중심</h4>
+          <p>
+            블라인드, 직장인 카카오톡 오픈채팅, 링크드인 등 직장인이 밀집한 채널에서 번아웃·우울증 관련 콘텐츠를 배포합니다. "심리상담 가격 비교", "번아웃 상담사 추천" 등 롱테일 키워드 SEO를 집중 공략해 검색 유입을 확보합니다. 첫 상담 할인 쿠폰으로 전환율을 높입니다.
+          </p>
+        </div>
+      </div>
+      <div class="gtm-step">
+        <div class="step-num">3</div>
+        <div>
+          <div class="phase-tag">Phase 3 · 리뷰·신뢰 축적 (6–12개월)</div>
+          <h4>리뷰 플라이휠 가동 — 신뢰 자산 구축</h4>
+          <p>
+            상담사 리뷰 시스템을 정교하게 운영합니다. 상담 종료 후 내담자에게 리뷰 작성을 유도하고, 리뷰 누적이 많은 상담사가 검색 상단에 노출되는 구조로 품질 있는 상담사의 자연스러운 성장을 지원합니다. 신규 내담자는 리뷰를 보고 신뢰하며 진입합니다.
+          </p>
+        </div>
+      </div>
+      <div class="gtm-step">
+        <div class="step-num">4</div>
+        <div>
+          <div class="phase-tag">Phase 4 · B2B 확장 (12개월+)</div>
+          <h4>기업 EAP 연계 — B2B 수익 다각화</h4>
+          <p>
+            스타트업·중소기업을 대상으로 임직원 심리상담 패키지를 B2B로 제공합니다. HR 담당자 대상 영업 채널을 통해 기업 단위 계약을 체결하고, 안정적인 수요 확보와 함께 브랜드 인지도를 높입니다.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       5. 한국 시장 특수성
+  ══════════════════════════════════════════ -->
+  <div class="section-title">
+    <div class="section-icon">🇰🇷</div>
+    <div>
+      <h2>5. 한국 시장 특수성 — 설계에 반영해야 할 맥락</h2>
+      <p>한국 사용자를 이해해야 올바른 제품을 만들 수 있다</p>
+    </div>
+  </div>
+
+  <div class="korea-grid">
+    <div class="korea-card">
+      <div class="emoji">😶</div>
+      <h4>심리상담 낙인(Stigma) 문화</h4>
+      <p>
+        "정신과" "심리 치료"라는 단어에 강한 낙인이 존재합니다. 많은 잠재 이용자가 자신이 "비정상"으로 보일까 봐 두려워합니다. MindFit은 "상담은 누구나 받을 수 있는 자기관리"라는 메시지를 통해 낙인을 해소해야 합니다.
+      </p>
+    </div>
+    <div class="korea-card">
+      <div class="emoji">🕵️</div>
+      <h4>직장인 익명성 니즈</h4>
+      <p>
+        상담 사실이 직장에 알려질까 봐 두려운 직장인이 많습니다. 닉네임 기반 가입, 익명 채팅, 상담 내용의 철저한 보안이 필수입니다. "내 데이터는 어디에, 누가 볼 수 있나?"에 대한 명확한 안내가 신뢰 형성의 핵심입니다.
+      </p>
+    </div>
+    <div class="korea-card">
+      <div class="emoji">💬</div>
+      <h4>카카오·네이버 생태계 의존</h4>
+      <p>
+        한국 사용자는 카카오 로그인, 네이버 페이 등 익숙한 생태계를 선호합니다. 카카오 소셜 로그인 지원과 카카오페이·네이버페이 결제 연동은 진입 장벽을 낮추는 핵심 요소입니다.
+      </p>
+    </div>
+    <div class="korea-card">
+      <div class="emoji">📅</div>
+      <h4>비동기 선호 & 바쁜 직장인 라이프스타일</h4>
+      <p>
+        야근이 잦은 직장인에게 정해진 시간에 통화해야 하는 화상 상담은 부담입니다. 언제든 메시지를 보내면 상담사가 답변하는 비동기 채팅 옵션이 중요합니다. 모바일 우선 UX도 필수입니다.
+      </p>
+    </div>
+    <div class="korea-card">
+      <div class="emoji">💰</div>
+      <h4>가격 민감도</h4>
+      <p>
+        오프라인 상담 가격(1회 10만 원+)은 심리적 장벽입니다. 수련생 상담사의 저가 옵션(3~5만 원)을 노출하고, "첫 상담 할인" 또는 "체험 세션" 기능을 제공해 첫 경험의 비용 부담을 낮춰야 합니다.
+      </p>
+    </div>
+    <div class="korea-card">
+      <div class="emoji">🏥</div>
+      <h4>정신과 vs 심리상담 혼동</h4>
+      <p>
+        많은 사용자가 심리상담과 정신과(정신건강의학과)를 혼동합니다. "심리상담은 약 처방이 없으며, 예방·성장 중심"이라는 명확한 안내가 서비스 첫 접점에서부터 필요합니다.
+      </p>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  MindFit 심리상담 마켓플레이스 · 기획 문서 02 — 시장 분석 · 내부 기획 자료 · 2026년 5월
+</footer>
+
+</body>
+</html>

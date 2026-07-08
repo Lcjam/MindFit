@@ -1,0 +1,1498 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MindFit — 시스템 아키텍처 문서 (System Architecture)</title>
+  <style>
+    :root {
+      --primary: #4f46e5;
+      --primary-light: #eef2ff;
+      --primary-mid: #c7d2fe;
+      --secondary: #0ea5e9;
+      --success: #16a34a;
+      --warning: #d97706;
+      --danger: #dc2626;
+      --patch: #ea580c;
+      --delete-bg: #fef2f2;
+      --gray-50: #f9fafb;
+      --gray-100: #f3f4f6;
+      --gray-200: #e5e7eb;
+      --gray-300: #d1d5db;
+      --gray-400: #9ca3af;
+      --gray-600: #4b5563;
+      --gray-700: #374151;
+      --gray-800: #1f2937;
+      --gray-900: #111827;
+      --border-radius: 8px;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+      --shadow-md: 0 4px 12px rgba(0,0,0,0.10);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans KR', sans-serif;
+      background: var(--gray-50);
+      color: var(--gray-800);
+      line-height: 1.7;
+    }
+
+    /* ── Header ── */
+    .page-header {
+      background: linear-gradient(135deg, #1e1b4b 0%, #4f46e5 60%, #7c3aed 100%);
+      color: #fff;
+      padding: 48px 40px 36px;
+    }
+    .page-header .doc-meta {
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      opacity: 0.75;
+      margin-bottom: 10px;
+    }
+    .page-header h1 { font-size: 2rem; font-weight: 700; margin-bottom: 8px; }
+    .page-header .subtitle { font-size: 1rem; opacity: 0.88; }
+    .meta-row {
+      margin-top: 20px;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      font-size: 13px;
+      opacity: 0.80;
+    }
+
+    /* ── Layout ── */
+    .container { max-width: 1080px; margin: 0 auto; padding: 40px 24px; }
+
+    /* ── Section ── */
+    .section { margin-bottom: 60px; }
+    .section-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--gray-900);
+      border-left: 4px solid var(--primary);
+      padding-left: 14px;
+      margin-bottom: 24px;
+    }
+    .section-subtitle {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--primary);
+      margin: 24px 0 12px;
+    }
+
+    /* ── Card ── */
+    .card {
+      background: #fff;
+      border: 1px solid var(--gray-200);
+      border-radius: var(--border-radius);
+      padding: 24px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* ═══════════════════════════════════════
+       SYSTEM DIAGRAM
+    ═══════════════════════════════════════ */
+    .sys-diagram {
+      background: #fff;
+      border: 1px solid var(--gray-200);
+      border-radius: var(--border-radius);
+      padding: 32px 24px;
+      box-shadow: var(--shadow-sm);
+      overflow-x: auto;
+    }
+
+    /* Row = one horizontal flow */
+    .diag-row {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      flex-wrap: nowrap;
+      gap: 0;
+      margin-bottom: 12px;
+    }
+    .diag-row:last-child { margin-bottom: 0; }
+
+    /* Node boxes */
+    .dn {
+      border-radius: 6px;
+      padding: 10px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      text-align: center;
+      white-space: nowrap;
+      min-width: 110px;
+      line-height: 1.3;
+    }
+    .dn sub { font-size: 10.5px; font-weight: 400; display: block; margin-top: 2px; }
+
+    /* Colour themes */
+    .dn-react    { background: #dbeafe; border: 1.5px solid #93c5fd; color: #1e40af; }
+    .dn-spring   { background: #dcfce7; border: 1.5px solid #86efac; color: #14532d; }
+    .dn-mysql    { background: #fef3c7; border: 1.5px solid #fcd34d; color: #78350f; }
+    .dn-ws       { background: #ede9fe; border: 1.5px solid #c4b5fd; color: #4c1d95; }
+    .dn-pg       { background: #ffedd5; border: 1.5px solid #fdba74; color: #7c2d12; }
+    .dn-s3       { background: #fee2e2; border: 1.5px solid #fca5a5; color: #7f1d1d; }
+    .dn-browser  { background: var(--gray-100); border: 1.5px solid var(--gray-300); color: var(--gray-700); }
+
+    /* Arrows */
+    .da {
+      flex-shrink: 0;
+      padding: 0 8px;
+      font-size: 18px;
+      color: var(--gray-400);
+      display: flex;
+      align-items: center;
+    }
+    .da-label {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 0 10px;
+    }
+    .da-label .arrow-line {
+      display: flex;
+      align-items: center;
+      color: var(--gray-400);
+      font-size: 18px;
+    }
+    .da-label .arrow-text {
+      font-size: 10.5px;
+      color: var(--gray-400);
+      white-space: nowrap;
+      margin-top: 2px;
+    }
+
+    .diag-separator {
+      border: none;
+      border-top: 1.5px dashed var(--gray-200);
+      margin: 16px 0;
+    }
+
+    .diag-legend {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid var(--gray-200);
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--gray-600);
+    }
+    .legend-dot {
+      width: 12px; height: 12px; border-radius: 3px;
+    }
+
+    /* ═══════════════════════════════════════
+       API PRINCIPLE
+    ═══════════════════════════════════════ */
+    .principle-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 14px;
+    }
+    .principle-card {
+      background: #fff;
+      border: 1px solid var(--gray-200);
+      border-radius: var(--border-radius);
+      padding: 16px 18px;
+      box-shadow: var(--shadow-sm);
+    }
+    .principle-card .p-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--primary);
+      margin-bottom: 6px;
+    }
+    .principle-card .p-value {
+      font-size: 13px;
+      color: var(--gray-700);
+      font-family: 'Menlo', 'Consolas', monospace;
+    }
+    .principle-card .p-desc {
+      font-size: 12px;
+      color: var(--gray-400);
+      margin-top: 4px;
+    }
+
+    /* Response example */
+    .code-block {
+      background: #1e1b4b;
+      color: #c7d2fe;
+      border-radius: var(--border-radius);
+      padding: 18px 22px;
+      font-family: 'Menlo', 'Consolas', monospace;
+      font-size: 13px;
+      line-height: 1.6;
+      overflow-x: auto;
+      margin: 14px 0;
+    }
+    .code-block .key   { color: #93c5fd; }
+    .code-block .str   { color: #86efac; }
+    .code-block .bool  { color: #fcd34d; }
+    .code-block .type  { color: #f9a8d4; }
+    .code-block .cmt   { color: #6b7280; font-style: italic; }
+
+    /* Error code table */
+    .err-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin-top: 14px;
+    }
+    .err-table th {
+      background: var(--gray-100);
+      padding: 10px 14px;
+      text-align: left;
+      border: 1px solid var(--gray-200);
+      font-weight: 600;
+      color: var(--gray-600);
+    }
+    .err-table td {
+      padding: 9px 14px;
+      border: 1px solid var(--gray-200);
+      vertical-align: top;
+    }
+    .err-table tr:nth-child(even) td { background: var(--gray-50); }
+
+    /* ═══════════════════════════════════════
+       API ENDPOINT TABLE
+    ═══════════════════════════════════════ */
+    .api-group { margin-bottom: 28px; }
+    .api-group-title {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--gray-500, #6b7280);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .api-group-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--gray-200);
+    }
+
+    .api-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    .api-table th {
+      background: var(--gray-100);
+      padding: 9px 12px;
+      text-align: left;
+      border: 1px solid var(--gray-200);
+      font-weight: 600;
+      color: var(--gray-600);
+      white-space: nowrap;
+    }
+    .api-table td {
+      padding: 9px 12px;
+      border: 1px solid var(--gray-200);
+      vertical-align: top;
+    }
+    .api-table tr:hover td { background: #f8f8ff; }
+
+    /* HTTP Method Badges */
+    .method {
+      display: inline-block;
+      border-radius: 4px;
+      padding: 2px 8px;
+      font-size: 11.5px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      font-family: 'Menlo', 'Consolas', monospace;
+      min-width: 60px;
+      text-align: center;
+    }
+    .m-get    { background: #dbeafe; color: #1d4ed8; border: 1px solid #93c5fd; }
+    .m-post   { background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
+    .m-put    { background: #fef9c3; color: #854d0e; border: 1px solid #fde047; }
+    .m-patch  { background: #ffedd5; color: #c2410c; border: 1px solid #fdba74; }
+    .m-delete { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; }
+    .m-ws     { background: #ede9fe; color: #6d28d9; border: 1px solid #c4b5fd; }
+
+    /* Role Badge */
+    .role-badge {
+      display: inline-block;
+      border-radius: 3px;
+      padding: 1px 6px;
+      font-size: 10.5px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .role-client     { background: #e0f2fe; color: #0369a1; }
+    .role-counselor  { background: #d1fae5; color: #065f46; }
+    .role-admin      { background: #fce7f3; color: #9d174d; }
+    .role-any        { background: var(--gray-100); color: var(--gray-600); }
+    .role-note       { background: #fef3c7; color: #92400e; font-size:10px; }
+
+    .endpoint-path {
+      font-family: 'Menlo', 'Consolas', monospace;
+      font-size: 12.5px;
+      color: var(--gray-800);
+    }
+
+    /* ═══════════════════════════════════════
+       DB SCHEMA
+    ═══════════════════════════════════════ */
+    .schema-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 16px;
+    }
+    .schema-card {
+      background: #fff;
+      border: 1px solid var(--gray-200);
+      border-radius: var(--border-radius);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+    }
+    .schema-card-header {
+      background: #1e1b4b;
+      color: #c7d2fe;
+      padding: 10px 16px;
+      font-family: 'Menlo', 'Consolas', monospace;
+      font-size: 13.5px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .schema-card-header .table-badge {
+      font-size: 10px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 3px;
+      padding: 2px 7px;
+      color: #e0e7ff;
+    }
+    .schema-card-body {
+      padding: 0;
+    }
+    .schema-row {
+      display: flex;
+      align-items: baseline;
+      padding: 6px 16px;
+      border-bottom: 1px solid var(--gray-100);
+      gap: 8px;
+      font-size: 12.5px;
+    }
+    .schema-row:last-child { border-bottom: none; }
+    .col-name {
+      font-family: 'Menlo', 'Consolas', monospace;
+      color: var(--gray-900);
+      font-weight: 500;
+      min-width: 140px;
+    }
+    .col-type {
+      font-family: 'Menlo', 'Consolas', monospace;
+      color: #6366f1;
+      font-size: 11.5px;
+      min-width: 90px;
+    }
+    .col-desc {
+      color: var(--gray-400);
+      font-size: 11.5px;
+    }
+    .col-pk { color: #d97706; font-size: 10px; font-weight: 700; margin-right: 2px; }
+    .col-fk { color: #0ea5e9; font-size: 10px; font-weight: 700; margin-right: 2px; }
+    .col-uk { color: #a855f7; font-size: 10px; font-weight: 700; margin-right: 2px; }
+
+    .enum-tag {
+      display: inline-block;
+      background: #f3f4f6;
+      border-radius: 3px;
+      padding: 0 5px;
+      font-size: 10.5px;
+      color: var(--gray-600);
+      font-family: monospace;
+      margin: 1px;
+    }
+
+    /* ═══════════════════════════════════════
+       WEBSOCKET
+    ═══════════════════════════════════════ */
+    .ws-flow {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      border: 1px solid var(--gray-200);
+      border-radius: var(--border-radius);
+      overflow: hidden;
+    }
+    .ws-step {
+      display: flex;
+      align-items: stretch;
+    }
+    .ws-step-num {
+      width: 40px;
+      min-width: 40px;
+      background: var(--primary);
+      color: #fff;
+      font-size: 13px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .ws-step-content {
+      flex: 1;
+      padding: 14px 18px;
+      background: #fff;
+      border-top: 1px solid var(--gray-100);
+      font-size: 13.5px;
+    }
+    .ws-step:first-child .ws-step-content { border-top: none; }
+    .ws-step-content strong { color: var(--gray-900); }
+    .ws-step-content .ws-code {
+      font-family: 'Menlo', 'Consolas', monospace;
+      background: var(--primary-light);
+      color: var(--primary);
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-size: 12.5px;
+    }
+
+    /* ═══════════════════════════════════════
+       SECURITY
+    ═══════════════════════════════════════ */
+    .security-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 14px;
+    }
+    .sec-card {
+      background: #fff;
+      border: 1px solid var(--gray-200);
+      border-radius: var(--border-radius);
+      padding: 18px;
+      box-shadow: var(--shadow-sm);
+    }
+    .sec-card-title {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--gray-900);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .sec-icon {
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      background: var(--primary-light);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px;
+    }
+
+    ul.detail-list {
+      list-style: none;
+      margin: 0; padding: 0;
+    }
+    ul.detail-list li {
+      padding: 5px 0 5px 20px;
+      font-size: 13px;
+      color: var(--gray-600);
+      position: relative;
+    }
+    ul.detail-list li::before {
+      content: "·";
+      position: absolute;
+      left: 6px;
+      color: var(--primary);
+      font-weight: 700;
+    }
+
+    /* ── Info / Warning Box ── */
+    .info-box {
+      background: var(--primary-light);
+      border-left: 4px solid var(--primary);
+      border-radius: 0 var(--border-radius) var(--border-radius) 0;
+      padding: 14px 18px;
+      font-size: 13.5px;
+      color: #3730a3;
+      margin: 16px 0;
+    }
+    .warning-box {
+      background: #fffbeb;
+      border-left: 4px solid var(--warning);
+      border-radius: 0 var(--border-radius) var(--border-radius) 0;
+      padding: 14px 18px;
+      font-size: 13.5px;
+      color: #78350f;
+      margin: 16px 0;
+    }
+    .danger-box {
+      background: #fff1f2;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 var(--border-radius) var(--border-radius) 0;
+      padding: 14px 18px;
+      font-size: 13.5px;
+      color: #7f1d1d;
+      margin: 16px 0;
+    }
+
+    /* ── Footer ── */
+    .page-footer {
+      text-align: center;
+      padding: 32px;
+      font-size: 12.5px;
+      color: var(--gray-400);
+      border-top: 1px solid var(--gray-200);
+      margin-top: 40px;
+    }
+
+    @media (max-width: 700px) {
+      .schema-grid { grid-template-columns: 1fr; }
+      .security-grid { grid-template-columns: 1fr; }
+      .principle-grid { grid-template-columns: 1fr; }
+      .diag-row { flex-wrap: wrap; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════
+     PAGE HEADER
+══════════════════════════════════════════ -->
+<header class="page-header">
+  <div class="doc-meta">MindFit · Architecture · Doc 08</div>
+  <h1>시스템 아키텍처 문서</h1>
+  <div class="subtitle">다이어그램 · API 설계 · DB 스키마 · WebSocket 설계 (System Architecture)</div>
+  <div class="meta-row">
+    <span>버전: v1.0</span>
+    <span>작성일: 2026-05-24</span>
+    <span>상태: 확정 (Finalized)</span>
+    <span>분류: Architecture</span>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- ══════════════════════════════════════════
+       1. 전체 시스템 구성도
+  ══════════════════════════════════════════ -->
+  <section class="section">
+    <h2 class="section-title">1. 전체 시스템 구성도 (System Diagram)</h2>
+
+    <div class="sys-diagram">
+
+      <!-- Row 1: Main REST Flow -->
+      <div style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.07em; color:var(--gray-400); margin-bottom:10px;">REST API 플로우 (주요 통신)</div>
+      <div class="diag-row">
+        <div class="dn dn-browser">브라우저<sub>사용자 클라이언트</sub></div>
+        <div class="da-label">
+          <div class="arrow-line">→→</div>
+          <div class="arrow-text">HTTPS REST</div>
+        </div>
+        <div class="dn dn-react">React 18 SPA<sub>TypeScript + Vite</sub></div>
+        <div class="da-label">
+          <div class="arrow-line">⇆</div>
+          <div class="arrow-text">HTTP/HTTPS + JWT</div>
+        </div>
+        <div class="dn dn-spring">Spring Boot 3.x<sub>REST API Server</sub></div>
+        <div class="da-label">
+          <div class="arrow-line">⇆</div>
+          <div class="arrow-text">JPA / SQL</div>
+        </div>
+        <div class="dn dn-mysql">MySQL 8.x<sub>Primary DB</sub></div>
+      </div>
+
+      <hr class="diag-separator" />
+
+      <!-- Row 2: WebSocket Flow -->
+      <div style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.07em; color:var(--gray-400); margin-bottom:10px;">실시간 채팅 채널 (WebSocket)</div>
+      <div class="diag-row">
+        <div class="dn dn-react">React 18 SPA<sub>SockJS + @stomp/stompjs</sub></div>
+        <div class="da-label">
+          <div class="arrow-line">⇆</div>
+          <div class="arrow-text">WS / STOMP</div>
+        </div>
+        <div class="dn dn-ws">Spring WebSocket<sub>STOMP + SockJS Fallback</sub></div>
+        <div class="da-label">
+          <div class="arrow-line">→</div>
+          <div class="arrow-text">메시지 저장</div>
+        </div>
+        <div class="dn dn-mysql">MySQL 8.x<sub>messages 테이블</sub></div>
+      </div>
+
+      <hr class="diag-separator" />
+
+      <!-- Row 3: Payment Flow -->
+      <div style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.07em; color:var(--gray-400); margin-bottom:10px;">결제 플로우 (Payment)</div>
+      <div class="diag-row">
+        <div class="dn dn-react">React 18 SPA<sub>토스페이먼츠 SDK</sub></div>
+        <div class="da-label">
+          <div class="arrow-line">→</div>
+          <div class="arrow-text">결제 요청</div>
+        </div>
+        <div class="dn dn-pg">토스페이먼츠 PG<sub>카드사 처리</sub></div>
+        <div class="da-label">
+          <div class="arrow-line">→</div>
+          <div class="arrow-text">Webhook POST</div>
+        </div>
+        <div class="dn dn-spring">Spring Boot 3.x<sub>결제 검증·권한 부여</sub></div>
+        <div class="da-label">
+          <div class="arrow-line">→</div>
+          <div class="arrow-text">DB Update + 채팅방 생성</div>
+        </div>
+        <div class="dn dn-mysql">MySQL 8.x</div>
+      </div>
+
+      <hr class="diag-separator" />
+
+      <!-- Row 4: File Upload Flow -->
+      <div style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.07em; color:var(--gray-400); margin-bottom:10px;">파일 업로드 플로우 (File Storage)</div>
+      <div class="diag-row">
+        <div class="dn dn-react">React 18 SPA<sub>자격 서류 / 프로필 사진</sub></div>
+        <div class="da-label">
+          <div class="arrow-line">→</div>
+          <div class="arrow-text">Pre-signed URL 요청</div>
+        </div>
+        <div class="dn dn-spring">Spring Boot 3.x<sub>URL 발급</sub></div>
+        <div class="da-label">
+          <div class="arrow-line">→</div>
+          <div class="arrow-text">직접 PUT 업로드</div>
+        </div>
+        <div class="dn dn-s3">AWS S3<sub>Object Storage</sub></div>
+        <div class="da-label">
+          <div class="arrow-line">→</div>
+          <div class="arrow-text">URL 저장</div>
+        </div>
+        <div class="dn dn-mysql">MySQL 8.x</div>
+      </div>
+
+      <!-- Legend -->
+      <div class="diag-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#bfdbfe;"></div> React 18 SPA</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#bbf7d0;"></div> Spring Boot 3.x</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#fde68a;"></div> MySQL 8.x</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#ddd6fe;"></div> Spring WebSocket / STOMP</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#fed7aa;"></div> 토스페이먼츠 PG</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#fecaca;"></div> AWS S3</div>
+      </div>
+    </div>
+
+    <div class="info-box">
+      <strong>3-Tier 구조 원칙:</strong> Presentation(React SPA) ↔ Application(Spring Boot REST) ↔ Data(MySQL).
+      실시간 채팅은 별도 WebSocket 채널로 처리하되, 메시지는 동일한 MySQL에 저장.
+      외부 의존성(Zoom, 카카오 등)은 없으며, 결제는 토스페이먼츠 PG 단독 사용.
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════
+       2. API 설계 원칙
+  ══════════════════════════════════════════ -->
+  <section class="section">
+    <h2 class="section-title">2. API 설계 원칙 (API Design Principles)</h2>
+
+    <div class="principle-grid">
+      <div class="principle-card">
+        <div class="p-label">Base URL</div>
+        <div class="p-value">/api/v1/</div>
+        <div class="p-desc">버전 명시, 추후 /v2/ 분기 대비</div>
+      </div>
+      <div class="principle-card">
+        <div class="p-label">인증 헤더</div>
+        <div class="p-value">Authorization:<br/>Bearer {JWT}</div>
+        <div class="p-desc">Access Token 30분, Refresh 7일</div>
+      </div>
+      <div class="principle-card">
+        <div class="p-label">역할 제어</div>
+        <div class="p-value">@PreAuthorize</div>
+        <div class="p-desc">메서드 수준 인가 어노테이션</div>
+      </div>
+      <div class="principle-card">
+        <div class="p-label">콘텐츠 타입</div>
+        <div class="p-value">application/<br/>json</div>
+        <div class="p-desc">요청·응답 모두 JSON</div>
+      </div>
+    </div>
+
+    <h3 class="section-subtitle">응답 형식 (Response Schema)</h3>
+    <div class="code-block">
+<span class="cmt">// 성공 응답</span>
+{
+  <span class="key">"success"</span>: <span class="bool">true</span>,
+  <span class="key">"data"</span>: <span class="type">T</span>,          <span class="cmt">// 요청별 페이로드</span>
+  <span class="key">"message"</span>: <span class="str">"요청이 성공적으로 처리되었습니다."</span>
+}
+
+<span class="cmt">// 실패 응답</span>
+{
+  <span class="key">"success"</span>: <span class="bool">false</span>,
+  <span class="key">"data"</span>: <span class="bool">null</span>,
+  <span class="key">"message"</span>: <span class="str">"에러 메시지"</span>,
+  <span class="key">"errorCode"</span>: <span class="str">"AUTH_001"</span>   <span class="cmt">// 에러 코드</span>
+}
+
+<span class="cmt">// 페이지네이션 응답</span>
+{
+  <span class="key">"success"</span>: <span class="bool">true</span>,
+  <span class="key">"data"</span>: {
+    <span class="key">"content"</span>: [ <span class="type">...items</span> ],
+    <span class="key">"page"</span>: <span class="bool">0</span>,
+    <span class="key">"size"</span>: <span class="bool">20</span>,
+    <span class="key">"totalElements"</span>: <span class="bool">153</span>,
+    <span class="key">"totalPages"</span>: <span class="bool">8</span>
+  },
+  <span class="key">"message"</span>: <span class="str">"ok"</span>
+}</div>
+
+    <h3 class="section-subtitle">에러 코드 체계 (Error Codes)</h3>
+    <table class="err-table">
+      <thead>
+        <tr>
+          <th>에러 코드</th>
+          <th>HTTP 상태</th>
+          <th>설명</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><code>AUTH_001</code></td><td>401</td><td>JWT 토큰 없음 또는 형식 오류</td></tr>
+        <tr><td><code>AUTH_002</code></td><td>401</td><td>JWT 토큰 만료</td></tr>
+        <tr><td><code>AUTH_003</code></td><td>403</td><td>권한 부족 (역할 불일치)</td></tr>
+        <tr><td><code>AUTH_004</code></td><td>409</td><td>이메일 중복</td></tr>
+        <tr><td><code>USER_001</code></td><td>404</td><td>사용자를 찾을 수 없음</td></tr>
+        <tr><td><code>COUNSELOR_001</code></td><td>403</td><td>상담사 프로필 미승인 상태</td></tr>
+        <tr><td><code>SESSION_001</code></td><td>404</td><td>세션을 찾을 수 없음</td></tr>
+        <tr><td><code>SESSION_002</code></td><td>409</td><td>이미 예약된 시간대</td></tr>
+        <tr><td><code>PAYMENT_001</code></td><td>402</td><td>결제 미완료 (문진표 접근 불가)</td></tr>
+        <tr><td><code>PAYMENT_002</code></td><td>409</td><td>중복 결제 웹훅</td></tr>
+        <tr><td><code>FILE_001</code></td><td>400</td><td>파일 크기 초과</td></tr>
+        <tr><td><code>FILE_002</code></td><td>400</td><td>허용되지 않는 파일 형식</td></tr>
+        <tr><td><code>COMMON_001</code></td><td>400</td><td>요청 파라미터 검증 실패</td></tr>
+        <tr><td><code>COMMON_002</code></td><td>500</td><td>서버 내부 오류</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ══════════════════════════════════════════
+       3. 핵심 API 엔드포인트 목록
+  ══════════════════════════════════════════ -->
+  <section class="section">
+    <h2 class="section-title">3. 핵심 API 엔드포인트 목록 (API Endpoints)</h2>
+
+    <!-- Auth -->
+    <div class="api-group">
+      <div class="api-group-title">Auth (인증)</div>
+      <table class="api-table">
+        <thead><tr><th>메서드</th><th>엔드포인트</th><th>설명</th><th>역할</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="method m-post">POST</span></td>
+            <td class="endpoint-path">/api/v1/auth/signup</td>
+            <td>회원가입 (이메일 인증 메일 발송)</td>
+            <td><span class="role-badge role-any">PUBLIC</span></td>
+          </tr>
+          <tr>
+            <td><span class="method m-post">POST</span></td>
+            <td class="endpoint-path">/api/v1/auth/login</td>
+            <td>로그인 → JWT 발급 (Access + Refresh)</td>
+            <td><span class="role-badge role-any">PUBLIC</span></td>
+          </tr>
+          <tr>
+            <td><span class="method m-post">POST</span></td>
+            <td class="endpoint-path">/api/v1/auth/refresh</td>
+            <td>Access Token 갱신 (Refresh Token 사용)</td>
+            <td><span class="role-badge role-any">PUBLIC</span></td>
+          </tr>
+          <tr>
+            <td><span class="method m-post">POST</span></td>
+            <td class="endpoint-path">/api/v1/auth/logout</td>
+            <td>로그아웃 (Refresh Token 무효화)</td>
+            <td><span class="role-badge role-any">인증 필요</span></td>
+          </tr>
+          <tr>
+            <td><span class="method m-post">POST</span></td>
+            <td class="endpoint-path">/api/v1/auth/verify-email</td>
+            <td>이메일 인증 완료 처리 <span class="role-badge role-note">v1.0 예정</span></td>
+            <td><span class="role-badge role-any">PUBLIC</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Counselors -->
+    <div class="api-group">
+      <div class="api-group-title">Counselors (상담사)</div>
+      <table class="api-table">
+        <thead><tr><th>메서드</th><th>엔드포인트</th><th>설명</th><th>역할</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="method m-get">GET</span></td>
+            <td class="endpoint-path">/api/v1/counselors</td>
+            <td>상담사 목록 조회 <br/><small style="color:var(--gray-400);">?specialty=&amp;priceMin=&amp;priceMax=&amp;sessionType=&amp;page=&amp;size=</small></td>
+            <td><span class="role-badge role-any">PUBLIC</span></td>
+          </tr>
+          <tr>
+            <td><span class="method m-get">GET</span></td>
+            <td class="endpoint-path">/api/v1/counselors/{id}</td>
+            <td>상담사 프로필 상세 조회</td>
+            <td><span class="role-badge role-any">PUBLIC</span></td>
+          </tr>
+          <tr>
+            <td><span class="method m-put">PUT</span></td>
+            <td class="endpoint-path">/api/v1/counselors/me/profile</td>
+            <td>내 프로필 수정 (bio, 전문분야, 가격 등)</td>
+            <td><span class="role-badge role-counselor">COUNSELOR</span></td>
+          </tr>
+          <tr>
+            <td><span class="method m-post">POST</span></td>
+            <td class="endpoint-path">/api/v1/counselors/me/availability</td>
+            <td>가용 시간 설정 (주간/특정일)</td>
+            <td><span class="role-badge role-counselor">COUNSELOR</span></td>
+          </tr>
+          <tr>
+            <td><span class="method m-post">POST</span></td>
+            <td class="endpoint-path">/api/v1/counselors/credentials</td>
+            <td>자격 서류 업로드 (S3 Pre-signed URL 방식)</td>
+            <td><span class="role-badge role-counselor">COUNSELOR</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Sessions -->
+    <div class="api-group">
+      <div class="api-group-title">Sessions (상담 세션)</div>
+      <table class="api-table">
+        <thead><tr><th>메서드</th><th>엔드포인트</th><th>설명</th><th>역할</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="method m-post">POST</span></td>
+            <td class="endpoint-path">/api/v1/sessions</td>
+            <td>상담 세션 예약 생성</td>
+            <td><span class="role-badge role-client">CLIENT</span></td>
+          </tr>
+          <tr>
+            <td><span class="method m-get">GET</span></td>
+            <td class="endpoint-path">/api/v1/sessions/{id}</td>
+            <td>세션 상세 조회 (본인 세션만)</td>
+            <td><span class="role-badge role-client">CLIENT</span> <span class="role-badge role-counselor">COUNSELOR</span></td>
+          </tr>
+          <tr>
+            <td><span class="method m-patch">PATCH</span></td>
+            <td class="endpoint-path">/api/v1/sessions/{id}/status</td>
+            <td>상태 변경: CONFIRMED / REJECTED / COMPLETED</td>
+            <td><span class="role-badge role-counselor">COUNSELOR</span></td>
+          </tr>
+          <tr>
+            <td><span class="method m-delete">DELETE</span></td>
+            <td class="endpoint-path">/api/v1/sessions/{id}</td>
+            <td>세션 취소 (결제 미완료 상태만 가능)</td>
+            <td><span class="role-badge role-client">CLIENT</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Questionnaires -->
+    <div class="api-group">
+      <div class="api-group-title">Questionnaires (문진표)</div>
+      <table class="api-table">
+        <thead><tr><th>메서드</th><th>엔드포인트</th><th>설명</th><th>역할</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="method m-post">POST</span></td>
+            <td class="endpoint-path">/api/v1/questionnaires</td>
+            <td>문진표 제출 (세션 예약 후 작성)</td>
+            <td><span class="role-badge role-client">CLIENT</span></td>
+          </tr>
+          <tr>
+            <td><span class="method m-get">GET</span></td>
+            <td class="endpoint-path">/api/v1/questionnaires/{sessionId}</td>
+            <td>문진표 열람 <span class="role-badge role-note">결제 완료 후 해당 상담사만</span></td>
+            <td><span class="role-badge role-counselor">COUNSELOR</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Payments -->
+    <div class="api-group">
+      <div class="api-group-title">Payments (결제)</div>
+      <table class="api-table">
+        <thead><tr><th>메서드</th><th>엔드포인트</th><th>설명</th><th>역할</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="method m-post">POST</span></td>
+            <td class="endpoint-path">/api/v1/payments</td>
+            <td>결제 요청 생성 (토스페이먼츠 SDK 초기화용)</td>
+            <td><span class="role-badge role-client">CLIENT</span></td>
+          </tr>
+          <tr>
+            <td><span class="method m-post">POST</span></td>
+            <td class="endpoint-path">/api/v1/payments/webhook</td>
+            <td>토스페이먼츠 PG 웹훅 수신 (서버 간 통신)</td>
+            <td><span class="role-badge role-any">PG 서버</span></td>
+          </tr>
+          <tr>
+            <td><span class="method m-get">GET</span></td>
+            <td class="endpoint-path">/api/v1/payments/sessions/{sessionId}</td>
+            <td>세션별 결제 내역 조회</td>
+            <td><span class="role-badge role-client">CLIENT</span> <span class="role-badge role-counselor">COUNSELOR</span></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Webhook 멱등성 처리 절차 -->
+      <div class="info-box" style="margin-top:16px;">
+        <strong>Webhook 멱등성 처리 절차 — <code>POST /api/v1/payments/webhook</code></strong>
+        <div style="margin-top:10px;">
+          <div class="ws-flow" style="border-color:#c7d2fe;">
+            <div class="ws-step">
+              <div class="ws-step-num" style="background:#4f46e5; min-width:32px; width:32px; font-size:12px;">1</div>
+              <div class="ws-step-content" style="font-size:13px;">
+                <strong>중복 확인</strong> — <code>pg_transaction_id</code>로 <code>payments</code> 테이블 SELECT 조회
+              </div>
+            </div>
+            <div class="ws-step">
+              <div class="ws-step-num" style="background:#16a34a; min-width:32px; width:32px; font-size:12px;">2</div>
+              <div class="ws-step-content" style="font-size:13px;">
+                <strong>이미 존재하는 경우</strong> → 즉시 <code>200 OK</code> 반환 (재처리 없음).
+                토스페이먼츠는 200 수신 시 재전송을 중단하므로 무한 재전송 루프가 차단됩니다.
+              </div>
+            </div>
+            <div class="ws-step">
+              <div class="ws-step-num" style="background:#4f46e5; min-width:32px; width:32px; font-size:12px;">3</div>
+              <div class="ws-step-content" style="font-size:13px;">
+                <strong>존재하지 않는 경우</strong> → 단일 트랜잭션(<code>@Transactional</code>) 내에서 아래 3가지를 원자적으로 처리:
+                <ul class="detail-list" style="margin-top:8px;">
+                  <li><strong>a.</strong> <code>payments</code> 레코드 INSERT (<code>pg_transaction_id</code> 유니크 제약이 동시 요청 경쟁 조건 방어)</li>
+                  <li><strong>b.</strong> <code>sessions.status = CONFIRMED</code> 로 업데이트</li>
+                  <li><strong>c.</strong> <code>chat_rooms</code> 레코드 생성 + <code>questionnaires.is_accessible = true</code> 설정</li>
+                </ul>
+              </div>
+            </div>
+            <div class="ws-step">
+              <div class="ws-step-num" style="background:#16a34a; min-width:32px; width:32px; font-size:12px;">4</div>
+              <div class="ws-step-content" style="font-size:13px;">
+                <strong>처리 완료</strong> → <code>200 OK</code> 반환.
+                트랜잭션 실패(DB 오류 등) 시에는 <strong>200이 아닌 5xx</strong>를 반환하여 토스페이먼츠가 재전송하도록 유도.
+              </div>
+            </div>
+          </div>
+        </div>
+        <div style="margin-top:12px; font-size:12.5px; color:#4338ca;">
+          <strong>설계 근거:</strong> <code>pg_transaction_id</code> 유니크 인덱스만으로는 두 번째 Webhook이 INSERT 실패 → 500 반환 → 토스페이먼츠 재전송 루프로 이어질 수 있습니다.
+          사전 SELECT 조회(위 1·2단계)를 통해 정상 중복은 200으로 조기 차단하고, 실제 오류만 5xx로 분리하는 것이 올바른 멱등성 처리입니다.
+        </div>
+      </div>
+    </div>
+
+    <!-- Chat -->
+    <div class="api-group">
+      <div class="api-group-title">Chat (채팅)</div>
+      <table class="api-table">
+        <thead><tr><th>메서드</th><th>엔드포인트</th><th>설명</th><th>역할</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="method m-get">GET</span></td>
+            <td class="endpoint-path">/api/v1/chat-rooms/{id}/messages</td>
+            <td>채팅 이력 조회 (페이지네이션, 최신순)</td>
+            <td><span class="role-badge role-client">CLIENT</span> <span class="role-badge role-counselor">COUNSELOR</span></td>
+          </tr>
+          <tr>
+            <td><span class="method m-ws">WS SUB</span></td>
+            <td class="endpoint-path">/topic/chat/{roomId}</td>
+            <td>채팅방 실시간 메시지 구독 (STOMP Subscribe)</td>
+            <td><span class="role-badge role-client">CLIENT</span> <span class="role-badge role-counselor">COUNSELOR</span></td>
+          </tr>
+          <tr>
+            <td><span class="method m-ws">WS SEND</span></td>
+            <td class="endpoint-path">/app/chat/{roomId}/send</td>
+            <td>메시지 전송 (STOMP Send)</td>
+            <td><span class="role-badge role-client">CLIENT</span> <span class="role-badge role-counselor">COUNSELOR</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Reviews -->
+    <div class="api-group">
+      <div class="api-group-title">Reviews (리뷰)</div>
+      <table class="api-table">
+        <thead><tr><th>메서드</th><th>엔드포인트</th><th>설명</th><th>역할</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="method m-post">POST</span></td>
+            <td class="endpoint-path">/api/v1/reviews</td>
+            <td>리뷰 작성 (세션 COMPLETED 상태만)</td>
+            <td><span class="role-badge role-client">CLIENT</span></td>
+          </tr>
+          <tr>
+            <td><span class="method m-get">GET</span></td>
+            <td class="endpoint-path">/api/v1/reviews?counselorId={id}</td>
+            <td>상담사별 리뷰 목록 조회</td>
+            <td><span class="role-badge role-any">PUBLIC</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Admin -->
+    <div class="api-group">
+      <div class="api-group-title">Admin (관리자)</div>
+      <table class="api-table">
+        <thead><tr><th>메서드</th><th>엔드포인트</th><th>설명</th><th>역할</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="method m-get">GET</span></td>
+            <td class="endpoint-path">/api/v1/admin/credentials</td>
+            <td>자격 서류 심사 대기 목록</td>
+            <td><span class="role-badge role-admin">ADMIN</span></td>
+          </tr>
+          <tr>
+            <td><span class="method m-patch">PATCH</span></td>
+            <td class="endpoint-path">/api/v1/admin/credentials/{id}</td>
+            <td>서류 승인 또는 거절 처리 (이메일 알림 발송)</td>
+            <td><span class="role-badge role-admin">ADMIN</span></td>
+          </tr>
+          <tr>
+            <td><span class="method m-get">GET</span></td>
+            <td class="endpoint-path">/api/v1/admin/stats</td>
+            <td>플랫폼 통계 (가입자 수, 세션 수, 결제액 등)</td>
+            <td><span class="role-badge role-admin">ADMIN</span></td>
+          </tr>
+          <tr>
+            <td><span class="method m-post">POST</span></td>
+            <td class="endpoint-path">/api/v1/admin/refunds/{paymentId}</td>
+            <td>강제 환불 처리</td>
+            <td><span class="role-badge role-admin">ADMIN</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════
+       4. MySQL 핵심 테이블 스키마
+  ══════════════════════════════════════════ -->
+  <section class="section">
+    <h2 class="section-title">4. MySQL 핵심 테이블 스키마 (DB Schema)</h2>
+
+    <div style="padding:14px 18px;background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;color:#92400E;font-size:14px;margin-bottom:20px;">
+      ⚠️ <strong>이 스키마는 <a href="../design/13_erd.html" style="color:#92400E">13번 ERD 확정 문서</a>로 대체됨</strong> (2026-07-08). 특히 아래 <code>counselor_profiles</code>의 <code>specialties</code>·<code>session_types</code>·<code>approach_types</code> JSON 컬럼은 정규화(마스터+N:M 매핑 테이블)로 전면 교체됐다 — 12번 마스터 플랜 ADR-1 참조. 이 섹션은 이력 보존용이며 구현 시 참조하지 말 것.
+    </div>
+
+    <div class="schema-grid">
+
+      <!-- users -->
+      <div class="schema-card">
+        <div class="schema-card-header">
+          users
+          <span class="table-badge">사용자 기본</span>
+        </div>
+        <div class="schema-card-body">
+          <div class="schema-row"><span class="col-name"><span class="col-pk">PK</span>id</span><span class="col-type">BIGINT</span><span class="col-desc">AUTO_INCREMENT</span></div>
+          <div class="schema-row"><span class="col-name"><span class="col-uk">UQ</span>email</span><span class="col-type">VARCHAR(255)</span><span class="col-desc">로그인 식별자</span></div>
+          <div class="schema-row"><span class="col-name">password_hash</span><span class="col-type">VARCHAR(255)</span><span class="col-desc">BCrypt 해시</span></div>
+          <div class="schema-row"><span class="col-name">name</span><span class="col-type">VARCHAR(50)</span><span class="col-desc">표시 이름</span></div>
+          <div class="schema-row"><span class="col-name">role</span><span class="col-type">ENUM</span><span class="col-desc"><span class="enum-tag">CLIENT</span><span class="enum-tag">COUNSELOR</span><span class="enum-tag">ADMIN</span></span></div>
+          <div class="schema-row"><span class="col-name">status</span><span class="col-type">ENUM</span><span class="col-desc"><span class="enum-tag">ACTIVE</span><span class="enum-tag">PENDING</span><span class="enum-tag">SUSPENDED</span></span></div>
+          <div class="schema-row"><span class="col-name">email_verified</span><span class="col-type">BOOLEAN</span><span class="col-desc">이메일 인증 여부</span></div>
+          <div class="schema-row"><span class="col-name">created_at</span><span class="col-type">DATETIME</span><span class="col-desc">가입일</span></div>
+        </div>
+      </div>
+
+      <!-- counselor_profiles -->
+      <div class="schema-card">
+        <div class="schema-card-header">
+          counselor_profiles
+          <span class="table-badge">상담사 프로필</span>
+        </div>
+        <div class="schema-card-body">
+          <div class="schema-row"><span class="col-name"><span class="col-pk">PK</span>id</span><span class="col-type">BIGINT</span><span class="col-desc">AUTO_INCREMENT</span></div>
+          <div class="schema-row"><span class="col-name"><span class="col-fk">FK</span>user_id</span><span class="col-type">BIGINT</span><span class="col-desc">→ users.id (1:1)</span></div>
+          <div class="schema-row"><span class="col-name">bio</span><span class="col-type">TEXT</span><span class="col-desc">자기소개</span></div>
+          <div class="schema-row"><span class="col-name">photo_url</span><span class="col-type">VARCHAR(512)</span><span class="col-desc">S3 프로필 사진 URL</span></div>
+          <div class="schema-row"><span class="col-name">specialties</span><span class="col-type">JSON</span><span class="col-desc">전문 분야 배열</span></div>
+          <div class="schema-row"><span class="col-name">session_types</span><span class="col-type">JSON</span><span class="col-desc"><span class="enum-tag">CHAT</span><span class="enum-tag">VIDEO_LINK</span></span></div>
+          <div class="schema-row"><span class="col-name">approach_types</span><span class="col-type">JSON</span><span class="col-desc">상담 접근 방식</span></div>
+          <div class="schema-row"><span class="col-name">price_per_session</span><span class="col-type">INT</span><span class="col-desc">회당 가격 (원)</span></div>
+          <div class="schema-row"><span class="col-name">status</span><span class="col-type">ENUM</span><span class="col-desc"><span class="enum-tag">PENDING</span><span class="enum-tag">APPROVED</span><span class="enum-tag">REJECTED</span></span></div>
+          <div class="schema-row"><span class="col-name">approved_at</span><span class="col-type">DATETIME</span><span class="col-desc">승인 일시</span></div>
+        </div>
+      </div>
+
+      <!-- counselor_credentials -->
+      <div class="schema-card">
+        <div class="schema-card-header">
+          counselor_credentials
+          <span class="table-badge">자격 서류</span>
+        </div>
+        <div class="schema-card-body">
+          <div class="schema-row"><span class="col-name"><span class="col-pk">PK</span>id</span><span class="col-type">BIGINT</span><span class="col-desc">AUTO_INCREMENT</span></div>
+          <div class="schema-row"><span class="col-name"><span class="col-fk">FK</span>counselor_id</span><span class="col-type">BIGINT</span><span class="col-desc">→ counselor_profiles.id</span></div>
+          <div class="schema-row"><span class="col-name">type</span><span class="col-type">ENUM</span><span class="col-desc"><span class="enum-tag">ENROLLMENT</span><span class="enum-tag">DEGREE</span><span class="enum-tag">LICENSE</span><span class="enum-tag">ID</span></span></div>
+          <div class="schema-row"><span class="col-name">file_url</span><span class="col-type">VARCHAR(512)</span><span class="col-desc">S3 Pre-signed URL 원본</span></div>
+          <div class="schema-row"><span class="col-name">status</span><span class="col-type">ENUM</span><span class="col-desc"><span class="enum-tag">PENDING</span><span class="enum-tag">APPROVED</span><span class="enum-tag">REJECTED</span></span></div>
+          <div class="schema-row"><span class="col-name">reviewed_at</span><span class="col-type">DATETIME</span><span class="col-desc">심사 일시</span></div>
+          <div class="schema-row"><span class="col-name">reject_reason</span><span class="col-type">TEXT</span><span class="col-desc">거절 사유</span></div>
+        </div>
+      </div>
+
+      <!-- counselor_availability -->
+      <div class="schema-card">
+        <div class="schema-card-header">
+          counselor_availability
+          <span class="table-badge">가용 시간</span>
+        </div>
+        <div class="schema-card-body">
+          <div class="schema-row"><span class="col-name"><span class="col-pk">PK</span>id</span><span class="col-type">BIGINT</span><span class="col-desc">AUTO_INCREMENT</span></div>
+          <div class="schema-row"><span class="col-name"><span class="col-fk">FK</span>counselor_id</span><span class="col-type">BIGINT</span><span class="col-desc">→ counselor_profiles.id</span></div>
+          <div class="schema-row"><span class="col-name">type</span><span class="col-type">ENUM</span><span class="col-desc"><span class="enum-tag">WEEKLY</span><span class="enum-tag">SPECIFIC</span></span></div>
+          <div class="schema-row"><span class="col-name">day_of_week</span><span class="col-type">TINYINT</span><span class="col-desc">0=일, 1=월 … 6=토</span></div>
+          <div class="schema-row"><span class="col-name">date</span><span class="col-type">DATE</span><span class="col-desc">특정일 (type=SPECIFIC)</span></div>
+          <div class="schema-row"><span class="col-name">start_time</span><span class="col-type">TIME</span><span class="col-desc">시작 시각</span></div>
+          <div class="schema-row"><span class="col-name">end_time</span><span class="col-type">TIME</span><span class="col-desc">종료 시각</span></div>
+          <div class="schema-row"><span class="col-name">is_blocked</span><span class="col-type">BOOLEAN</span><span class="col-desc">차단 슬롯 여부</span></div>
+        </div>
+      </div>
+
+      <!-- sessions -->
+      <div class="schema-card">
+        <div class="schema-card-header">
+          sessions
+          <span class="table-badge">상담 세션</span>
+        </div>
+        <div class="schema-card-body">
+          <div class="schema-row"><span class="col-name"><span class="col-pk">PK</span>id</span><span class="col-type">BIGINT</span><span class="col-desc">AUTO_INCREMENT</span></div>
+          <div class="schema-row"><span class="col-name"><span class="col-fk">FK</span>counselor_id</span><span class="col-type">BIGINT</span><span class="col-desc">→ counselor_profiles.id</span></div>
+          <div class="schema-row"><span class="col-name"><span class="col-fk">FK</span>client_id</span><span class="col-type">BIGINT</span><span class="col-desc">→ users.id</span></div>
+          <div class="schema-row"><span class="col-name">scheduled_at</span><span class="col-type">DATETIME</span><span class="col-desc">예약 일시</span></div>
+          <div class="schema-row"><span class="col-name">duration_min</span><span class="col-type">INT</span><span class="col-desc">상담 시간(분)</span></div>
+          <div class="schema-row"><span class="col-name">session_type</span><span class="col-type">ENUM</span><span class="col-desc"><span class="enum-tag">CHAT</span><span class="enum-tag">VIDEO_LINK</span></span></div>
+          <div class="schema-row"><span class="col-name">status</span><span class="col-type">ENUM</span><span class="col-desc"><span class="enum-tag">PENDING</span><span class="enum-tag">CONFIRMED</span><span class="enum-tag">COMPLETED</span><span class="enum-tag">CANCELLED</span></span></div>
+          <div class="schema-row"><span class="col-name">created_at</span><span class="col-type">DATETIME</span><span class="col-desc">생성 일시</span></div>
+        </div>
+      </div>
+
+      <!-- questionnaires -->
+      <div class="schema-card">
+        <div class="schema-card-header">
+          questionnaires
+          <span class="table-badge">문진표</span>
+        </div>
+        <div class="schema-card-body">
+          <div class="schema-row"><span class="col-name"><span class="col-pk">PK</span>id</span><span class="col-type">BIGINT</span><span class="col-desc">AUTO_INCREMENT</span></div>
+          <div class="schema-row"><span class="col-name"><span class="col-fk">FK</span>session_id</span><span class="col-type">BIGINT</span><span class="col-desc">→ sessions.id (1:1)</span></div>
+          <div class="schema-row"><span class="col-name"><span class="col-fk">FK</span>client_id</span><span class="col-type">BIGINT</span><span class="col-desc">→ users.id</span></div>
+          <div class="schema-row"><span class="col-name">main_concern</span><span class="col-type">TEXT</span><span class="col-desc">주요 호소 문제</span></div>
+          <div class="schema-row"><span class="col-name">severity</span><span class="col-type">TINYINT</span><span class="col-desc">심각도 1-10</span></div>
+          <div class="schema-row"><span class="col-name">duration_text</span><span class="col-type">VARCHAR(255)</span><span class="col-desc">증상 지속 기간</span></div>
+          <div class="schema-row"><span class="col-name">prior_experience</span><span class="col-type">BOOLEAN</span><span class="col-desc">이전 상담 경험</span></div>
+          <div class="schema-row"><span class="col-name">goal</span><span class="col-type">TEXT</span><span class="col-desc">상담 목표</span></div>
+          <div class="schema-row"><span class="col-name">additional_note</span><span class="col-type">TEXT</span><span class="col-desc">추가 전달 사항</span></div>
+          <div class="schema-row"><span class="col-name">submitted_at</span><span class="col-type">DATETIME</span><span class="col-desc">제출 일시</span></div>
+        </div>
+      </div>
+
+      <!-- payments -->
+      <div class="schema-card">
+        <div class="schema-card-header">
+          payments
+          <span class="table-badge">결제</span>
+        </div>
+        <div class="schema-card-body">
+          <div class="schema-row"><span class="col-name"><span class="col-pk">PK</span>id</span><span class="col-type">BIGINT</span><span class="col-desc">AUTO_INCREMENT</span></div>
+          <div class="schema-row"><span class="col-name"><span class="col-fk">FK</span>session_id</span><span class="col-type">BIGINT</span><span class="col-desc">→ sessions.id</span></div>
+          <div class="schema-row"><span class="col-name">amount</span><span class="col-type">INT</span><span class="col-desc">결제 금액 (원)</span></div>
+          <div class="schema-row"><span class="col-name">commission_rate</span><span class="col-type">DECIMAL(5,2)</span><span class="col-desc">수수료율 (%)</span></div>
+          <div class="schema-row"><span class="col-name">commission_amount</span><span class="col-type">INT</span><span class="col-desc">수수료 금액</span></div>
+          <div class="schema-row"><span class="col-name">net_amount</span><span class="col-type">INT</span><span class="col-desc">상담사 정산 금액</span></div>
+          <div class="schema-row"><span class="col-name">status</span><span class="col-type">ENUM</span><span class="col-desc"><span class="enum-tag">PENDING</span><span class="enum-tag">COMPLETED</span><span class="enum-tag">REFUNDED</span><span class="enum-tag">PARTIAL_REFUNDED</span></span></div>
+          <div class="schema-row"><span class="col-name"><span class="col-uk">UQ</span>pg_transaction_id</span><span class="col-type">VARCHAR(255)</span><span class="col-desc">중복 웹훅 방어</span></div>
+          <div class="schema-row"><span class="col-name">paid_at</span><span class="col-type">DATETIME</span><span class="col-desc">결제 완료 일시</span></div>
+        </div>
+      </div>
+
+      <!-- chat_rooms -->
+      <div class="schema-card">
+        <div class="schema-card-header">
+          chat_rooms
+          <span class="table-badge">채팅방</span>
+        </div>
+        <div class="schema-card-body">
+          <div class="schema-row"><span class="col-name"><span class="col-pk">PK</span>id</span><span class="col-type">BIGINT</span><span class="col-desc">AUTO_INCREMENT</span></div>
+          <div class="schema-row"><span class="col-name"><span class="col-fk">FK</span>session_id</span><span class="col-type">BIGINT</span><span class="col-desc">→ sessions.id (1:1)</span></div>
+          <div class="schema-row"><span class="col-name"><span class="col-fk">FK</span>counselor_id</span><span class="col-type">BIGINT</span><span class="col-desc">→ counselor_profiles.id</span></div>
+          <div class="schema-row"><span class="col-name"><span class="col-fk">FK</span>client_id</span><span class="col-type">BIGINT</span><span class="col-desc">→ users.id</span></div>
+          <div class="schema-row"><span class="col-name">created_at</span><span class="col-type">DATETIME</span><span class="col-desc">결제 완료 시 자동 생성</span></div>
+        </div>
+      </div>
+
+      <!-- messages -->
+      <div class="schema-card">
+        <div class="schema-card-header">
+          messages
+          <span class="table-badge">채팅 메시지</span>
+        </div>
+        <div class="schema-card-body">
+          <div class="schema-row"><span class="col-name"><span class="col-pk">PK</span>id</span><span class="col-type">BIGINT</span><span class="col-desc">AUTO_INCREMENT</span></div>
+          <div class="schema-row"><span class="col-name"><span class="col-fk">FK</span>chat_room_id</span><span class="col-type">BIGINT</span><span class="col-desc">→ chat_rooms.id</span></div>
+          <div class="schema-row"><span class="col-name"><span class="col-fk">FK</span>sender_id</span><span class="col-type">BIGINT</span><span class="col-desc">→ users.id</span></div>
+          <div class="schema-row"><span class="col-name">content</span><span class="col-type">TEXT</span><span class="col-desc">메시지 본문</span></div>
+          <div class="schema-row"><span class="col-name">message_type</span><span class="col-type">ENUM</span><span class="col-desc"><span class="enum-tag">TEXT</span><span class="enum-tag">LINK</span><span class="enum-tag">FILE</span></span></div>
+          <div class="schema-row"><span class="col-name">file_url</span><span class="col-type">VARCHAR(512)</span><span class="col-desc">파일 첨부 URL</span></div>
+          <div class="schema-row"><span class="col-name">created_at</span><span class="col-type">DATETIME</span><span class="col-desc">전송 일시 (인덱스)</span></div>
+          <div class="schema-row"><span class="col-name">read_at</span><span class="col-type">DATETIME</span><span class="col-desc">읽은 일시 (nullable)</span></div>
+        </div>
+      </div>
+
+      <!-- reviews -->
+      <div class="schema-card">
+        <div class="schema-card-header">
+          reviews
+          <span class="table-badge">리뷰</span>
+        </div>
+        <div class="schema-card-body">
+          <div class="schema-row"><span class="col-name"><span class="col-pk">PK</span>id</span><span class="col-type">BIGINT</span><span class="col-desc">AUTO_INCREMENT</span></div>
+          <div class="schema-row"><span class="col-name"><span class="col-fk">FK</span>session_id</span><span class="col-type">BIGINT</span><span class="col-desc">→ sessions.id (1:1)</span></div>
+          <div class="schema-row"><span class="col-name"><span class="col-fk">FK</span>client_id</span><span class="col-type">BIGINT</span><span class="col-desc">→ users.id</span></div>
+          <div class="schema-row"><span class="col-name"><span class="col-fk">FK</span>counselor_id</span><span class="col-type">BIGINT</span><span class="col-desc">→ counselor_profiles.id</span></div>
+          <div class="schema-row"><span class="col-name">rating</span><span class="col-type">TINYINT</span><span class="col-desc">1-5 별점</span></div>
+          <div class="schema-row"><span class="col-name">content</span><span class="col-type">TEXT</span><span class="col-desc">리뷰 내용</span></div>
+          <div class="schema-row"><span class="col-name">is_anonymous</span><span class="col-type">BOOLEAN</span><span class="col-desc">익명 여부</span></div>
+          <div class="schema-row"><span class="col-name">counselor_reply</span><span class="col-type">TEXT</span><span class="col-desc">상담사 답변 (nullable)</span></div>
+          <div class="schema-row"><span class="col-name">created_at</span><span class="col-type">DATETIME</span><span class="col-desc">작성 일시</span></div>
+        </div>
+      </div>
+
+      <!-- notifications -->
+      <div class="schema-card">
+        <div class="schema-card-header">
+          notifications
+          <span class="table-badge">알림</span>
+        </div>
+        <div class="schema-card-body">
+          <div class="schema-row"><span class="col-name"><span class="col-pk">PK</span>id</span><span class="col-type">BIGINT</span><span class="col-desc">AUTO_INCREMENT</span></div>
+          <div class="schema-row"><span class="col-name"><span class="col-fk">FK</span>user_id</span><span class="col-type">BIGINT</span><span class="col-desc">→ users.id</span></div>
+          <div class="schema-row"><span class="col-name">type</span><span class="col-type">VARCHAR(50)</span><span class="col-desc">알림 유형 코드</span></div>
+          <div class="schema-row"><span class="col-name">title</span><span class="col-type">VARCHAR(255)</span><span class="col-desc">알림 제목</span></div>
+          <div class="schema-row"><span class="col-name">body</span><span class="col-type">TEXT</span><span class="col-desc">알림 본문</span></div>
+          <div class="schema-row"><span class="col-name">is_read</span><span class="col-type">BOOLEAN</span><span class="col-desc">읽음 여부 (인덱스)</span></div>
+          <div class="schema-row"><span class="col-name">created_at</span><span class="col-type">DATETIME</span><span class="col-desc">생성 일시</span></div>
+        </div>
+      </div>
+
+    </div><!-- /schema-grid -->
+
+    <div class="info-box" style="margin-top:20px;">
+      <strong>범례:</strong>
+      <span class="col-pk">PK</span> Primary Key &nbsp;·&nbsp;
+      <span class="col-fk">FK</span> Foreign Key &nbsp;·&nbsp;
+      <span class="col-uk">UQ</span> Unique Constraint
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════
+       5. WebSocket 상세 설계
+  ══════════════════════════════════════════ -->
+  <section class="section">
+    <h2 class="section-title">5. WebSocket 상세 설계 (WebSocket Design)</h2>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:20px;">
+      <div class="card">
+        <div class="section-subtitle" style="margin-top:0;">프로토콜 스택</div>
+        <ul class="detail-list">
+          <li>전송 레이어: WebSocket (RFC 6455)</li>
+          <li>메시징 프로토콜: STOMP 1.2 (Simple Text Oriented Messaging)</li>
+          <li>폴백: SockJS (HTTP Long-polling, Server-Sent Events)</li>
+          <li>클라이언트 라이브러리: <code>@stomp/stompjs</code> + <code>sockjs-client</code></li>
+          <li>서버: Spring WebSocket + Spring Messaging</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="section-subtitle" style="margin-top:0;">채널 구성</div>
+        <ul class="detail-list">
+          <li>핸드셰이크 엔드포인트: <code>/ws</code></li>
+          <li>애플리케이션 목적지 접두사: <code>/app</code></li>
+          <li>브로커 접두사 (구독): <code>/topic</code></li>
+          <li>구독 채널: <code>/topic/chat/{roomId}</code></li>
+          <li>메시지 전송: <code>/app/chat/{roomId}/send</code></li>
+        </ul>
+      </div>
+    </div>
+
+    <h3 class="section-subtitle">연결 및 메시지 송수신 플로우</h3>
+    <div class="ws-flow">
+      <div class="ws-step">
+        <div class="ws-step-num">1</div>
+        <div class="ws-step-content">
+          <strong>핸드셰이크 &amp; JWT 인증</strong><br/>
+          클라이언트가 <span class="ws-code">/ws</span> 엔드포인트에 SockJS 연결 요청.
+          헤더에 <span class="ws-code">Authorization: Bearer {JWT}</span> 포함.
+          Spring Security HandshakeInterceptor에서 JWT 검증 → 인증 실패 시 연결 거부(401).
+        </div>
+      </div>
+      <div class="ws-step">
+        <div class="ws-step-num">2</div>
+        <div class="ws-step-content">
+          <strong>채팅방 구독</strong><br/>
+          채팅방 UI 진입 시 클라이언트가 <span class="ws-code">/topic/chat/{roomId}</span> 채널 구독.
+          서버는 해당 <code>roomId</code>에 접근 권한(채팅방 멤버)이 있는지 검증.
+        </div>
+      </div>
+      <div class="ws-step">
+        <div class="ws-step-num">3</div>
+        <div class="ws-step-content">
+          <strong>메시지 전송</strong><br/>
+          클라이언트가 <span class="ws-code">/app/chat/{roomId}/send</span>로 STOMP 메시지 발송.
+          페이로드: <code>{ content: string, messageType: "TEXT" | "LINK" | "FILE", fileUrl?: string }</code>
+        </div>
+      </div>
+      <div class="ws-step">
+        <div class="ws-step-num">4</div>
+        <div class="ws-step-content">
+          <strong>서버 처리 &amp; DB 저장</strong><br/>
+          Spring <code>@MessageMapping</code> 컨트롤러에서 수신.
+          <code>messages</code> 테이블에 즉시 저장 (chat_room_id, sender_id, content, created_at).
+          저장 성공 후 응답 DTO 구성.
+        </div>
+      </div>
+      <div class="ws-step">
+        <div class="ws-step-num">5</div>
+        <div class="ws-step-content">
+          <strong>브로드캐스트</strong><br/>
+          <span class="ws-code">/topic/chat/{roomId}</span> 구독자 전원에게 메시지 브로드캐스트 (<code>messagingTemplate.convertAndSend()</code>).
+          응답 DTO: <code>{ id, senderId, senderName, content, messageType, createdAt }</code>
+        </div>
+      </div>
+      <div class="ws-step">
+        <div class="ws-step-num">6</div>
+        <div class="ws-step-content">
+          <strong>채팅방 자동 생성 (채팅방 생성 시점)</strong><br/>
+          결제 완료 웹훅 수신 시 Spring 서버에서 <code>chat_rooms</code> 레코드 자동 삽입.
+          생성 시점: <code>payments.status = COMPLETED</code> 업데이트 직후 동일 트랜잭션 내에서 처리.
+        </div>
+      </div>
+    </div>
+
+    <h3 class="section-subtitle">메시지 이력 복원</h3>
+    <div class="card">
+      <ul class="detail-list">
+        <li>채팅방 입장 시 REST API <code>GET /api/v1/chat-rooms/{id}/messages?page=0&amp;size=50</code>로 이전 메시지 조회</li>
+        <li><code>messages(chat_room_id, created_at)</code> 복합 인덱스로 페이지네이션 성능 보장</li>
+        <li>최신 메시지부터 역순 로드 (무한 스크롤 상향 방식)</li>
+        <li>WebSocket 연결 이후의 신규 메시지만 실시간 수신</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════
+       6. 보안 고려사항
+  ══════════════════════════════════════════ -->
+  <section class="section">
+    <h2 class="section-title">6. 보안 고려사항 (Security)</h2>
+
+    <div class="security-grid">
+
+      <div class="sec-card">
+        <div class="sec-card-title">
+          <div class="sec-icon">A</div>
+          JWT 토큰 보안
+        </div>
+        <ul class="detail-list">
+          <li>HTTPS 강제 적용 (HTTP → HTTPS 리다이렉트)</li>
+          <li>Access Token: 30분 (짧은 TTL로 탈취 피해 최소화)</li>
+          <li>Refresh Token: HttpOnly Cookie 저장 (JS 접근 차단, XSS 방어)</li>
+          <li>Refresh Token 재사용 탐지(RTR) 구현 권장</li>
+        </ul>
+      </div>
+
+      <div class="sec-card">
+        <div class="sec-card-title">
+          <div class="sec-icon">Q</div>
+          문진표 접근 제어
+        </div>
+        <ul class="detail-list">
+          <li>조건 1: 해당 세션의 결제 상태가 <code>COMPLETED</code>이어야 함</li>
+          <li>조건 2: 요청자가 해당 세션의 담당 상담사 본인이어야 함</li>
+          <li>이중 검증을 서비스 레이어에서 수행 (API + 서비스 레이어 중복 체크)</li>
+          <li>문진표 내용은 개인 민감정보 — 향후 컬럼 수준 암호화 검토</li>
+        </ul>
+      </div>
+
+      <div class="sec-card">
+        <div class="sec-card-title">
+          <div class="sec-icon">F</div>
+          파일 업로드 보안
+        </div>
+        <ul class="detail-list">
+          <li>MIME 타입 화이트리스트 검사 (Content-Type 헤더 + 매직 바이트)</li>
+          <li>파일 크기 제한: 자격 서류 5MB, 프로필 사진 2MB</li>
+          <li>자격 서류 S3 버킷 Private 설정 (Public URL 직접 접근 불가)</li>
+          <li>파일명 UUID 재생성 (경로 순회 공격 방지)</li>
+        </ul>
+      </div>
+
+      <div class="sec-card">
+        <div class="sec-card-title">
+          <div class="sec-icon">P</div>
+          결제 웹훅 보안
+        </div>
+        <ul class="detail-list">
+          <li>토스페이먼츠 웹훅 서명 검증 (X-Webhook-Signature)</li>
+          <li>멱등성: 사전 SELECT → 중복이면 200 즉시 반환, 신규이면 트랜잭션 처리 (상세 절차는 API 섹션 참조)</li>
+          <li><code>pg_transaction_id</code> 유니크 제약으로 동시 요청 경쟁 조건(race condition) 방어</li>
+          <li>웹훅 수신 후 토스페이먼츠 API에 재확인 요청 (결제 진위 이중 검증)</li>
+        </ul>
+      </div>
+
+      <div class="sec-card">
+        <div class="sec-card-title">
+          <div class="sec-icon">W</div>
+          WebSocket 보안
+        </div>
+        <ul class="detail-list">
+          <li>연결 시 JWT 검증 (HandshakeInterceptor)</li>
+          <li>채팅방 구독 시 멤버 권한 재검증</li>
+          <li>메시지 전송 시 채팅방 소속 여부 확인</li>
+          <li>Rate Limiting: 초당 메시지 전송 횟수 제한 검토</li>
+        </ul>
+      </div>
+
+      <div class="sec-card">
+        <div class="sec-card-title">
+          <div class="sec-icon">G</div>
+          개인정보보호
+        </div>
+        <ul class="detail-list">
+          <li>개인정보보호법 준수 — 상담 관련 민감 데이터 암호화 저장 검토</li>
+          <li>상담 내용(채팅) 보존 기간 정책 수립 필요</li>
+          <li>비밀번호: BCrypt 해싱 (cost factor 12+)</li>
+          <li>로그에서 개인식별정보(PII) 마스킹 처리</li>
+        </ul>
+      </div>
+
+    </div>
+
+    <div class="danger-box" style="margin-top:20px;">
+      <strong>중요:</strong> 심리상담 플랫폼 특성상 문진표, 채팅 내용은 일반 서비스 대비 고수준의 데이터 보호가 요구됩니다.
+      서비스 론칭 전 개인정보보호법 적합성 검토 및 데이터 보호 책임자(DPO) 지정을 권장합니다.
+    </div>
+  </section>
+
+</div>
+
+<footer class="page-footer">
+  MindFit Architecture Document 08 — System Architecture &nbsp;|&nbsp; v1.0 &nbsp;|&nbsp; 2026-05-24
+</footer>
+
+</body>
+</html>

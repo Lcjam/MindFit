@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MindFit — 비즈니스 모델 기획서</title>
+  <style>
+    :root {
+      --primary:      #059669;
+      --primary-dark: #047857;
+      --accent:       #0EA5E9;
+      --purple:       #7C3AED;
+      --warning:      #D97706;
+      --danger:       #DC2626;
+      --bg:           #F6FAF8;
+      --surface:      #FFFFFF;
+      --border:       #E2EBE7;
+      --text:         #1A2620;
+      --text-sub:     #4D6358;
+      --text-muted:   #8FA89B;
+      --radius:       12px;
+      --shadow:       0 2px 12px rgba(5,150,105,.08);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      font-size: 15px;
+    }
+    /* ── 헤더 ── */
+    header {
+      background: linear-gradient(135deg, #047857 0%, #065F46 100%);
+      color: #fff;
+      padding: 56px 40px 48px;
+    }
+    header .doc-meta {
+      font-size: 12px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      opacity: .75;
+      margin-bottom: 14px;
+    }
+    header h1 {
+      font-size: 36px;
+      font-weight: 800;
+      letter-spacing: -.02em;
+      line-height: 1.2;
+    }
+    header .subtitle {
+      margin-top: 10px;
+      font-size: 17px;
+      opacity: .85;
+      max-width: 660px;
+    }
+    header .tags {
+      margin-top: 22px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    header .tag {
+      background: rgba(255,255,255,.18);
+      border: 1px solid rgba(255,255,255,.3);
+      border-radius: 99px;
+      padding: 4px 14px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    /* ── 레이아웃 ── */
+    main {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 48px 24px 80px;
+    }
+    section { margin-bottom: 60px; }
+    /* ── 섹션 제목 ── */
+    .section-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--primary);
+      margin-bottom: 8px;
+    }
+    h2 {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--text);
+      margin-bottom: 22px;
+      padding-bottom: 14px;
+      border-bottom: 2px solid var(--border);
+    }
+    h3 {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 10px;
+    }
+    p { color: var(--text-sub); margin-bottom: 12px; }
+    /* ── 수수료 메인 카드 ── */
+    .fee-hero {
+      background: linear-gradient(135deg, #065F46 0%, #047857 50%, #059669 100%);
+      color: #fff;
+      border-radius: var(--radius);
+      padding: 36px 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 32px;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+    }
+    .fee-hero .fee-left h3 {
+      color: rgba(255,255,255,.8);
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .fee-hero .fee-left .pct {
+      font-size: 72px;
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: -.04em;
+    }
+    .fee-hero .fee-left .pct span { font-size: 32px; }
+    .fee-hero .fee-left .basis {
+      font-size: 14px;
+      opacity: .75;
+      margin-top: 6px;
+    }
+    .fee-hero .fee-right {
+      flex: 1;
+      min-width: 220px;
+    }
+    .fee-hero .fee-right .ref-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      opacity: .65;
+      margin-bottom: 10px;
+    }
+    .ref-items {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .ref-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(255,255,255,.12);
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-size: 13px;
+    }
+    .ref-item .ri-name { opacity: .8; }
+    .ref-item .ri-pct  { font-weight: 700; }
+    .ref-item.highlight { background: rgba(255,255,255,.25); }
+    /* ── 수수료 예시 계산 ── */
+    .fee-example {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px 32px;
+      box-shadow: var(--shadow);
+    }
+    .fee-example .ex-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--primary);
+      margin-bottom: 16px;
+    }
+    .fee-flow {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    .fee-box {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 20px;
+      text-align: center;
+      min-width: 140px;
+    }
+    .fee-box .fb-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .fee-box .fb-amount {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+    }
+    .fee-box .fb-note {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+    .fee-box.platform { border-color: var(--primary); background: #ECFDF5; }
+    .fee-box.platform .fb-amount { color: var(--primary); }
+    .fee-box.counselor { border-color: #0EA5E9; background: #F0F9FF; }
+    .fee-box.counselor .fb-amount { color: #0369A1; }
+    .fee-arrow { font-size: 22px; color: var(--text-muted); }
+    .fee-equals { font-size: 22px; color: var(--text-muted); }
+    /* ── 수수료 근거 설명 ── */
+    .rationale-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 14px;
+    }
+    .rationale-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 16px;
+      box-shadow: var(--shadow);
+    }
+    .rationale-card .rc-icon {
+      font-size: 20px;
+      margin-bottom: 8px;
+    }
+    .rationale-card h3 {
+      font-size: 13px;
+      margin-bottom: 6px;
+    }
+    .rationale-card p {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin: 0;
+    }
+    /* ── Unit Economics 표 ── */
+    .ue-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--surface);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      font-size: 14px;
+    }
+    .ue-table thead tr {
+      background: var(--primary);
+      color: #fff;
+    }
+    .ue-table th {
+      padding: 14px 18px;
+      text-align: right;
+      font-weight: 700;
+      font-size: 13px;
+    }
+    .ue-table th:first-child { text-align: left; }
+    .ue-table td {
+      padding: 13px 18px;
+      border-bottom: 1px solid var(--border);
+      text-align: right;
+      color: var(--text-sub);
+      vertical-align: middle;
+    }
+    .ue-table td:first-child { text-align: left; font-weight: 600; color: var(--text); }
+    .ue-table tbody tr:last-child td { border-bottom: none; }
+    .ue-table tbody tr:nth-child(even) td { background: #F6FAF8; }
+    .ue-table .row-breakeven { background: #FFF7ED !important; }
+    .ue-table .row-breakeven td { color: var(--warning); font-weight: 700; }
+    .ue-table .row-breakeven td:first-child { color: var(--warning); }
+    .ue-table .row-target { background: #ECFDF5 !important; }
+    .ue-table .row-target td { color: var(--primary); font-weight: 700; }
+    .ue-table .row-target td:first-child { color: var(--primary); }
+    .badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 99px;
+    }
+    .badge-green  { background: #D1FAE5; color: #065F46; }
+    .badge-orange { background: #FEF3C7; color: #92400E; }
+    .badge-blue   { background: #E0F2FE; color: #075985; }
+    .badge-purple { background: #EDE9FE; color: #5B21B6; }
+    /* ── Break-even 설명 카드 ── */
+    .be-card {
+      background: #FFF7ED;
+      border: 1px solid #FDE68A;
+      border-radius: var(--radius);
+      padding: 22px 28px;
+      margin-top: 16px;
+    }
+    .be-card .be-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--warning);
+      margin-bottom: 10px;
+    }
+    .be-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 12px;
+    }
+    @media (max-width: 580px) { .be-grid { grid-template-columns: 1fr; } }
+    .be-item h4 { font-size: 13px; color: var(--text); margin-bottom: 4px; }
+    .be-item p  { font-size: 12px; color: var(--text-sub); margin: 0; }
+    /* ── 고객 획득 전략 ── */
+    .strategy-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    @media (max-width: 640px) { .strategy-grid { grid-template-columns: 1fr; } }
+    .strategy-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: var(--shadow);
+    }
+    .strategy-card .s-badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      padding: 4px 12px;
+      border-radius: 99px;
+      margin-bottom: 14px;
+    }
+    .strategy-card.supply .s-badge { background: #D1FAE5; color: var(--primary-dark); }
+    .strategy-card.demand .s-badge { background: #E0F2FE; color: #075985; }
+    .s-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .s-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 14px;
+      color: var(--text-sub);
+    }
+    .s-list li .s-icon {
+      font-size: 16px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    /* ── 공급 우선 전략 인사이트 ── */
+    .supply-first-box {
+      background: #1A2620;
+      color: #fff;
+      border-radius: var(--radius);
+      padding: 24px 30px;
+      margin-bottom: 20px;
+    }
+    .supply-first-box .sf-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: #6EE7B7;
+      margin-bottom: 10px;
+    }
+    .supply-first-box .sf-quote {
+      font-size: 16px;
+      font-weight: 700;
+      line-height: 1.5;
+      margin-bottom: 10px;
+    }
+    .supply-first-box p {
+      font-size: 13px;
+      color: rgba(255,255,255,.65);
+      margin: 0;
+    }
+    /* ── 중장기 수익 다각화 ── */
+    .revenue-timeline {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      position: relative;
+    }
+    .revenue-timeline::before {
+      content: '';
+      position: absolute;
+      left: 19px;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: var(--border);
+    }
+    .rt-item {
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+      padding-bottom: 28px;
+      position: relative;
+    }
+    .rt-dot {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+      position: relative;
+      z-index: 1;
+      border: 3px solid var(--bg);
+    }
+    .rt-dot.phase0 { background: var(--primary); }
+    .rt-dot.phase1 { background: var(--accent); }
+    .rt-dot.phase2 { background: var(--purple); }
+    .rt-dot.phase3 { background: var(--warning); }
+    .rt-body {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      flex: 1;
+      box-shadow: var(--shadow);
+    }
+    .rt-body .rt-phase {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    .rt-body h3 { font-size: 15px; margin-bottom: 6px; }
+    .rt-body p  { font-size: 13px; color: var(--text-sub); margin: 0; }
+    .rt-body .rt-detail {
+      margin-top: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    /* ── 가격 범위 시각화 ── */
+    .price-range-visual {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: var(--shadow);
+      margin-bottom: 24px;
+    }
+    .price-range-visual .prv-label {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 16px;
+    }
+    .price-bar-wrap {
+      position: relative;
+      height: 12px;
+      background: var(--border);
+      border-radius: 99px;
+      margin-bottom: 10px;
+    }
+    .price-bar {
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      width: 100%;
+      background: linear-gradient(90deg, #D1FAE5 0%, var(--primary) 40%, #059669 70%, #065F46 100%);
+      border-radius: 99px;
+    }
+    .price-marker {
+      position: absolute;
+      top: 50%;
+      transform: translateX(-50%) translateY(-50%);
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #fff;
+      border: 3px solid var(--primary);
+      box-shadow: 0 0 0 2px rgba(5,150,105,.2);
+    }
+    .price-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+    .price-labels .pl-bold { font-weight: 700; color: var(--primary); }
+    .price-note {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 8px;
+    }
+    /* ── 푸터 ── */
+    footer {
+      text-align: center;
+      padding: 32px 24px;
+      font-size: 12px;
+      color: var(--text-muted);
+      border-top: 1px solid var(--border);
+    }
+  </style>
+</head>
+<body>
+
+<!-- ──────────────────── 헤더 ──────────────────── -->
+<header>
+  <div class="doc-meta">MindFit Planning Docs · Document 10</div>
+  <h1>비즈니스 모델</h1>
+  <p class="subtitle">MindFit 수익 모델 상세, Unit Economics 시뮬레이션, 고객 획득 전략 및 중장기 수익 다각화 로드맵</p>
+  <div class="tags">
+    <span class="tag">비즈니스 모델</span>
+    <span class="tag">수익화 전략</span>
+    <span class="tag">Unit Economics</span>
+    <span class="tag">Go-to-Market</span>
+    <span class="tag">v0.1 Draft</span>
+  </div>
+</header>
+
+<main>
+
+  <!-- ① 수익 모델 — 중개 수수료 -->
+  <section>
+    <div class="section-label">Section 01</div>
+    <h2>수익 모델 — 중개 수수료</h2>
+
+    <div class="fee-hero">
+      <div class="fee-left">
+        <h3>플랫폼 수수료율</h3>
+        <div class="pct">20<span>%</span></div>
+        <div class="basis">세션 금액의 20% — 업계 평균 15~25% 수준</div>
+      </div>
+      <div class="fee-right">
+        <div class="ref-label">업계 수수료 비교</div>
+        <div class="ref-items">
+          <div class="ref-item">
+            <span class="ri-name">에어비앤비 (숙박 플랫폼)</span>
+            <span class="ri-pct">3~5% + 서비스 요금</span>
+          </div>
+          <div class="ref-item">
+            <span class="ri-name">배달의민족 (음식 배달)</span>
+            <span class="ri-pct">6.8~9.8%</span>
+          </div>
+          <div class="ref-item">
+            <span class="ri-name">BetterHelp (미국 온라인 상담)</span>
+            <span class="ri-pct">~20% 추정</span>
+          </div>
+          <div class="ref-item">
+            <span class="ri-name">프리랜서 플랫폼 평균</span>
+            <span class="ri-pct">10~20%</span>
+          </div>
+          <div class="ref-item highlight">
+            <span class="ri-name">MindFit (심리상담 마켓플레이스)</span>
+            <span class="ri-pct">20%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 수수료 근거 -->
+    <div class="rationale-cards" style="margin-bottom: 28px;">
+      <div class="rationale-card">
+        <div class="rc-icon">🏦</div>
+        <h3>결제 처리 비용 커버</h3>
+        <p>PG사 수수료(약 2~3%)를 포함한 결제 인프라 비용을 수수료에서 충당합니다.</p>
+      </div>
+      <div class="rationale-card">
+        <div class="rc-icon">🛡️</div>
+        <h3>자격 검증 운영 비용</h3>
+        <p>상담사 서류 심사, 관리자 인건비 등 신뢰 인프라 구축·운영 비용을 반영합니다.</p>
+      </div>
+      <div class="rationale-card">
+        <div class="rc-icon">📣</div>
+        <h3>마케팅 인프라 제공</h3>
+        <p>상담사가 별도 마케팅 없이 내담자를 확보할 수 있도록 플랫폼이 트래픽을 공급합니다.</p>
+      </div>
+      <div class="rationale-card">
+        <div class="rc-icon">⚖️</div>
+        <h3>상담사 이탈 방지 설계</h3>
+        <p>25% 초과 시 상담사 이탈 위험. 15% 미만 시 플랫폼 지속 운영 불가. 20%는 균형점입니다.</p>
+      </div>
+    </div>
+
+    <!-- 수수료 예시 계산 -->
+    <div class="fee-example">
+      <div class="ex-label">수수료 계산 예시 — 세션 금액 60,000원 기준</div>
+      <div class="fee-flow">
+        <div class="fee-box">
+          <div class="fb-label">내담자 결제액</div>
+          <div class="fb-amount">60,000원</div>
+          <div class="fb-note">세션 1회</div>
+        </div>
+        <div class="fee-arrow">→</div>
+        <div class="fee-box platform">
+          <div class="fb-label">MindFit 수익 (20%)</div>
+          <div class="fb-amount">12,000원</div>
+          <div class="fb-note">PG 수수료 차감 전</div>
+        </div>
+        <div class="fee-equals">+</div>
+        <div class="fee-box counselor">
+          <div class="fb-label">상담사 정산액 (80%)</div>
+          <div class="fb-amount">48,000원</div>
+          <div class="fb-note">정산 주기: 월 1~2회</div>
+        </div>
+      </div>
+      <p style="font-size:13px; color: var(--text-muted); margin:0;">* PG사 수수료 약 2~3%는 MindFit 수익(12,000원)에서 차감됩니다. 상담사는 항상 48,000원을 수령합니다.</p>
+    </div>
+  </section>
+
+  <!-- ② 상담사 가격 설정 -->
+  <section>
+    <div class="section-label">Section 02</div>
+    <h2>상담사 가격 설정 자유</h2>
+
+    <div class="price-range-visual">
+      <div class="prv-label">상담사 자율 가격 설정 범위 (KRW / 세션)</div>
+      <div class="price-bar-wrap">
+        <div class="price-bar"></div>
+        <div class="price-marker" style="left: 0%;"></div>
+        <div class="price-marker" style="left: 100%;"></div>
+      </div>
+      <div class="price-labels">
+        <span class="pl-bold">30,000원</span>
+        <span>60,000원 (중위)</span>
+        <span>100,000원</span>
+        <span class="pl-bold">150,000원</span>
+      </div>
+      <p class="price-note">상담사가 자신의 경력, 전문성, 수요에 따라 세션 가격을 자유롭게 설정합니다. 플랫폼은 최소·최대 가이드라인만 제시하며, 가격은 상담사 프로필에 사전 공개됩니다.</p>
+    </div>
+
+    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); gap:16px;">
+      <div style="background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:20px; box-shadow:var(--shadow);">
+        <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;">입문 / 신진 상담사</div>
+        <div style="font-size:22px;font-weight:800;color:var(--text);margin-bottom:6px;">30,000 – 60,000원</div>
+        <p style="font-size:13px;margin:0;">경력 초기 상담사. 내담자 후기를 쌓으며 신뢰 형성 단계. 가격 경쟁력이 강점.</p>
+      </div>
+      <div style="background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:20px; box-shadow:var(--shadow);">
+        <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;">중견 상담사</div>
+        <div style="font-size:22px;font-weight:800;color:var(--text);margin-bottom:6px;">60,000 – 100,000원</div>
+        <p style="font-size:13px;margin:0;">일정 수준의 리뷰와 전문 분야를 갖춘 상담사. 가장 넓은 가격 구간.</p>
+      </div>
+      <div style="background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:20px; box-shadow:var(--shadow);">
+        <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;">시니어 / 전문가</div>
+        <div style="font-size:22px;font-weight:800;color:var(--text);margin-bottom:6px;">100,000 – 150,000원</div>
+        <p style="font-size:13px;margin:0;">다수의 리뷰, 높은 재방문율, 특수 전문성(트라우마, 부부 상담 등) 보유 상담사.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ③ Unit Economics 시뮬레이션 -->
+  <section>
+    <div class="section-label">Section 03</div>
+    <h2>Unit Economics 시뮬레이션</h2>
+
+    <p>아래 시뮬레이션은 <strong>세션 평균 단가 60,000원</strong>을 기준으로 계산합니다. 플랫폼 수익은 세션 금액의 20%이며, PG 수수료(2.5%) 차감 후 실질 수익을 산출합니다.</p>
+
+    <table class="ue-table">
+      <thead>
+        <tr>
+          <th>시나리오</th>
+          <th>월 세션 수</th>
+          <th>총 거래액 (GMV)</th>
+          <th>플랫폼 수익 (20%)</th>
+          <th>PG 수수료 (2.5%)</th>
+          <th>실질 플랫폼 수익</th>
+          <th>고정비 추정</th>
+          <th>손익</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>초기 시작</td>
+          <td>100세션</td>
+          <td>6,000,000원</td>
+          <td>1,200,000원</td>
+          <td>150,000원</td>
+          <td>1,050,000원</td>
+          <td rowspan="2" style="text-align:center; vertical-align:middle; font-size:13px; color:var(--text-muted);">약 1,000만원<br><span style="font-size:11px;">(인프라 + 최소 인건비)</span></td>
+          <td style="color:var(--danger); font-weight:700;">–8,950,000원</td>
+        </tr>
+        <tr>
+          <td>성장 초기</td>
+          <td>500세션</td>
+          <td>30,000,000원</td>
+          <td>6,000,000원</td>
+          <td>750,000원</td>
+          <td>5,250,000원</td>
+          <td style="color:var(--danger); font-weight:700;">–4,750,000원</td>
+        </tr>
+        <tr class="row-breakeven">
+          <td>Break-even</td>
+          <td>약 1,180세션</td>
+          <td>약 70,800,000원</td>
+          <td>약 14,160,000원</td>
+          <td>약 1,770,000원</td>
+          <td>약 12,390,000원</td>
+          <td style="text-align:center; color:var(--warning);">12,000,000원</td>
+          <td>≈ 0원</td>
+        </tr>
+        <tr>
+          <td>안정 성장</td>
+          <td>2,000세션</td>
+          <td>120,000,000원</td>
+          <td>24,000,000원</td>
+          <td>3,000,000원</td>
+          <td>21,000,000원</td>
+          <td rowspan="2" style="text-align:center; vertical-align:middle; font-size:13px; color:var(--text-muted);">약 1,500만원<br><span style="font-size:11px;">(팀 확장 이후)</span></td>
+          <td style="color:var(--primary); font-weight:700;">+6,000,000원</td>
+        </tr>
+        <tr class="row-target">
+          <td>목표</td>
+          <td>5,000세션</td>
+          <td>300,000,000원</td>
+          <td>60,000,000원</td>
+          <td>7,500,000원</td>
+          <td>52,500,000원</td>
+          <td style="color:var(--primary); font-weight:700;">+37,500,000원</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="be-card">
+      <div class="be-label">Break-even 분석 가정</div>
+      <p style="font-size:14px; color:var(--text-sub); margin-bottom:12px;">손익분기점 달성을 위한 기본 가정을 명시합니다. 실제 비용은 팀 구성, 인프라 선택, 마케팅 집행 방식에 따라 달라질 수 있습니다.</p>
+      <div class="be-grid">
+        <div class="be-item">
+          <h4>인프라 비용 (고정)</h4>
+          <p>AWS 서버·DB·스토리지 + 채팅 서버 유지: 약 200~500만원/월</p>
+        </div>
+        <div class="be-item">
+          <h4>최소 인건비</h4>
+          <p>백엔드·프론트엔드 개발자 2인 + 관리 운영 1인: 약 600~800만원/월</p>
+        </div>
+        <div class="be-item">
+          <h4>고객 획득 비용 (CAC)</h4>
+          <p>초기 마케팅 예산 100~200만원/월 (SNS, 커뮤니티, 콘텐츠 마케팅)</p>
+        </div>
+        <div class="be-item">
+          <h4>기타 고정비</h4>
+          <p>PG 가입비, 법인 운영비, 보험, 회계·법무 자문: 약 50~100만원/월</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ④ 고객 획득 전략 -->
+  <section>
+    <div class="section-label">Section 04</div>
+    <h2>고객 획득 전략</h2>
+
+    <div class="supply-first-box">
+      <div class="sf-label">핵심 전략 원칙</div>
+      <div class="sf-quote">"공급 우선(Supply-First) 전략 — 상담사를 먼저 채우고, 내담자를 유입한다"</div>
+      <p>마켓플레이스의 가장 큰 초기 과제는 닭-달걀 문제입니다. MindFit은 공급 측(상담사) 확보를 최우선으로 하여, 내담자가 방문했을 때 선택할 수 있는 상담사가 충분히 있는 상태를 먼저 만들겠습니다. 상담사 20~30명 확보 후 내담자 마케팅을 본격 집행합니다.</p>
+    </div>
+
+    <div class="strategy-grid">
+      <div class="strategy-card supply">
+        <span class="s-badge">공급 측 — 상담사 확보</span>
+        <h3>전문가 커뮤니티 직접 접근</h3>
+        <ul class="s-list">
+          <li>
+            <span class="s-icon">🎓</span>
+            <span><strong>대학원 커뮤니티:</strong> 임상심리학과·상담심리학과 석·박사 과정생 및 졸업생 대상 직접 홍보. 학과 게시판, 학회 뉴스레터 활용.</span>
+          </li>
+          <li>
+            <span class="s-icon">🏛️</span>
+            <span><strong>학회 채널:</strong> 한국임상심리학회, 한국상담심리학회 공식 채널 및 커뮤니티에 플랫폼 소개.</span>
+          </li>
+          <li>
+            <span class="s-icon">👥</span>
+            <span><strong>수퍼바이저 네트워크:</strong> 경력 있는 수퍼바이저를 통해 추천 네트워크 구축. 초기 상담사에게 인센티브(수수료 한시 인하) 제공.</span>
+          </li>
+          <li>
+            <span class="s-icon">💼</span>
+            <span><strong>개인 개업 상담사 직접 영업:</strong> 상담사 포털(상담사닷컴 등)에 등록된 개인 상담사에게 플랫폼 합류 제안.</span>
+          </li>
+          <li>
+            <span class="s-icon">🎁</span>
+            <span><strong>초기 입점 혜택:</strong> 론칭 초기 상담사에게 수수료 0% 3개월 혜택 또는 프로필 상단 노출 제공.</span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="strategy-card demand">
+        <span class="s-badge">수요 측 — 내담자 유입</span>
+        <h3>직장인 타겟 디지털 마케팅</h3>
+        <ul class="s-list">
+          <li>
+            <span class="s-icon">📱</span>
+            <span><strong>SNS 콘텐츠 마케팅:</strong> 우울·번아웃 관련 공감 콘텐츠(인스타그램, 스레드, 유튜브 쇼츠). "당신의 감정은 정상입니다" 시리즈.</span>
+          </li>
+          <li>
+            <span class="s-icon">💬</span>
+            <span><strong>블라인드·리멤버:</strong> 직장인 익명 커뮤니티에서 번아웃 관련 글 맥락 광고. 자연스러운 콘텐츠 노출.</span>
+          </li>
+          <li>
+            <span class="s-icon">🔍</span>
+            <span><strong>검색 광고(SEO/SEM):</strong> "심리상담 비용", "번아웃 상담사 추천", "온라인 심리상담" 등 높은 의도성 키워드 타겟팅.</span>
+          </li>
+          <li>
+            <span class="s-icon">🤝</span>
+            <span><strong>파트너십:</strong> HR 솔루션, 복지 앱(토스웰스, 복지몰), 직장인 앱과 연계. 초기 무료 상담 바우처 협업.</span>
+          </li>
+          <li>
+            <span class="s-icon">💡</span>
+            <span><strong>상담사 콘텐츠 활용:</strong> 등록 상담사가 작성한 칼럼·Q&amp;A를 SEO 콘텐츠로 활용. 유입 + 신뢰 형성 동시 달성.</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ⑤ 중장기 수익 다각화 -->
+  <section>
+    <div class="section-label">Section 05</div>
+    <h2>중장기 수익 다각화 로드맵</h2>
+
+    <div class="revenue-timeline">
+
+      <div class="rt-item">
+        <div class="rt-dot phase0">💰</div>
+        <div class="rt-body">
+          <div class="rt-phase" style="color: var(--primary);">Phase 0 — 론칭 (현재)</div>
+          <h3>중개 수수료 단일 모델</h3>
+          <p>세션 금액의 20% 수수료. 핵심 운영에 집중하고 추가 수익 모델 없이 마켓플레이스 기능을 검증합니다.</p>
+          <div class="rt-detail">
+            <span class="badge badge-green">현재 적용 중</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="rt-item">
+        <div class="rt-dot phase1">⭐</div>
+        <div class="rt-body">
+          <div class="rt-phase" style="color: var(--accent);">Phase 1 — 6~12개월 후</div>
+          <h3>프리미엄 상담사 노출 (Featured Listing)</h3>
+          <p>원하는 상담사에게 검색 결과 및 메인 페이지 상단 노출 광고 상품을 판매합니다. 구글 검색 광고와 유사한 모델로, 상담사 자율 참여이며 플랫폼 추가 수익을 창출합니다.</p>
+          <div class="rt-detail">
+            <span class="badge badge-blue">예상 단가: 월 5~20만원/상담사</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="rt-item">
+        <div class="rt-dot phase2">🏢</div>
+        <div class="rt-body">
+          <div class="rt-phase" style="color: var(--purple);">Phase 2 — 12~24개월 후</div>
+          <h3>B2B EAP (Employee Assistance Program)</h3>
+          <p>기업이 직원 복지 차원에서 MindFit 심리상담 서비스를 연간 계약으로 구매하는 B2B 모델입니다. 한국임상심리학회에 따르면 직장인 멘탈헬스 투자 기업이 생산성 측면에서 ROI 6배 이상을 기록하는 데이터를 영업 포인트로 활용합니다.</p>
+          <div class="rt-detail">
+            <span class="badge badge-purple">타겟: 50인 이상 중소기업</span>
+            <span class="badge badge-blue">연간 계약 기반 안정 수익</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="rt-item">
+        <div class="rt-dot phase3">🔄</div>
+        <div class="rt-body">
+          <div class="rt-phase" style="color: var(--warning);">Phase 3 — 24개월 이후</div>
+          <h3>정기 구독 플랜 (월 N회 상담 패키지)</h3>
+          <p>내담자가 월 정기 구독으로 N회 상담을 묶음 구매하는 모델입니다. 예: 월 2회 상담 패키지 110,000원 (개별 구매 대비 8~10% 할인). 재방문율을 높이고 예측 가능한 반복 수익(MRR)을 확보합니다.</p>
+          <div class="rt-detail">
+            <span class="badge badge-orange">구독형 반복 수익 (MRR) 확보</span>
+            <span class="badge badge-green">내담자 이탈률 감소 효과</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ⑥ 핵심 지표 (KPI) -->
+  <section>
+    <div class="section-label">Section 06</div>
+    <h2>핵심 성과 지표 (KPI)</h2>
+
+    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap:14px;">
+      <div style="background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:20px; box-shadow:var(--shadow); text-align:center;">
+        <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;">GMV</div>
+        <div style="font-size:15px;font-weight:800;color:var(--text);">총 거래액</div>
+        <p style="font-size:12px;margin-top:6px;margin-bottom:0;">월 전체 세션 거래 금액 합계. 플랫폼 성장의 핵심 지표.</p>
+      </div>
+      <div style="background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:20px; box-shadow:var(--shadow); text-align:center;">
+        <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;">CAC</div>
+        <div style="font-size:15px;font-weight:800;color:var(--text);">고객 획득 비용</div>
+        <p style="font-size:12px;margin-top:6px;margin-bottom:0;">내담자 1명 유치에 드는 마케팅 비용. 목표: 1만원 이하.</p>
+      </div>
+      <div style="background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:20px; box-shadow:var(--shadow); text-align:center;">
+        <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;">LTV</div>
+        <div style="font-size:15px;font-weight:800;color:var(--text);">고객 생애 가치</div>
+        <p style="font-size:12px;margin-top:6px;margin-bottom:0;">내담자 1명이 플랫폼에서 지불하는 총 금액. LTV &gt; 3×CAC 목표.</p>
+      </div>
+      <div style="background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:20px; box-shadow:var(--shadow); text-align:center;">
+        <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;">Repeat Rate</div>
+        <div style="font-size:15px;font-weight:800;color:var(--text);">재방문율</div>
+        <p style="font-size:12px;margin-top:6px;margin-bottom:0;">첫 상담 후 재예약 비율. 목표: 60% 이상 (상담 특성상 반복 수요 높음).</p>
+      </div>
+      <div style="background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:20px; box-shadow:var(--shadow); text-align:center;">
+        <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;">Take Rate</div>
+        <div style="font-size:15px;font-weight:800;color:var(--text);">실질 수수료율</div>
+        <p style="font-size:12px;margin-top:6px;margin-bottom:0;">PG 수수료 차감 후 실제 플랫폼 수익 비율. 약 17.5% 목표.</p>
+      </div>
+      <div style="background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:20px; box-shadow:var(--shadow); text-align:center;">
+        <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;">Counselor NPS</div>
+        <div style="font-size:15px;font-weight:800;color:var(--text);">상담사 만족도</div>
+        <p style="font-size:12px;margin-top:6px;margin-bottom:0;">상담사 순추천지수. 공급 측 이탈 방지의 핵심 지표. 목표: 60 이상.</p>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  MindFit Planning Docs · Document 10 — Business Model · Draft v0.1 · 2026-05-24<br>
+  이 문서는 MindFit 내부 기획 전용 자료로, 외부 공개를 금합니다.
+</footer>
+
+</body>
+</html>

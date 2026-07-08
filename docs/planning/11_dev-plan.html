@@ -1,0 +1,1652 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MindFit — 개발 마스터 플랜</title>
+  <style>
+    :root {
+      --primary:     #4F6EF7;
+      --primary-dark:#3451D1;
+      --accent:      #7C3AED;
+      --success:     #059669;
+      --warning:     #D97706;
+      --danger:      #DC2626;
+      --bg:          #F8F9FC;
+      --surface:     #FFFFFF;
+      --border:      #E4E8F0;
+      --text:        #1A1D2E;
+      --text-sub:    #5A6070;
+      --text-muted:  #9299A8;
+      --radius:      12px;
+      --shadow:      0 2px 12px rgba(79,110,247,.08);
+      /* Phase colors */
+      --p0: #6B7280; --p0-bg: #F3F4F6;
+      --p1: #1D4ED8; --p1-bg: #EFF6FF;
+      --p2: #7C3AED; --p2-bg: #F5F3FF;
+      --p3: #0369A1; --p3-bg: #F0F9FF;
+      --p4: #C2410C; --p4-bg: #FFF7ED;
+      --p5: #15803D; --p5-bg: #F0FDF4;
+      --p6: #BE185D; --p6-bg: #FDF2F8;
+      /* Task type colors */
+      --be: #1D4ED8; --be-bg: #DBEAFE;
+      --fe: #15803D; --fe-bg: #DCFCE7;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      font-size: 15px;
+    }
+
+    /* ── 헤더 ── */
+    header {
+      background: linear-gradient(135deg, #1E3A8A 0%, #4F46E5 60%, #7C3AED 100%);
+      color: #fff;
+      padding: 56px 40px 48px;
+    }
+    header .doc-meta {
+      font-size: 12px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      opacity: .75;
+      margin-bottom: 14px;
+    }
+    header h1 { font-size: 36px; font-weight: 800; letter-spacing: -.02em; line-height: 1.2; }
+    header .subtitle { margin-top: 10px; font-size: 17px; opacity: .85; max-width: 680px; }
+    header .tags { margin-top: 22px; display: flex; gap: 8px; flex-wrap: wrap; }
+    header .tag {
+      background: rgba(255,255,255,.18);
+      border: 1px solid rgba(255,255,255,.3);
+      border-radius: 20px;
+      padding: 4px 14px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    header .phase-summary {
+      margin-top: 32px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    header .phase-chip {
+      background: rgba(255,255,255,.15);
+      border-radius: 8px;
+      padding: 8px 16px;
+      font-size: 13px;
+      text-align: center;
+    }
+    header .phase-chip .num { font-size: 20px; font-weight: 800; display: block; }
+
+    /* ── 레이아웃 ── */
+    main { max-width: 1100px; margin: 0 auto; padding: 40px 24px 80px; }
+    section { margin-bottom: 52px; }
+    .section-label {
+      font-size: 11px; font-weight: 700; letter-spacing: .1em;
+      text-transform: uppercase; color: var(--text-muted); margin-bottom: 16px;
+    }
+    h2 { font-size: 24px; font-weight: 800; color: var(--text); margin-bottom: 20px; }
+    h3 { font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 14px; }
+
+    /* ── 카드 ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: var(--shadow);
+    }
+    .card-grid { display: grid; gap: 16px; }
+    .card-grid.col-3 { grid-template-columns: repeat(3, 1fr); }
+    .card-grid.col-2 { grid-template-columns: repeat(2, 1fr); }
+    @media (max-width: 768px) {
+      .card-grid.col-3, .card-grid.col-2 { grid-template-columns: 1fr; }
+    }
+    .info-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
+    .info-card .label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--text-muted); margin-bottom: 6px; }
+    .info-card .value { font-size: 22px; font-weight: 800; color: var(--text); }
+    .info-card .desc { font-size: 13px; color: var(--text-sub); margin-top: 4px; }
+
+    /* ── 전체 진행률 ── */
+    .progress-section { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; margin-bottom: 36px; }
+    .progress-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .progress-title { font-weight: 700; font-size: 16px; }
+    .progress-count { font-size: 14px; color: var(--text-sub); }
+    .progress-bar-wrap { background: #E5E7EB; border-radius: 20px; height: 12px; overflow: hidden; }
+    .progress-bar { height: 100%; border-radius: 20px; background: linear-gradient(90deg, var(--primary), var(--accent)); transition: width .4s ease; }
+    .progress-phases { display: flex; gap: 12px; margin-top: 12px; flex-wrap: wrap; }
+    .phase-mini { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-sub); }
+    .phase-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+    /* ── Critical Path ── */
+    .critical-path {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      overflow-x: auto;
+      padding: 8px 0 8px;
+    }
+    .cp-node {
+      min-width: 110px;
+      text-align: center;
+      padding: 12px 14px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 700;
+      flex-shrink: 0;
+      line-height: 1.4;
+    }
+    .cp-arrow {
+      font-size: 20px;
+      color: var(--text-muted);
+      padding: 0 4px;
+      flex-shrink: 0;
+    }
+    .cp-note { font-size: 11px; font-weight: 400; opacity: .8; margin-top: 4px; }
+
+    /* ── Phase 블록 ── */
+    .phase-block {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      margin-bottom: 28px;
+      box-shadow: var(--shadow);
+    }
+    .phase-header {
+      padding: 20px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      user-select: none;
+    }
+    .phase-header:hover { filter: brightness(0.97); }
+    .phase-header-left { display: flex; align-items: center; gap: 16px; }
+    .phase-number {
+      width: 44px; height: 44px;
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; font-weight: 800; color: #fff;
+      flex-shrink: 0;
+    }
+    .phase-title-block .phase-title { font-size: 18px; font-weight: 800; }
+    .phase-title-block .phase-duration { font-size: 13px; margin-top: 2px; }
+    .phase-badge {
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .phase-toggle { font-size: 20px; color: var(--text-muted); transition: transform .3s; }
+    .phase-toggle.open { transform: rotate(180deg); }
+
+    .phase-body { padding: 0 28px 28px; display: block; }
+    .phase-body.hidden { display: none; }
+
+    .phase-goal {
+      background: #F8FAFC;
+      border-left: 4px solid;
+      border-radius: 0 8px 8px 0;
+      padding: 14px 18px;
+      margin-bottom: 24px;
+      font-size: 14px;
+      color: var(--text-sub);
+    }
+    .phase-goal strong { color: var(--text); font-weight: 700; }
+
+    /* ── 태스크 그리드 ── */
+    .task-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    @media (max-width: 760px) { .task-grid { grid-template-columns: 1fr; } }
+
+    .task-group { }
+    .task-group-header {
+      display: flex; align-items: center; gap: 8px;
+      margin-bottom: 10px;
+    }
+    .task-type-badge {
+      padding: 3px 10px; border-radius: 12px;
+      font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em;
+    }
+    .be-badge { background: var(--be-bg); color: var(--be); }
+    .fe-badge { background: var(--fe-bg); color: var(--fe); }
+
+    .task-list { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+    .task-item {
+      display: flex; align-items: flex-start; gap: 8px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      font-size: 13px;
+      line-height: 1.5;
+      cursor: pointer;
+      transition: background .15s;
+    }
+    .task-item:hover { background: #F8FAFC; }
+    .task-item input[type="checkbox"] {
+      margin-top: 2px;
+      width: 15px; height: 15px;
+      cursor: pointer;
+      flex-shrink: 0;
+      accent-color: var(--primary);
+    }
+    .task-item.checked { opacity: .6; }
+    .task-item.checked .task-text { text-decoration: line-through; }
+    .task-text { flex: 1; }
+    .task-file {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      background: #F1F5F9;
+      border-radius: 4px;
+      padding: 1px 6px;
+      margin-top: 2px;
+      display: inline-block;
+    }
+
+    .dod-block {
+      margin-top: 20px;
+      background: #ECFDF5;
+      border: 1px solid #A7F3D0;
+      border-radius: 10px;
+      padding: 16px 20px;
+    }
+    .dod-block .dod-title { font-size: 13px; font-weight: 700; color: var(--success); margin-bottom: 8px; }
+    .dod-block ul { list-style: none; display: flex; flex-direction: column; gap: 4px; }
+    .dod-block li { font-size: 13px; color: var(--text-sub); display: flex; align-items: flex-start; gap: 6px; }
+    .dod-block li::before { content: "✓"; color: var(--success); font-weight: 700; flex-shrink: 0; }
+
+    /* ── 구조도 ── */
+    .dir-tree {
+      font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+      font-size: 13px;
+      background: #1E1E2E;
+      color: #CDD6F4;
+      border-radius: 12px;
+      padding: 24px 28px;
+      line-height: 2;
+      overflow-x: auto;
+    }
+    .dir-tree .dir { color: #89B4FA; font-weight: 700; }
+    .dir-tree .file { color: #A6E3A1; }
+    .dir-tree .comment { color: #6C7086; }
+
+    /* ── Git 브랜치 ── */
+    .git-flow {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding: 20px;
+      background: #1E1E2E;
+      border-radius: 12px;
+    }
+    .git-branch {
+      display: flex; align-items: center; gap: 12px;
+    }
+    .git-line {
+      width: 32px; height: 3px; border-radius: 2px; flex-shrink: 0;
+    }
+    .git-branch-name {
+      font-family: monospace; font-size: 14px; font-weight: 700; color: #CDD6F4;
+    }
+    .git-branch-desc { font-size: 13px; color: #6C7086; }
+
+    /* ── 커밋 컨벤션 ── */
+    .commit-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    .commit-table th { text-align: left; padding: 10px 14px; background: var(--bg); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--text-muted); border-bottom: 1px solid var(--border); }
+    .commit-table td { padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+    .commit-table tr:last-child td { border-bottom: none; }
+    .commit-tag { font-family: monospace; font-weight: 700; padding: 2px 8px; border-radius: 6px; font-size: 13px; }
+
+    /* ── 타임라인 ── */
+    .timeline-grid {
+      display: grid;
+      grid-template-columns: 80px repeat(8, 1fr);
+      gap: 4px;
+      font-size: 12px;
+    }
+    .tl-header { text-align: center; font-weight: 700; color: var(--text-sub); padding: 6px 4px; font-size: 11px; }
+    .tl-label { font-weight: 700; font-size: 12px; display: flex; align-items: center; color: var(--text-sub); padding-right: 8px; }
+    .tl-cell { height: 28px; border-radius: 4px; }
+    .tl-filled { display: flex; align-items: center; justify-content: center; border-radius: 4px; color: #fff; font-size: 10px; font-weight: 700; }
+    .tl-empty { background: #F1F5F9; }
+
+    /* ── 환경변수 표 ── */
+    .env-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .env-table th { text-align: left; padding: 8px 14px; background: var(--bg); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--text-muted); border-bottom: 1px solid var(--border); }
+    .env-table td { padding: 8px 14px; border-bottom: 1px solid var(--border); font-family: 'SF Mono', monospace; font-size: 12px; }
+    .env-table tr:last-child td { border-bottom: none; }
+    .env-key { color: #7C3AED; }
+
+    /* ── MVP 완료 기준 ── */
+    .mvp-list { display: flex; flex-direction: column; gap: 10px; }
+    .mvp-item {
+      display: flex; align-items: flex-start; gap: 12px;
+      padding: 14px 16px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--surface);
+      font-size: 14px;
+    }
+    .mvp-check { width: 22px; height: 22px; border-radius: 6px; background: #ECFDF5; border: 1px solid #A7F3D0; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 14px; }
+    .mvp-text strong { display: block; font-weight: 700; margin-bottom: 2px; }
+    .mvp-text span { font-size: 13px; color: var(--text-sub); }
+
+    /* ── API 병렬 개발 ── */
+    .parallel-box {
+      background: #FFFBEB;
+      border: 1px solid #FDE68A;
+      border-radius: 12px;
+      padding: 20px 24px;
+      margin-top: 20px;
+    }
+    .parallel-box h4 { font-size: 15px; font-weight: 700; color: #92400E; margin-bottom: 10px; }
+    .parallel-box p { font-size: 14px; color: #78350F; line-height: 1.6; }
+    code { font-family: 'SF Mono', 'Fira Code', monospace; background: #F1F5F9; padding: 2px 6px; border-radius: 4px; font-size: 13px; }
+
+    /* ── TDD ── */
+    .tdd-cycle {
+      display: flex; align-items: center; gap: 0;
+      margin: 20px 0;
+    }
+    .tdd-step {
+      flex: 1; text-align: center; padding: 16px 12px; border-radius: 12px;
+      font-weight: 700; font-size: 14px;
+    }
+    .tdd-arrow { font-size: 22px; color: var(--text-muted); padding: 0 8px; flex-shrink: 0; }
+    .tdd-red    { background: #FEF2F2; border: 2px solid #FCA5A5; color: #DC2626; }
+    .tdd-green  { background: #F0FDF4; border: 2px solid #86EFAC; color: #16A34A; }
+    .tdd-blue   { background: #EFF6FF; border: 2px solid #93C5FD; color: #2563EB; }
+    .tdd-step .tdd-icon { font-size: 28px; display: block; margin-bottom: 6px; }
+    .tdd-step .tdd-title { font-size: 16px; font-weight: 800; }
+    .tdd-step .tdd-desc { font-size: 12px; font-weight: 400; margin-top: 4px; opacity: .85; }
+
+    .test-group { margin-bottom: 0; }
+    .test-badge { background: #FEF2F2; color: #DC2626; }
+    .test-item {
+      display: flex; align-items: flex-start; gap: 8px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: 1px solid #FECACA;
+      background: #FFF8F8;
+      font-size: 13px; line-height: 1.5;
+      cursor: pointer; transition: background .15s;
+    }
+    .test-item:hover { background: #FEF2F2; }
+    .test-item input[type="checkbox"] {
+      margin-top: 2px; width: 15px; height: 15px; cursor: pointer; flex-shrink: 0;
+      accent-color: #DC2626;
+    }
+    .test-item.checked { opacity: .6; }
+    .test-item.checked .task-text { text-decoration: line-through; }
+
+    .tdd-phase-note {
+      background: #FFF8F8; border: 1px solid #FECACA; border-radius: 10px;
+      padding: 14px 18px; margin-bottom: 20px;
+      font-size: 13px; color: #7F1D1D;
+    }
+    .tdd-phase-note strong { color: #DC2626; }
+
+    .coverage-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 12px; }
+    .coverage-table th { text-align: left; padding: 8px 14px; background: var(--bg); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--text-muted); border-bottom: 1px solid var(--border); }
+    .coverage-table td { padding: 8px 14px; border-bottom: 1px solid var(--border); }
+    .coverage-table tr:last-child td { border-bottom: none; }
+    .cov-bar-wrap { background: #E5E7EB; border-radius: 20px; height: 8px; width: 120px; overflow: hidden; display: inline-block; vertical-align: middle; margin-left: 8px; }
+    .cov-bar { height: 100%; border-radius: 20px; background: linear-gradient(90deg, #16A34A, #4ADE80); }
+  </style>
+</head>
+<body>
+
+<div style="max-width:1100px;margin:20px auto 0;padding:14px 20px;background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;color:#92400E;font-family:'Pretendard','Apple SD Gothic Neo','Noto Sans KR',sans-serif;font-size:14px;">
+  ⚠️ <strong>실행 기준은 <a href="12_master-plan.html" style="color:#92400E">12번 마스터 플랜</a></strong> — 이 문서는 2026-07-07 이전 계획으로 이력 보존용이다. Phase 태스크 분해·ADR은 12번 §3·§7을 따른다.
+</div>
+
+<!-- ══════════════ 헤더 ══════════════ -->
+<header>
+  <div class="doc-meta">MindFit · 개발 문서 · 11번</div>
+  <h1>개발 마스터 플랜</h1>
+  <p class="subtitle">MVP 8주 전체 개발 로드맵 — 환경 설정부터 채팅까지, Phase별 태스크 분해 및 BE/FE 병렬 개발 가이드</p>
+  <div class="tags">
+    <span class="tag">Java Spring Boot 3.x</span>
+    <span class="tag">React 18 + TypeScript</span>
+    <span class="tag">MySQL 8.x</span>
+    <span class="tag">WebSocket STOMP</span>
+    <span class="tag">토스페이먼츠</span>
+    <span class="tag">AWS S3</span>
+  </div>
+  <div class="phase-summary">
+    <div class="phase-chip"><span class="num">P0</span>환경 설정<br><small>1일</small></div>
+    <div class="phase-chip"><span class="num">P1</span>인증 시스템<br><small>3일</small></div>
+    <div class="phase-chip"><span class="num">P2</span>상담사 온보딩<br><small>4일</small></div>
+    <div class="phase-chip"><span class="num">P3</span>탐색·예약·문진표<br><small>5일</small></div>
+    <div class="phase-chip"><span class="num">P4</span>결제<br><small>3일</small></div>
+    <div class="phase-chip"><span class="num">P5</span>채팅<br><small>4일</small></div>
+    <div class="phase-chip"><span class="num">P6</span>리뷰·마무리<br><small>3일</small></div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ══ 전체 진행률 ══ -->
+  <div class="progress-section">
+    <div class="progress-header">
+      <span class="progress-title">전체 태스크 진행률</span>
+      <span class="progress-count" id="progressCount">0 / 0 완료</span>
+    </div>
+    <div class="progress-bar-wrap">
+      <div class="progress-bar" id="progressBar" style="width: 0%"></div>
+    </div>
+    <div class="progress-phases">
+      <div class="phase-mini"><div class="phase-dot" style="background:#6B7280"></div>P0 환경 설정</div>
+      <div class="phase-mini"><div class="phase-dot" style="background:#1D4ED8"></div>P1 인증</div>
+      <div class="phase-mini"><div class="phase-dot" style="background:#7C3AED"></div>P2 상담사 온보딩</div>
+      <div class="phase-mini"><div class="phase-dot" style="background:#0369A1"></div>P3 탐색·예약</div>
+      <div class="phase-mini"><div class="phase-dot" style="background:#C2410C"></div>P4 결제</div>
+      <div class="phase-mini"><div class="phase-dot" style="background:#15803D"></div>P5 채팅</div>
+      <div class="phase-mini"><div class="phase-dot" style="background:#BE185D"></div>P6 마무리</div>
+    </div>
+  </div>
+
+  <!-- ══ 개요 ══ -->
+  <section>
+    <div class="section-label">개발 개요</div>
+    <div class="card-grid col-3">
+      <div class="info-card">
+        <div class="label">총 개발 기간</div>
+        <div class="value">8주 (40일)</div>
+        <div class="desc">Phase 0~6, MVP 기준</div>
+      </div>
+      <div class="info-card">
+        <div class="label">개발 구조</div>
+        <div class="value">모노레포</div>
+        <div class="desc">backend/ + frontend/ 디렉토리 분리</div>
+      </div>
+      <div class="info-card">
+        <div class="label">총 태스크 수</div>
+        <div class="value" id="totalTaskCount">—</div>
+        <div class="desc">BE + FE 합산</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ 프로젝트 구조 ══ -->
+  <section>
+    <div class="section-label">프로젝트 디렉토리 구조</div>
+    <div class="card-grid col-2">
+      <div>
+        <h3 style="margin-bottom:12px">Backend (Spring Boot)</h3>
+        <div class="dir-tree">
+<span class="dir">mindfit/</span>
+├── <span class="dir">backend/</span>
+│   ├── <span class="dir">src/main/java/com/mindfit/</span>
+│   │   ├── <span class="dir">auth/</span>           <span class="comment"># JWT, Security</span>
+│   │   │   ├── <span class="file">JwtTokenProvider.java</span>
+│   │   │   ├── <span class="file">JwtAuthFilter.java</span>
+│   │   │   ├── <span class="file">SecurityConfig.java</span>
+│   │   │   ├── <span class="file">AuthService.java</span>
+│   │   │   ├── <span class="file">AuthController.java</span>
+│   │   │   └── <span class="dir">dto/</span>           <span class="comment"># SignupRequest · LoginRequest · TokenResponse · RefreshRequest</span>
+│   │   ├── <span class="dir">user/</span>           <span class="comment"># 유저 공통</span>
+│   │   │   ├── <span class="file">User.java</span>
+│   │   │   └── <span class="file">UserRepository.java</span>
+│   │   ├── <span class="dir">counselor/</span>      <span class="comment"># 상담사</span>
+│   │   ├── <span class="dir">session/</span>        <span class="comment"># 예약</span>
+│   │   ├── <span class="dir">questionnaire/</span>  <span class="comment"># 문진표</span>
+│   │   ├── <span class="dir">payment/</span>        <span class="comment"># 결제/Webhook</span>
+│   │   ├── <span class="dir">chat/</span>           <span class="comment"># WebSocket</span>
+│   │   ├── <span class="dir">review/</span>         <span class="comment"># 리뷰</span>
+│   │   ├── <span class="dir">admin/</span>          <span class="comment"># 관리자</span>
+│   │   └── <span class="dir">common/</span>         <span class="comment"># 공통 유틸</span>
+│   │       ├── <span class="file">ApiResponse.java</span>
+│   │       ├── <span class="file">GlobalExHandler.java</span>
+│   │       └── <span class="file">S3Service.java</span>
+│   └── <span class="dir">src/main/resources/</span>
+│       ├── <span class="file">application.yml</span>
+│       ├── <span class="file">application-dev.yml</span>
+│       └── <span class="file">application-prod.yml</span>
+└── <span class="file">build.gradle</span>
+        </div>
+      </div>
+      <div>
+        <h3 style="margin-bottom:12px">Frontend (React + TypeScript)</h3>
+        <div class="dir-tree">
+<span class="dir">mindfit/</span>
+└── <span class="dir">frontend/</span>
+    ├── <span class="dir">src/</span>
+    │   ├── <span class="dir">api/</span>            <span class="comment"># axios 인스턴스 + API 함수</span>
+    │   │   ├── <span class="file">axios.ts</span>
+    │   │   ├── <span class="file">authApi.ts</span>
+    │   │   ├── <span class="file">counselorApi.ts</span>
+    │   │   ├── <span class="file">sessionApi.ts</span>
+    │   │   ├── <span class="file">paymentApi.ts</span>
+    │   │   └── <span class="file">chatApi.ts</span>
+    │   ├── <span class="dir">components/</span>     <span class="comment"># 공용 UI</span>
+    │   │   ├── <span class="file">ProtectedRoute.tsx</span>
+    │   │   └── <span class="file">CounselorCard.tsx</span>
+    │   ├── <span class="dir">pages/</span>
+    │   │   ├── <span class="dir">auth/</span>           <span class="comment"># 로그인, 회원가입</span>
+    │   │   ├── <span class="dir">client/</span>         <span class="comment"># 홈, 상담사 상세, 예약</span>
+    │   │   ├── <span class="dir">counselor/</span>      <span class="comment"># 대시보드, 프로필 편집</span>
+    │   │   └── <span class="dir">admin/</span>          <span class="comment"># 심사 대시보드</span>
+    │   ├── <span class="dir">hooks/</span>          <span class="comment"># useWebSocket, useAuth...</span>
+    │   ├── <span class="dir">store/</span>          <span class="comment"># Zustand 스토어</span>
+    │   │   └── <span class="file">authStore.ts</span>
+    │   ├── <span class="dir">types/</span>          <span class="comment"># TypeScript 타입 정의</span>
+    │   └── <span class="dir">utils/</span>          <span class="comment"># 날짜 포맷, 환불 계산...</span>
+    ├── <span class="file">.env.development</span>
+    ├── <span class="file">.env.production</span>
+    └── <span class="file">vite.config.ts</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ 핵심 경로 ══ -->
+  <section>
+    <div class="section-label">핵심 개발 경로 (Critical Path)</div>
+    <div class="card">
+      <p style="font-size:13px; color:var(--text-sub); margin-bottom:16px">각 Phase는 이전 Phase에 의존. 단, BE/FE는 API 계약 확정 후 병렬 개발 가능.</p>
+      <div class="critical-path">
+        <div class="cp-node" style="background:#F3F4F6; color:#374151">
+          P0<br><span class="cp-note">환경 설정</span>
+        </div>
+        <div class="cp-arrow">→</div>
+        <div class="cp-node" style="background:#EFF6FF; color:#1D4ED8">
+          P1<br><span class="cp-note">인증 시스템</span>
+        </div>
+        <div class="cp-arrow">→</div>
+        <div class="cp-node" style="background:#F5F3FF; color:#7C3AED">
+          P2<br><span class="cp-note">상담사 온보딩</span>
+        </div>
+        <div class="cp-arrow">→</div>
+        <div class="cp-node" style="background:#F0F9FF; color:#0369A1">
+          P3<br><span class="cp-note">탐색·예약</span>
+        </div>
+        <div class="cp-arrow">→</div>
+        <div class="cp-node" style="background:#FFF7ED; color:#C2410C">
+          P4<br><span class="cp-note">결제</span>
+        </div>
+        <div class="cp-arrow">→</div>
+        <div class="cp-node" style="background:#F0FDF4; color:#15803D">
+          P5<br><span class="cp-note">채팅</span>
+        </div>
+        <div class="cp-arrow">→</div>
+        <div class="cp-node" style="background:#FDF2F8; color:#BE185D">
+          P6<br><span class="cp-note">리뷰·마무리</span>
+        </div>
+      </div>
+      <div class="parallel-box">
+        <h4>⚡ BE/FE 병렬 개발 전략</h4>
+        <p>
+          P1 완료 직후, API 계약(OpenAPI 3.0 스펙)을 먼저 문서화한다.<br>
+          이후 FE는 <code>MSW(Mock Service Worker)</code>로 Mock API를 사용해 독립 개발, BE가 실제 API 완성 후 교체한다.<br>
+          결제(P4) Webhook은 로컬 테스트 시 <strong>Toss Payments 테스트 모드</strong>를 사용한다.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ TDD 방법론 ══ -->
+  <section>
+    <div class="section-label">TDD — 테스트 주도 개발 (필수 적용)</div>
+    <div class="card">
+      <h3 style="margin-bottom:6px">Red → Green → Refactor 사이클</h3>
+      <p style="font-size:14px; color:var(--text-sub); margin-bottom:16px">구현 코드를 먼저 작성하는 것은 금지. 반드시 실패하는 테스트를 먼저 작성한 뒤 구현한다.</p>
+      <div class="tdd-cycle">
+        <div class="tdd-step tdd-red">
+          <span class="tdd-icon">🔴</span>
+          <div class="tdd-title">Red</div>
+          <div class="tdd-desc">실패하는 테스트 먼저 작성<br>아직 구현 코드 없음</div>
+        </div>
+        <div class="tdd-arrow">→</div>
+        <div class="tdd-step tdd-green">
+          <span class="tdd-icon">🟢</span>
+          <div class="tdd-title">Green</div>
+          <div class="tdd-desc">테스트를 통과하는<br>최소한의 코드 작성</div>
+        </div>
+        <div class="tdd-arrow">→</div>
+        <div class="tdd-step tdd-blue">
+          <span class="tdd-icon">🔵</span>
+          <div class="tdd-title">Refactor</div>
+          <div class="tdd-desc">테스트 통과 유지하며<br>코드 품질 개선</div>
+        </div>
+      </div>
+      <div class="card-grid col-2" style="gap:16px; margin-top:20px;">
+        <div>
+          <h3 style="font-size:15px; margin-bottom:12px">테스팅 피라미드</h3>
+          <div style="background:#F8FAFC; border-radius:10px; padding:16px; text-align:center;">
+            <div style="background:#FEE2E2; border-radius:8px; padding:8px; margin-bottom:6px; font-size:13px; font-weight:700; color:#DC2626;">E2E 테스트 (소수 · 핵심 플로우만)</div>
+            <div style="background:#FEF9C3; border-radius:8px; padding:8px; margin-bottom:6px; font-size:13px; font-weight:700; color:#92400E;">통합 테스트 (@SpringBootTest, Testcontainers)</div>
+            <div style="background:#DCFCE7; border-radius:8px; padding:10px; font-size:13px; font-weight:700; color:#15803D;">단위 테스트 (가장 많음 · JUnit 5 + Vitest)</div>
+          </div>
+        </div>
+        <div>
+          <h3 style="font-size:15px; margin-bottom:12px">커버리지 목표</h3>
+          <table class="coverage-table">
+            <thead><tr><th>레이어</th><th>목표</th></tr></thead>
+            <tbody>
+              <tr><td>Service (비즈니스 로직)</td><td>90%<div class="cov-bar-wrap"><div class="cov-bar" style="width:90%"></div></div></td></tr>
+              <tr><td>Controller (API)</td><td>80%<div class="cov-bar-wrap"><div class="cov-bar" style="width:80%"></div></div></td></tr>
+              <tr><td>Repository</td><td>70%<div class="cov-bar-wrap"><div class="cov-bar" style="width:70%"></div></div></td></tr>
+              <tr><td>Frontend Component</td><td>70%<div class="cov-bar-wrap"><div class="cov-bar" style="width:70%"></div></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card-grid col-2" style="gap:16px; margin-top:16px;">
+        <div style="background:#1E1E2E; border-radius:10px; padding:16px;">
+          <div style="font-size:11px; font-weight:700; color:#6C7086; text-transform:uppercase; letter-spacing:.07em; margin-bottom:10px;">Backend 테스트 네이밍</div>
+          <pre style="background:transparent; color:#A6E3A1; font-size:12px; line-height:1.8; margin:0; font-family:'SF Mono',monospace;">// 메서드명_상황_기대결과
+signup_duplicateEmail_throwsException()
+login_wrongPassword_throwsUnauthorized()
+createSession_timeConflict_throwsDuplicate()
+getQuestionnaire_notAccessible_throwsForbidden()</pre>
+        </div>
+        <div style="background:#1E1E2E; border-radius:10px; padding:16px;">
+          <div style="font-size:11px; font-weight:700; color:#6C7086; text-transform:uppercase; letter-spacing:.07em; margin-bottom:10px;">Frontend 테스트 네이밍</div>
+          <pre style="background:transparent; color:#89B4FA; font-size:12px; line-height:1.8; margin:0; font-family:'SF Mono',monospace;">// it('상황에서 기대하는 동작')
+it('shows error when email is empty')
+it('redirects to login when unauthenticated')
+it('disables submit while loading')
+it('renders anonymous badge when isAnonymous')</pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- Phase 0 — 환경 설정 -->
+  <!-- ═══════════════════════════════════════ -->
+  <section>
+    <div class="section-label">Phase 별 태스크</div>
+
+    <div class="phase-block">
+      <div class="phase-header" onclick="togglePhase('p0')" style="background:#F0FDF4;">
+        <div class="phase-header-left">
+          <div class="phase-number" style="background:#16A34A;">0</div>
+          <div class="phase-title-block">
+            <div class="phase-title" style="color:#15803D;">Phase 0 — 환경 설정 &amp; 프로젝트 초기화</div>
+            <div class="phase-duration" style="color:#16A34A;">완료 · PR #1 머지 대기 중 (feat/p0-project-setup → develop)</div>
+          </div>
+        </div>
+        <div style="display:flex; gap:12px; align-items:center;">
+          <span class="phase-badge" style="background:#DCFCE7; color:#15803D;">✅ 완료</span>
+          <span class="phase-toggle" id="toggle-p0">▼</span>
+        </div>
+      </div>
+      <div class="phase-body" id="body-p0">
+        <div class="phase-goal">
+          <strong>이 Phase가 끝나면:</strong> BE는 Spring Boot 앱이 MySQL에 연결되어 <code>/api/v1/health</code>가 응답하고, FE는 Vite dev server가 켜지며 Tailwind가 적용된 빈 화면이 보인다. 시크릿은 <code>backend/.env</code>에서 spring-dotenv로 로드, 평문 값 없음.
+        </div>
+        <div class="task-grid">
+          <div class="task-group">
+            <div class="task-group-header">
+              <span class="task-type-badge be-badge">Backend</span>
+            </div>
+            <ul class="task-list">
+              <li class="task-item checked"><input type="checkbox" checked /><span class="task-text">Spring Initializr로 프로젝트 생성<br><span class="task-file">build.gradle — Web, Security, JPA, WebSocket, MySQL, Lombok, Validation, spring-dotenv</span></span></li>
+              <li class="task-item checked"><input type="checkbox" checked /><span class="task-text">application.yml 기본 구조 작성<br><span class="task-file">datasource / jwt / s3 / mail 섹션 — 모든 값 <code>${env.VAR_NAME}</code> 참조</span></span></li>
+              <li class="task-item checked"><input type="checkbox" checked /><span class="task-text">dev/prod 프로파일 분리<br><span class="task-file">application-dev.yml (gitignore), .env + spring-dotenv 로드</span></span></li>
+              <li class="task-item checked"><input type="checkbox" checked /><span class="task-text">MySQL 로컬 DB 생성 (mindfit_db)</span></li>
+              <li class="task-item checked"><input type="checkbox" checked /><span class="task-text">패키지 구조 초기화 (auth/user/common...)</span></li>
+              <li class="task-item checked"><input type="checkbox" checked /><span class="task-text">공통 ApiResponse&lt;T&gt; 래퍼 클래스 작성<br><span class="task-file">common/ApiResponse.java</span></span></li>
+              <li class="task-item checked"><input type="checkbox" checked /><span class="task-text">GlobalExceptionHandler 스켈레톤<br><span class="task-file">common/GlobalExceptionHandler.java — @Slf4j, NPE 방어, 500 로깅</span></span></li>
+              <li class="task-item checked"><input type="checkbox" checked /><span class="task-text">GET /api/v1/health 엔드포인트 (인증 없이 공개)<br><span class="task-file">SecurityConfig — CORS(localhost:5173) 설정 포함</span></span></li>
+            </ul>
+          </div>
+          <div class="task-group">
+            <div class="task-group-header">
+              <span class="task-type-badge fe-badge">Frontend</span>
+            </div>
+            <ul class="task-list">
+              <li class="task-item checked"><input type="checkbox" checked /><span class="task-text">Vite + React + TypeScript 프로젝트 생성<br><span class="task-file">npm create vite@latest frontend -- --template react-ts</span></span></li>
+              <li class="task-item checked"><input type="checkbox" checked /><span class="task-text">패키지 설치<br><span class="task-file">tailwindcss(@tailwindcss/vite v4), @tanstack/react-query, zustand, react-router-dom, react-hook-form, zod, @hookform/resolvers, sockjs-client, @stomp/stompjs, axios</span></span></li>
+              <li class="task-item checked"><input type="checkbox" checked /><span class="task-text">Tailwind CSS v4 설정<br><span class="task-file">@tailwindcss/vite 플러그인 방식, <code>@import "tailwindcss"</code> in CSS</span></span></li>
+              <li class="task-item checked"><input type="checkbox" checked /><span class="task-text">디렉토리 구조 생성<br><span class="task-file">api/ components/ pages/ hooks/ store/ types/ utils/</span></span></li>
+              <li class="task-item checked"><input type="checkbox" checked /><span class="task-text">axios 인스턴스 초기 설정<br><span class="task-file">api/axios.ts — baseURL: /api/v1, Vite proxy(/api → localhost:8080) 설정</span></span></li>
+              <li class="task-item checked"><input type="checkbox" checked /><span class="task-text">TanStack Query QueryClient 설정<br><span class="task-file">main.tsx에 QueryClientProvider 적용</span></span></li>
+              <li class="task-item checked"><input type="checkbox" checked /><span class="task-text">React Router v6 기본 설정<br><span class="task-file">App.tsx — BrowserRouter, 기본 라우트</span></span></li>
+              <li class="task-item checked"><input type="checkbox" checked /><span class="task-text">.env.development 파일 생성<br><span class="task-file">VITE_API_URL, VITE_WS_URL, VITE_TOSS_CLIENT_KEY (gitignore 적용)</span></span></li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- TDD 셋업 -->
+        <div style="margin-top:20px;">
+          <div class="task-group-header" style="margin-bottom:10px;">
+            <span class="task-type-badge test-badge">🔴 TDD 셋업</span>
+            <span style="font-size:13px; color:var(--text-sub);">테스트 환경 구성 — 구현 전 먼저 실행</span>
+          </div>
+          <div class="task-grid">
+            <div class="task-group">
+              <ul class="task-list">
+                <li class="task-item checked" style="border-color:#FECACA; background:#FFF8F8;"><input type="checkbox" checked /><span class="task-text">테스트 의존성 추가 (build.gradle)<br><span class="task-file">testImplementation: H2, Testcontainers (mysql), spring-security-test</span></span></li>
+                <li class="task-item checked" style="border-color:#FECACA; background:#FFF8F8;"><input type="checkbox" checked /><span class="task-text">테스트 디렉토리 구조 생성<br><span class="task-file">src/test/java/com/mindfit/{auth,user,counselor,session,payment,chat,review}/</span></span></li>
+                <li class="task-item checked" style="border-color:#FECACA; background:#FFF8F8;"><input type="checkbox" checked /><span class="task-text">테스트용 application.yml 분리<br><span class="task-file">src/test/resources/application.yml — H2 인메모리 DB (MySQL MODE), spring.mail 자동설정 제외</span></span></li>
+              </ul>
+            </div>
+            <div class="task-group">
+              <ul class="task-list">
+                <li class="task-item checked" style="border-color:#FECACA; background:#FFF8F8;"><input type="checkbox" checked /><span class="task-text">Vitest + React Testing Library 설치<br><span class="task-file">npm install -D vitest @vitest/coverage-v8 @testing-library/react @testing-library/user-event @testing-library/jest-dom jsdom msw</span></span></li>
+                <li class="task-item checked" style="border-color:#FECACA; background:#FFF8F8;"><input type="checkbox" checked /><span class="task-text">Vitest 설정 파일<br><span class="task-file">vitest.config.ts — environment: 'jsdom', setupFiles: './src/test/setup.ts'</span></span></li>
+                <li class="task-item checked" style="border-color:#FECACA; background:#FFF8F8;"><input type="checkbox" checked /><span class="task-text">MSW 핸들러 초기 설정<br><span class="task-file">src/test/mocks/handlers.ts — /api/v1/health 핸들러 포함</span></span></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="dod-block">
+          <div class="dod-title">✅ 완료 기준 (Definition of Done) — 달성 완료</div>
+          <ul>
+            <li>✅ BE: <code>curl localhost:8080/api/v1/health</code> → 200 OK 응답</li>
+            <li>✅ FE: <code>localhost:5173</code>에서 Tailwind 스타일 적용된 빈 페이지 로드</li>
+            <li>✅ BE: <code>./gradlew test</code> → BUILD SUCCESSFUL (ApplicationContextTest PASS)</li>
+            <li>✅ FE: <code>npx vitest run</code> → 1 passed (setup.test.ts PASS)</li>
+            <li>✅ .gitignore — application-dev.yml, .env* 제외 확인</li>
+            <li>✅ 시크릿 관리: <code>backend/.env</code> + spring-dotenv, application-dev.yml 평문 값 없음</li>
+            <li>✅ CORS: localhost:5173 허용, Vite proxy(/api → localhost:8080) 설정</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Phase 1 — 인증 -->
+    <div class="phase-block">
+      <div class="phase-header" onclick="togglePhase('p1')" style="background:#EFF6FF;">
+        <div class="phase-header-left">
+          <div class="phase-number" style="background:#1D4ED8;">1</div>
+          <div class="phase-title-block">
+            <div class="phase-title" style="color:#1E3A8A;">Phase 1 — 인증 시스템 (JWT)</div>
+            <div class="phase-duration" style="color:#3B82F6;">완료 · BE (feat/p1-be-jwt-auth) · FE (feat/p1-fe-login-page) — PR 대기</div>
+          </div>
+        </div>
+        <div style="display:flex; gap:12px; align-items:center;">
+          <span class="phase-badge" style="background:#DCFCE7; color:#15803D;">✅ FE 완료</span>
+          <span class="phase-toggle" id="toggle-p1">▼</span>
+        </div>
+      </div>
+      <div class="phase-body" id="body-p1">
+        <div class="phase-goal">
+          <strong>이 Phase가 끝나면:</strong> 내담자/상담사/관리자가 역할을 선택해 회원가입하고, 로그인 시 JWT를 발급받으며, 역할별로 다른 화면으로 이동한다. Refresh Token 자동 갱신이 동작한다.
+        </div>
+        <div class="task-grid">
+          <div class="task-group">
+            <div class="task-group-header">
+              <span class="task-type-badge be-badge">Backend</span>
+            </div>
+            <ul class="task-list">
+              <li class="task-item checked"><input type="checkbox" checked /><span class="task-text">User 엔티티 + Role enum<br><span class="task-file">user/User.java — id, email, password, name, birthDate, role, emailVerified, refreshToken</span></span></li>
+              <li class="task-item checked"><input type="checkbox" checked /><span class="task-text">UserRepository (JPA)<br><span class="task-file">user/UserRepository.java — findByEmail, existsByEmail, findByEmailVerifyToken</span></span></li>
+              <li class="task-item checked"><input type="checkbox" checked /><span class="task-text">JWT Provider 구현<br><span class="task-file">auth/JwtTokenProvider.java — generateAccessToken, generateRefreshToken, validateToken, getUserIdFromToken, getRoleFromToken</span></span></li>
+              <li class="task-item checked"><input type="checkbox" checked /><span class="task-text">JWT 인증 필터<br><span class="task-file">auth/JwtAuthFilter.java — OncePerRequestFilter, Bearer 토큰 추출 및 SecurityContext 설정</span></span></li>
+              <li class="task-item checked"><input type="checkbox" checked /><span class="task-text">Spring Security 설정<br><span class="task-file">auth/SecurityConfig.java — /api/v1/auth/** permitAll, BCryptPasswordEncoder @Bean, CORS</span></span></li>
+              <li class="task-item checked"><input type="checkbox" checked /><span class="task-text">POST /api/v1/auth/signup — AuthService + DTO<br><span class="task-file">auth/AuthService.java · auth/AuthController.java · auth/dto/SignupRequest.java · TokenResponse.java</span></span></li>
+              <li class="task-item checked"><input type="checkbox" checked /><span class="task-text">POST /api/v1/auth/login<br><span class="task-file">— 이메일 조회 + BCrypt 비밀번호 검증 → Access Token(30분) + Refresh Token(7일) 발급</span></span></li>
+              <li class="task-item checked"><input type="checkbox" checked /><span class="task-text">POST /api/v1/auth/refresh<br><span class="task-file">— Refresh Token 검증 + 저장값 비교 후 새 Access Token 발급</span></span></li>
+              <li class="task-item checked"><input type="checkbox" checked /><span class="task-text">POST /api/v1/auth/logout<br><span class="task-file">— SecurityContext에서 userId 추출 → Refresh Token null 처리</span></span></li>
+              <li class="task-item"><input type="checkbox" /><span class="task-text">GET /api/v1/users/me<br><span class="task-file">— 현재 로그인 유저 정보 반환</span></span></li>
+              <li class="task-item checked"><input type="checkbox" checked /><span class="task-text">GlobalExceptionHandler 완성<br><span class="task-file">— BusinessException, MethodArgumentNotValidException, AccessDeniedException, 500 통일 처리</span></span></li>
+            </ul>
+          </div>
+          <div class="task-group">
+            <div class="task-group-header">
+              <span class="task-type-badge fe-badge">Frontend</span>
+            </div>
+            <ul class="task-list">
+              <li class="task-item checked"><input type="checkbox" checked /><span class="task-text">axios 인터셉터 설정<br><span class="task-file">api/axios.ts — Authorization 헤더 자동 주입, 401 시 refresh 토큰으로 재발급 (plainAxios로 순환 참조 방지)</span></span></li>
+              <li class="task-item checked"><input type="checkbox" checked /><span class="task-text">Zustand authStore 구현<br><span class="task-file">store/authStore.ts — accessToken, refreshToken, user(userId/role), setAuth, clearAuth, localStorage 자동 persist</span></span></li>
+              <li class="task-item checked"><input type="checkbox" checked /><span class="task-text">auth API 함수<br><span class="task-file">api/auth.ts — signup, login, logout, refresh (ApiResponse 래퍼 자동 unwrap)</span></span></li>
+              <li class="task-item checked"><input type="checkbox" checked /><span class="task-text">로그인 페이지<br><span class="task-file">pages/auth/LoginPage.tsx — React Hook Form + Zod 검증</span></span></li>
+              <li class="task-item checked"><input type="checkbox" checked /><span class="task-text">회원가입 페이지<br><span class="task-file">pages/auth/SignupPage.tsx — 역할 선택 라디오(내담자/상담사)</span></span></li>
+              <li class="task-item checked"><input type="checkbox" checked /><span class="task-text">PrivateRoute 컴포넌트<br><span class="task-file">components/PrivateRoute.tsx — 비인증 시 /login 리다이렉트 (Outlet 방식)</span></span></li>
+              <li class="task-item"><input type="checkbox" /><span class="task-text">역할별 레이아웃 분기<br><span class="task-file">— ClientLayout.tsx, CounselorLayout.tsx, AdminLayout.tsx (공통 GNB 포함)</span></span></li>
+              <li class="task-item checked"><input type="checkbox" checked /><span class="task-text">React Router 라우트 구성<br><span class="task-file">App.tsx — /login, /signup, / (PrivateRoute 보호) 구현됨</span></span></li>
+              <li class="task-item checked"><input type="checkbox" checked /><span class="task-text">Access Token localStorage 저장 + 앱 초기 로드 시 복원<br><span class="task-file">store/authStore.ts — 초기화 시 localStorage 자동 복원, isAuthenticated 계산</span></span></li>
+            </ul>
+          </div>
+        </div>
+        <!-- Phase 1 TDD -->
+        <div class="tdd-phase-note">
+          <strong>🔴 테스트 먼저 작성 — 아래 테스트가 Red(실패) 상태인 것을 확인한 후 구현 시작</strong>
+        </div>
+        <div class="task-grid" style="margin-bottom:20px;">
+          <div class="task-group">
+            <div class="task-group-header">
+              <span class="task-type-badge test-badge">BE 테스트</span>
+              <span style="font-size:12px; color:var(--text-muted);">JUnit 5 + Mockito + MockMvc</span>
+            </div>
+            <ul class="task-list">
+              <li class="test-item checked"><input type="checkbox" checked /><span class="task-text"><strong>JwtTokenProviderTest</strong> ✅ 5 케이스<br>generateAccessToken · generateRefreshToken → non-blank 토큰<br>validateToken (정상·변조·만료) → true/false<br>getUserIdFromToken · getRoleFromToken → 정확한 값 반환</span></li>
+              <li class="test-item checked"><input type="checkbox" checked /><span class="task-text"><strong>AuthServiceTest</strong> ✅ 10 케이스 (Mockito)<br>signup (신규·중복이메일) / login (성공·이메일없음·비번틀림)<br>refresh (유효·무효토큰·저장값불일치) / logout (유저있음·없음)</span></li>
+              <li class="test-item checked"><input type="checkbox" checked /><span class="task-text"><strong>AuthControllerTest</strong> ✅ 10 케이스 (@WebMvcTest)<br>signup 201·400·409 / login 200·401 / refresh 200·401<br>logout 200(인증) · 401(비인증)</span></li>
+              <li class="test-item checked"><input type="checkbox" checked /><span class="task-text"><strong>JwtAuthFilterTest</strong> ✅ 3 케이스 (@SpringBootTest)<br>유효 토큰 → 200 / 헤더없음 → permitAll 200 / 무효토큰 → 401</span></li>
+            </ul>
+          </div>
+          <div class="task-group">
+            <div class="task-group-header">
+              <span class="task-type-badge test-badge">FE 테스트</span>
+              <span style="font-size:12px; color:var(--text-muted);">Vitest + RTL + MSW</span>
+            </div>
+            <ul class="task-list">
+              <li class="test-item checked"><input type="checkbox" checked /><span class="task-text"><strong>authStore.test.ts</strong> ✅ 4 케이스<br>초기 상태 → isAuthenticated=false, null token/user<br>setAuth → token·user·localStorage 저장됨<br>clearAuth → 상태·localStorage 전체 초기화</span></li>
+              <li class="test-item checked"><input type="checkbox" checked /><span class="task-text"><strong>LoginPage.test.tsx</strong> ✅ 5 케이스<br>이메일·비밀번호 입력 후 제출 → login API 호출 + setAuth<br>잘못된 이메일 → Zod 검증 에러 표시 (API 미호출)<br>비밀번호 공란 → 에러 메시지 표시<br>회원가입 링크 렌더링 확인</span></li>
+              <li class="test-item checked"><input type="checkbox" checked /><span class="task-text"><strong>SignupPage.test.tsx</strong> ✅ 5 케이스<br>유효한 정보 제출 → signup API 호출 + setAuth<br>이메일 형식 오류·비밀번호 8자 미만 → 에러 메시지<br>로그인 링크 렌더링 확인</span></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="dod-block">
+          <div class="dod-title">완료 기준 — BE ✅ · FE 핵심 기능 ✅</div>
+          <ul>
+            <li>✅ BE: <code>./gradlew test</code> 전체 통과 — JwtTokenProviderTest·JwtAuthFilterTest·UserRepositoryTest·AuthServiceTest·AuthControllerTest (39개 통과)</li>
+            <li>✅ BE: signup / login / refresh / logout API 구현 완료 (feat/p1-be-jwt-auth)</li>
+            <li>✅ BE: Access Token(30분) + Refresh Token(7일) 발급 · DB 저장 · 무효화 동작</li>
+            <li>✅ FE: axios 인터셉터 + authStore + 로그인/회원가입 페이지 + PrivateRoute 구현 완료 (feat/p1-fe-login-page)</li>
+            <li>✅ FE: <code>npx vitest run</code> — 19 passed (auth·authStore·LoginPage·SignupPage·setup) · 커버리지 75%</li>
+            <li>⬜ FE: 역할별 레이아웃 분기 (ClientLayout/CounselorLayout/AdminLayout) 미구현 → P2에서 추가</li>
+            <li>⬜ BE: GET /api/v1/users/me 미구현 → P2에서 추가</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Phase 2 — 상담사 온보딩 -->
+    <div class="phase-block">
+      <div class="phase-header" onclick="togglePhase('p2')" style="background:#F5F3FF;">
+        <div class="phase-header-left">
+          <div class="phase-number" style="background:#7C3AED;">2</div>
+          <div class="phase-title-block">
+            <div class="phase-title" style="color:#4C1D95;">Phase 2 — 상담사 온보딩 &amp; 관리자 심사</div>
+            <div class="phase-duration" style="color:#8B5CF6;">예상 소요: 4일 · 산출: 상담사 자격 심사 전체 플로우</div>
+          </div>
+        </div>
+        <div style="display:flex; gap:12px; align-items:center;">
+          <span class="phase-badge" style="background:#EDE9FE; color:#7C3AED;">공급자 확보</span>
+          <span class="phase-toggle" id="toggle-p2">▼</span>
+        </div>
+      </div>
+      <div class="phase-body" id="body-p2">
+        <div class="phase-goal">
+          <strong>이 Phase가 끝나면:</strong> 상담사가 자격증 서류를 업로드하고, 관리자가 UI에서 서류를 열람해 승인/거절하면 상담사 프로필이 활성화된다. S3에 파일이 업로드된다.
+        </div>
+        <div class="task-grid">
+          <div class="task-group">
+            <div class="task-group-header">
+              <span class="task-type-badge be-badge">Backend</span>
+            </div>
+            <ul class="task-list">
+              <li class="task-item"><input type="checkbox" /><span class="task-text">CounselorProfile 엔티티<br><span class="task-file">counselor/CounselorProfile.java — userId(FK), bio, specialties, counselingStyle, pricePerSession, profileImageUrl, status(PENDING/APPROVED/REJECTED)</span></span></li>
+              <li class="task-item"><input type="checkbox" /><span class="task-text">CounselorCredential 엔티티<br><span class="task-file">counselor/CounselorCredential.java — counselorId, documentUrl, credentialType, reviewStatus, rejectReason</span></span></li>
+              <li class="task-item"><input type="checkbox" /><span class="task-text">S3Service 구현<br><span class="task-file">common/S3Service.java — uploadFile(MultipartFile), deleteFile, getPresignedUrl</span></span></li>
+              <li class="task-item"><input type="checkbox" /><span class="task-text">POST /api/v1/counselors/credentials<br><span class="task-file">— Multipart 파일 수신 → S3 업로드 → DB 저장</span></span></li>
+              <li class="task-item"><input type="checkbox" /><span class="task-text">GET /api/v1/counselors/me/profile<br><span class="task-file">— 내 프로필 조회</span></span></li>
+              <li class="task-item"><input type="checkbox" /><span class="task-text">PUT /api/v1/counselors/me/profile<br><span class="task-file">— 승인 상태일 때만 수정 가능</span></span></li>
+              <li class="task-item"><input type="checkbox" /><span class="task-text">GET /api/v1/admin/credentials?status=PENDING<br><span class="task-file">— ROLE_ADMIN만 접근 가능, 페이지네이션</span></span></li>
+              <li class="task-item"><input type="checkbox" /><span class="task-text">PATCH /api/v1/admin/credentials/{id}<br><span class="task-file">— approve/reject, 거절 시 rejectReason 저장</span></span></li>
+              <li class="task-item"><input type="checkbox" /><span class="task-text">이메일 알림 발송 (Spring Mail)<br><span class="task-file">— 승인/거절 결과를 상담사 이메일로 발송</span></span></li>
+            </ul>
+          </div>
+          <div class="task-group">
+            <div class="task-group-header">
+              <span class="task-type-badge fe-badge">Frontend</span>
+            </div>
+            <ul class="task-list">
+              <li class="task-item"><input type="checkbox" /><span class="task-text">자격증 업로드 폼<br><span class="task-file">pages/counselor/CredentialUploadPage.tsx — 파일 드래그앤드롭, 미리보기, 다중 파일</span></span></li>
+              <li class="task-item"><input type="checkbox" /><span class="task-text">심사 대기 화면<br><span class="task-file">pages/counselor/PendingApprovalPage.tsx — "최대 72시간 내 검토됩니다" 안내</span></span></li>
+              <li class="task-item"><input type="checkbox" /><span class="task-text">상담사 프로필 편집 페이지<br><span class="task-file">pages/counselor/ProfileEditPage.tsx — 소개, 전문분야 태그, 가격, 프로필 사진 업로드</span></span></li>
+              <li class="task-item"><input type="checkbox" /><span class="task-text">관리자 심사 대시보드<br><span class="task-file">pages/admin/CredentialReviewPage.tsx — PENDING 목록 테이블</span></span></li>
+              <li class="task-item"><input type="checkbox" /><span class="task-text">서류 뷰어 모달<br><span class="task-file">— PDF/이미지 미리보기, 승인 버튼, 거절+사유 입력</span></span></li>
+              <li class="task-item"><input type="checkbox" /><span class="task-text">counselorApi 함수<br><span class="task-file">api/counselorApi.ts — uploadCredential, getMyProfile, updateProfile</span></span></li>
+              <li class="task-item"><input type="checkbox" /><span class="task-text">adminApi 함수<br><span class="task-file">api/adminApi.ts — getCredentials, reviewCredential</span></span></li>
+            </ul>
+          </div>
+        </div>
+        <!-- Phase 2 TDD -->
+        <div class="tdd-phase-note">
+          <strong>🔴 테스트 먼저 작성 — 특히 상태 전이(PENDING→APPROVED) 로직의 경계값 테스트에 집중</strong>
+        </div>
+        <div class="task-grid" style="margin-bottom:20px;">
+          <div class="task-group">
+            <div class="task-group-header">
+              <span class="task-type-badge test-badge">BE 테스트</span>
+            </div>
+            <ul class="task-list">
+              <li class="test-item"><input type="checkbox" /><span class="task-text"><strong>CounselorServiceTest</strong><br>updateProfile_whenApproved_success → 프로필 저장<br>updateProfile_whenPending_throwsForbidden → PENDING 상태에서 수정 불가<br>updateProfile_whenRejected_throwsForbidden</span></li>
+              <li class="test-item"><input type="checkbox" /><span class="task-text"><strong>AdminServiceTest</strong><br>approveCredential → status APPROVED, 이메일 발송<br>rejectCredential_withReason → status REJECTED, rejectReason 저장<br>rejectCredential_emptyReason_throwsException → 사유 없이 거절 불가</span></li>
+              <li class="test-item"><input type="checkbox" /><span class="task-text"><strong>S3ServiceTest</strong> (S3Client Mock)<br>uploadFile_success → URL 반환<br>uploadFile_emptyFile_throwsException<br>uploadFile_invalidType_throwsException (허용: pdf, jpg, png만)</span></li>
+              <li class="test-item"><input type="checkbox" /><span class="task-text"><strong>CounselorControllerTest</strong> (@WebMvcTest)<br>POST /counselors/credentials (ROLE_COUNSELOR) → 200<br>POST /counselors/credentials (ROLE_CLIENT) → 403<br>GET /admin/credentials (ROLE_ADMIN) → 200<br>PATCH /admin/credentials/{id} (ROLE_COUNSELOR) → 403</span></li>
+            </ul>
+          </div>
+          <div class="task-group">
+            <div class="task-group-header">
+              <span class="task-type-badge test-badge">FE 테스트</span>
+            </div>
+            <ul class="task-list">
+              <li class="test-item"><input type="checkbox" /><span class="task-text"><strong>CredentialUploadPage.test.tsx</strong><br>파일 드롭 → 파일명 미리보기 표시<br>허용되지 않는 파일 타입 → 에러 메시지<br>업로드 버튼 클릭 → API 호출<br>업로드 성공 → 대기 화면으로 이동</span></li>
+              <li class="test-item"><input type="checkbox" /><span class="task-text"><strong>AdminReviewPage.test.tsx</strong><br>PENDING 목록 렌더링<br>승인 버튼 클릭 → approveCredential API 호출<br>거절 버튼 클릭 → 사유 입력 모달 표시<br>사유 없이 거절 시도 → 제출 불가</span></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="dod-block">
+          <div class="dod-title">✅ 완료 기준</div>
+          <ul>
+            <li>상담사 자격증 파일 업로드 → S3 저장 → DB 기록</li>
+            <li>관리자 대시보드에서 서류 열람 → 승인 → 상담사 프로필 활성화</li>
+            <li>거절 시 사유 포함 이메일 발송</li>
+            <li>모든 CounselorServiceTest, AdminServiceTest, S3ServiceTest 통과</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Phase 3 — 탐색·예약·문진표 -->
+    <div class="phase-block">
+      <div class="phase-header" onclick="togglePhase('p3')" style="background:#F0F9FF;">
+        <div class="phase-header-left">
+          <div class="phase-number" style="background:#0369A1;">3</div>
+          <div class="phase-title-block">
+            <div class="phase-title" style="color:#0C4A6E;">Phase 3 — 탐색 · 예약 · 문진표</div>
+            <div class="phase-duration" style="color:#0EA5E9;">예상 소요: 5일 · 핵심 사용자 여정</div>
+          </div>
+        </div>
+        <div style="display:flex; gap:12px; align-items:center;">
+          <span class="phase-badge" style="background:#E0F2FE; color:#0369A1;">핵심 플로우</span>
+          <span class="phase-toggle" id="toggle-p3">▼</span>
+        </div>
+      </div>
+      <div class="phase-body" id="body-p3">
+        <div class="phase-goal">
+          <strong>이 Phase가 끝나면:</strong> 내담자가 상담사를 필터로 탐색하고, 프로필을 보고, 원하는 날짜/시간을 선택해 예약하며, 문진표를 작성해 제출할 수 있다. (결제 전 단계까지)
+        </div>
+        <div class="task-grid">
+          <div class="task-group">
+            <div class="task-group-header">
+              <span class="task-type-badge be-badge">Backend</span>
+            </div>
+            <ul class="task-list">
+              <li class="task-item"><input type="checkbox" /><span class="task-text">CounselorAvailability 엔티티<br><span class="task-file">counselor/CounselorAvailability.java — dayOfWeek, startTime, endTime, isRecurring</span></span></li>
+              <li class="task-item"><input type="checkbox" /><span class="task-text">GET /api/v1/counselors<br><span class="task-file">— 목록+필터(specialty, priceMin/Max, availableDate), 페이지네이션</span></span></li>
+              <li class="task-item"><input type="checkbox" /><span class="task-text">GET /api/v1/counselors/{id}<br><span class="task-file">— 상세: 프로필 + 리뷰 요약(평점, 건수) + 가용 시간</span></span></li>
+              <li class="task-item"><input type="checkbox" /><span class="task-text">PUT /api/v1/counselors/me/availability<br><span class="task-file">— 상담사가 가용 시간표 저장</span></span></li>
+              <li class="task-item"><input type="checkbox" /><span class="task-text">GET /api/v1/counselors/{id}/availability?date=YYYY-MM-DD<br><span class="task-file">— 특정 날짜 예약 가능 슬롯 반환</span></span></li>
+              <li class="task-item"><input type="checkbox" /><span class="task-text">Session 엔티티<br><span class="task-file">session/Session.java — clientId, counselorId, scheduledAt, status(PENDING/CONFIRMED/COMPLETED/CANCELLED)</span></span></li>
+              <li class="task-item"><input type="checkbox" /><span class="task-text">POST /api/v1/sessions<br><span class="task-file">— 예약 생성, PENDING 상태, 중복 시간 충돌 체크</span></span></li>
+              <li class="task-item"><input type="checkbox" /><span class="task-text">Questionnaire 엔티티<br><span class="task-file">questionnaire/Questionnaire.java — sessionId, mainConcern, severity(1-5), duration, hasExperience, goal, isAccessible(default false)</span></span></li>
+              <li class="task-item"><input type="checkbox" /><span class="task-text">POST /api/v1/questionnaires<br><span class="task-file">— 세션 생성과 동시에 문진표 제출 (isAccessible=false)</span></span></li>
+              <li class="task-item"><input type="checkbox" /><span class="task-text">상담사 대시보드용 API<br><span class="task-file">— GET /api/v1/sessions?role=COUNSELOR (신규 예약 목록)</span></span></li>
+              <li class="task-item"><input type="checkbox" /><span class="task-text">가용 시간표 관리 페이지<br><span class="task-file">pages/counselor/AvailabilityPage.tsx — 요일별 시간 블록 선택 UI</span></span></li>
+            </ul>
+          </div>
+          <div class="task-group">
+            <div class="task-group-header">
+              <span class="task-type-badge fe-badge">Frontend</span>
+            </div>
+            <ul class="task-list">
+              <li class="task-item"><input type="checkbox" /><span class="task-text">홈 페이지 (상담사 탐색)<br><span class="task-file">pages/client/HomePage.tsx — 카드 그리드 + 검색바 + 필터 사이드바</span></span></li>
+              <li class="task-item"><input type="checkbox" /><span class="task-text">CounselorCard 컴포넌트<br><span class="task-file">components/CounselorCard.tsx — 사진, 이름, 전문분야 뱃지, 가격, 평점</span></span></li>
+              <li class="task-item"><input type="checkbox" /><span class="task-text">필터 컴포넌트<br><span class="task-file">components/FilterPanel.tsx — 전문분야 체크, 가격 슬라이더, 날짜 선택</span></span></li>
+              <li class="task-item"><input type="checkbox" /><span class="task-text">상담사 상세 페이지<br><span class="task-file">pages/client/CounselorDetailPage.tsx — 전체 프로필, 가용 시간 캘린더, 리뷰 목록</span></span></li>
+              <li class="task-item"><input type="checkbox" /><span class="task-text">날짜/시간 선택 UI<br><span class="task-file">— TanStack Query로 가용 슬롯 fetch → 달력 + 시간 버튼</span></span></li>
+              <li class="task-item"><input type="checkbox" /><span class="task-text">문진표 작성 폼<br><span class="task-file">pages/client/QuestionnairePage.tsx — React Hook Form + Zod: 주 호소, 심각도 슬라이더, 기간, 경험, 목표</span></span></li>
+              <li class="task-item"><input type="checkbox" /><span class="task-text">예약 확인 화면<br><span class="task-file">pages/client/BookingConfirmPage.tsx — 상담사/일정/금액 요약 + 결제 버튼</span></span></li>
+              <li class="task-item"><input type="checkbox" /><span class="task-text">counselorApi 함수 추가<br><span class="task-file">getCounselors, getCounselorById, getAvailability, setAvailability</span></span></li>
+              <li class="task-item"><input type="checkbox" /><span class="task-text">sessionApi 함수<br><span class="task-file">api/sessionApi.ts — createSession, getSessions, submitQuestionnaire</span></span></li>
+            </ul>
+          </div>
+        </div>
+        <!-- Phase 3 TDD -->
+        <div class="tdd-phase-note">
+          <strong>🔴 테스트 먼저 작성 — 예약 시간 중복 체크와 문진표 접근 제어 로직에 특히 집중</strong>
+        </div>
+        <div class="task-grid" style="margin-bottom:20px;">
+          <div class="task-group">
+            <div class="task-group-header">
+              <span class="task-type-badge test-badge">BE 테스트</span>
+            </div>
+            <ul class="task-list">
+              <li class="test-item"><input type="checkbox" /><span class="task-text"><strong>SessionServiceTest</strong><br>createSession_success → Session DB 저장, PENDING 상태<br>createSession_timeConflict_throwsDuplicateException → 같은 시간대 예약 이미 존재<br>createSession_unapprovedCounselor_throwsException → PENDING 상담사 예약 불가<br>createSession_pastTime_throwsException → 과거 시간 예약 불가</span></li>
+              <li class="test-item"><input type="checkbox" /><span class="task-text"><strong>CounselorSearchTest</strong> (@DataJpaTest)<br>findAll_withSpecialtyFilter → specialty 일치 결과만 반환<br>findAll_withPriceRange → 가격 범위 내 결과만 반환<br>findAll_noFilter → 전체 APPROVED 상담사 반환<br>findById_notFound_throwsException</span></li>
+              <li class="test-item"><input type="checkbox" /><span class="task-text"><strong>QuestionnaireServiceTest</strong><br>submitQuestionnaire_success → isAccessible=false로 저장<br>getQuestionnaire_accessible_success → 열람 성공<br>getQuestionnaire_notAccessible_throwsForbidden → 결제 전 열람 시도<br>getQuestionnaire_wrongCounselor_throwsForbidden → 타 상담사 접근</span></li>
+            </ul>
+          </div>
+          <div class="task-group">
+            <div class="task-group-header">
+              <span class="task-type-badge test-badge">FE 테스트</span>
+            </div>
+            <ul class="task-list">
+              <li class="test-item"><input type="checkbox" /><span class="task-text"><strong>CounselorCard.test.tsx</strong><br>이름, 전문분야 뱃지, 가격, 평점 올바르게 렌더링<br>클릭 → 상세 페이지 이동</span></li>
+              <li class="test-item"><input type="checkbox" /><span class="task-text"><strong>QuestionnairePage.test.tsx</strong><br>주호소 내용 비어있을 때 → 제출 불가<br>심각도 1-5 범위 외 값 → Zod 검증 에러<br>모든 필드 채운 후 submit → API 호출<br>제출 성공 → 예약 확인 화면으로 이동</span></li>
+              <li class="test-item"><input type="checkbox" /><span class="task-text"><strong>FilterPanel.test.tsx</strong><br>전문분야 선택 → 쿼리 파라미터에 반영<br>가격 슬라이더 변경 → priceMin/Max 업데이트<br>필터 초기화 버튼 → 모든 필터 리셋</span></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="dod-block">
+          <div class="dod-title">✅ 완료 기준</div>
+          <ul>
+            <li>내담자가 상담사 목록을 전문분야/가격으로 필터링할 수 있다</li>
+            <li>날짜/시간 선택 → 문진표 작성 → 예약 확인 화면까지 이동 가능</li>
+            <li>예약 생성 API 호출 성공 → Session DB 저장</li>
+            <li>SessionServiceTest 중 시간 중복 테스트 포함 전체 통과</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Phase 4 — 결제 -->
+    <div class="phase-block">
+      <div class="phase-header" onclick="togglePhase('p4')" style="background:#FFF7ED;">
+        <div class="phase-header-left">
+          <div class="phase-number" style="background:#C2410C;">4</div>
+          <div class="phase-title-block">
+            <div class="phase-title" style="color:#7C2D12;">Phase 4 — 결제 (토스페이먼츠 Webhook)</div>
+            <div class="phase-duration" style="color:#EA580C;">예상 소요: 3일 · 결제 완료가 문진표 열람과 채팅방의 트리거</div>
+          </div>
+        </div>
+        <div style="display:flex; gap:12px; align-items:center;">
+          <span class="phase-badge" style="background:#FED7AA; color:#C2410C;">수익 핵심</span>
+          <span class="phase-toggle" id="toggle-p4">▼</span>
+        </div>
+      </div>
+      <div class="phase-body" id="body-p4">
+        <div class="phase-goal">
+          <strong>이 Phase가 끝나면:</strong> 내담자가 토스페이먼츠로 결제를 완료하면, Webhook으로 서버가 확인하고 자동으로 ① 채팅방 생성 ② 상담사의 문진표 열람 권한 부여가 이루어진다.
+        </div>
+        <div class="task-grid">
+          <div class="task-group">
+            <div class="task-group-header">
+              <span class="task-type-badge be-badge">Backend</span>
+            </div>
+            <ul class="task-list">
+              <li class="task-item"><input type="checkbox" /><span class="task-text">Payment 엔티티<br><span class="task-file">payment/Payment.java — sessionId, amount, status(PENDING/COMPLETED/REFUNDED), tossPaymentKey, tossOrderId</span></span></li>
+              <li class="task-item"><input type="checkbox" /><span class="task-text">POST /api/v1/payments/initialize<br><span class="task-file">— 결제 초기화 (orderId 생성, Payment 레코드 PENDING 상태로 저장)</span></span></li>
+              <li class="task-item"><input type="checkbox" /><span class="task-text">POST /api/v1/payments/confirm<br><span class="task-file">— 클라이언트에서 받은 paymentKey로 토스 서버 승인 API 호출</span></span></li>
+              <li class="task-item"><input type="checkbox" /><span class="task-text">POST /api/v1/payments/webhook<br><span class="task-file">— 토스 Webhook 수신: 서명 검증 → 결제 완료 처리</span></span></li>
+              <li class="task-item"><input type="checkbox" /><span class="task-text">Webhook 후처리 로직<br><span class="task-file">payment/PaymentWebhookHandler.java</span></span></li>
+              <li class="task-item"><input type="checkbox" /><span class="task-text" style="color:#C2410C; font-weight:600;">① session.status = CONFIRMED</span></li>
+              <li class="task-item"><input type="checkbox" /><span class="task-text" style="color:#C2410C; font-weight:600;">② ChatRoom 자동 생성 (clientId + counselorId + sessionId)</span></li>
+              <li class="task-item"><input type="checkbox" /><span class="task-text" style="color:#C2410C; font-weight:600;">③ questionnaire.isAccessible = true (상담사 열람 권한 부여)</span></li>
+              <li class="task-item"><input type="checkbox" /><span class="task-text">GET /api/v1/questionnaires/{sessionId}<br><span class="task-file">— ROLE_COUNSELOR + isAccessible=true + 해당 세션 상담사 본인만 접근</span></span></li>
+              <li class="task-item"><input type="checkbox" /><span class="task-text">환불 API: POST /api/v1/payments/{id}/refund<br><span class="task-file">— 24h 전: 전액, 미만: 50% 규칙 적용</span></span></li>
+            </ul>
+          </div>
+          <div class="task-group">
+            <div class="task-group-header">
+              <span class="task-type-badge fe-badge">Frontend</span>
+            </div>
+            <ul class="task-list">
+              <li class="task-item"><input type="checkbox" /><span class="task-text">토스페이먼츠 패키지 설치<br><span class="task-file">npm install @tosspayments/payment-widget-sdk</span></span></li>
+              <li class="task-item"><input type="checkbox" /><span class="task-text">결제 위젯 페이지<br><span class="task-file">pages/client/PaymentPage.tsx — PaymentWidget 렌더링, 금액/주문명 표시</span></span></li>
+              <li class="task-item"><input type="checkbox" /><span class="task-text">결제 성공 처리<br><span class="task-file">pages/client/PaymentSuccessPage.tsx — /payment/success?paymentKey=...&orderId=... 수신 → 서버 confirm 호출</span></span></li>
+              <li class="task-item"><input type="checkbox" /><span class="task-text">결제 실패 처리<br><span class="task-file">pages/client/PaymentFailPage.tsx — 에러 메시지 + 재시도 버튼</span></span></li>
+              <li class="task-item"><input type="checkbox" /><span class="task-text">결제 완료 화면<br><span class="task-file">— "채팅방이 열렸습니다" + 채팅방 이동 버튼</span></span></li>
+              <li class="task-item"><input type="checkbox" /><span class="task-text">취소 정책 안내 UI<br><span class="task-file">— 예약 확인 페이지에 "24시간 전 전액 환불" 안내 추가</span></span></li>
+              <li class="task-item"><input type="checkbox" /><span class="task-text">paymentApi 함수<br><span class="task-file">api/paymentApi.ts — initializePayment, confirmPayment</span></span></li>
+              <li class="task-item"><input type="checkbox" /><span class="task-text">문진표 열람 페이지 (상담사용)<br><span class="task-file">pages/counselor/QuestionnairePage.tsx — 결제 완료 후 접근 가능</span></span></li>
+            </ul>
+          </div>
+        </div>
+        <!-- Phase 4 TDD -->
+        <div class="tdd-phase-note">
+          <strong>🔴 테스트 먼저 작성 — Webhook 후처리(3가지 사이드 이펙트)는 TDD로 검증이 특히 중요</strong>
+        </div>
+        <div class="task-grid" style="margin-bottom:20px;">
+          <div class="task-group">
+            <div class="task-group-header">
+              <span class="task-type-badge test-badge">BE 테스트</span>
+            </div>
+            <ul class="task-list">
+              <li class="test-item"><input type="checkbox" /><span class="task-text"><strong>PaymentWebhookHandlerTest</strong> (핵심!)<br>processPaymentComplete_success →<br>&nbsp;&nbsp;① session.status = CONFIRMED<br>&nbsp;&nbsp;② ChatRoom 생성됨<br>&nbsp;&nbsp;③ questionnaire.isAccessible = true<br>processPaymentComplete_alreadyCompleted → 멱등성(중복 처리 방지)<br>processPaymentFailed → payment.status = FAILED, session CANCELLED</span></li>
+              <li class="test-item"><input type="checkbox" /><span class="task-text"><strong>PaymentServiceTest</strong><br>initializePayment_success → orderId 생성, PENDING 저장<br>confirmPayment_success → 토스 API 호출 (Mock), COMPLETED<br>confirmPayment_alreadyPaid → 중복 처리 방지</span></li>
+              <li class="test-item"><input type="checkbox" /><span class="task-text"><strong>QuestionnaireControllerTest</strong> (결제 연동)<br>GET /questionnaires/{sessionId} (isAccessible=false) → 403<br>GET /questionnaires/{sessionId} (isAccessible=true, 올바른 상담사) → 200<br>GET /questionnaires/{sessionId} (다른 상담사) → 403<br>GET /questionnaires/{sessionId} (ROLE_CLIENT) → 403</span></li>
+            </ul>
+          </div>
+          <div class="task-group">
+            <div class="task-group-header">
+              <span class="task-type-badge test-badge">FE 테스트</span>
+            </div>
+            <ul class="task-list">
+              <li class="test-item"><input type="checkbox" /><span class="task-text"><strong>PaymentSuccessPage.test.tsx</strong><br>페이지 로드 시 confirmPayment API 호출<br>성공 → "채팅방이 열렸습니다" 메시지 표시<br>성공 → 채팅방 이동 버튼 활성화<br>실패 → 에러 메시지 + 재시도 버튼</span></li>
+              <li class="test-item"><input type="checkbox" /><span class="task-text"><strong>환불 계산 유틸 테스트</strong><br><span class="task-file">utils/refundCalculator.test.ts</span><br>24시간 이상 남음 → 100% 환불<br>24시간 미만 남음 → 50% 환불<br>세션 시작 후 → 0% 환불</span></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="dod-block">
+          <div class="dod-title">✅ 완료 기준</div>
+          <ul>
+            <li>테스트 모드에서 결제 완료 시 Webhook 수신 → session CONFIRMED</li>
+            <li>채팅방 자동 생성 확인 (DB chat_rooms 레코드 생성)</li>
+            <li>상담사가 문진표 API 호출 성공 (isAccessible=true인 경우만)</li>
+            <li>PaymentWebhookHandlerTest — 3개 사이드이펙트 + 멱등성 테스트 통과</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Phase 5 — 채팅 -->
+    <div class="phase-block">
+      <div class="phase-header" onclick="togglePhase('p5')" style="background:#F0FDF4;">
+        <div class="phase-header-left">
+          <div class="phase-number" style="background:#15803D;">5</div>
+          <div class="phase-title-block">
+            <div class="phase-title" style="color:#14532D;">Phase 5 — 실시간 채팅 (WebSocket STOMP)</div>
+            <div class="phase-duration" style="color:#16A34A;">예상 소요: 4일 · MindFit의 핵심 차별점</div>
+          </div>
+        </div>
+        <div style="display:flex; gap:12px; align-items:center;">
+          <span class="phase-badge" style="background:#DCFCE7; color:#15803D;">핵심 기능</span>
+          <span class="phase-toggle" id="toggle-p5">▼</span>
+        </div>
+      </div>
+      <div class="phase-body" id="body-p5">
+        <div class="phase-goal">
+          <strong>이 Phase가 끝나면:</strong> 결제 완료 후 내담자와 상담사가 실시간으로 채팅할 수 있으며, 이전 메시지 이력을 불러올 수 있다. 줄 링크를 채팅으로 공유 가능하다.
+        </div>
+        <div class="task-grid">
+          <div class="task-group">
+            <div class="task-group-header">
+              <span class="task-type-badge be-badge">Backend</span>
+            </div>
+            <ul class="task-list">
+              <li class="task-item"><input type="checkbox" /><span class="task-text">WebSocket 설정<br><span class="task-file">chat/WebSocketConfig.java — /ws 엔드포인트, SockJS fallback, STOMP 브로커</span></span></li>
+              <li class="task-item"><input type="checkbox" /><span class="task-text">STOMP 인증 인터셉터<br><span class="task-file">chat/StompChannelInterceptor.java — CONNECT 시 Authorization 헤더에서 JWT 검증</span></span></li>
+              <li class="task-item"><input type="checkbox" /><span class="task-text">ChatRoom 엔티티<br><span class="task-file">chat/ChatRoom.java — sessionId, clientId, counselorId, createdAt</span></span></li>
+              <li class="task-item"><input type="checkbox" /><span class="task-text">Message 엔티티<br><span class="task-file">chat/Message.java — roomId, senderId, content, messageType(TEXT/IMAGE/LINK), createdAt</span></span></li>
+              <li class="task-item"><input type="checkbox" /><span class="task-text">메시지 수신 핸들러<br><span class="task-file">@MessageMapping("/chat/{roomId}/send") → DB 저장 → /topic/chat/{roomId}로 브로드캐스트</span></span></li>
+              <li class="task-item"><input type="checkbox" /><span class="task-text">GET /api/v1/chat-rooms<br><span class="task-file">— 내 채팅방 목록 (최근 메시지, 읽지 않은 메시지 수)</span></span></li>
+              <li class="task-item"><input type="checkbox" /><span class="task-text">GET /api/v1/chat-rooms/{id}/messages<br><span class="task-file">— 이력 조회, page&size 파라미터, 최신순</span></span></li>
+              <li class="task-item"><input type="checkbox" /><span class="task-text">채팅방 참여자 검증<br><span class="task-file">— 구독/전송 시 해당 채팅방의 clientId 또는 counselorId인지 검증</span></span></li>
+            </ul>
+          </div>
+          <div class="task-group">
+            <div class="task-group-header">
+              <span class="task-type-badge fe-badge">Frontend</span>
+            </div>
+            <ul class="task-list">
+              <li class="task-item"><input type="checkbox" /><span class="task-text">useWebSocket 커스텀 훅<br><span class="task-file">hooks/useWebSocket.ts — SockJS + STOMP 연결, 구독, 메시지 전송, 재연결 로직</span></span></li>
+              <li class="task-item"><input type="checkbox" /><span class="task-text">채팅 목록 페이지<br><span class="task-file">pages/chat/ChatListPage.tsx — 채팅방 카드: 상대방 이름, 마지막 메시지, 시간, 읽지 않은 뱃지</span></span></li>
+              <li class="task-item"><input type="checkbox" /><span class="task-text">채팅방 페이지<br><span class="task-file">pages/chat/ChatRoomPage.tsx — 메시지 버블, 날짜 구분선, 본인/상대 방향 구분</span></span></li>
+              <li class="task-item"><input type="checkbox" /><span class="task-text">메시지 입력창<br><span class="task-file">— 텍스트 입력, Enter 전송, Shift+Enter 줄바꿈, 전송 버튼</span></span></li>
+              <li class="task-item"><input type="checkbox" /><span class="task-text">이전 메시지 무한 스크롤<br><span class="task-file">— useInfiniteQuery, 스크롤 최상단 도달 시 이전 페이지 로드</span></span></li>
+              <li class="task-item"><input type="checkbox" /><span class="task-text">링크 타입 메시지 렌더링<br><span class="task-file">— URL 감지 시 클릭 가능한 링크로 표시 (줌 링크 공유 지원)</span></span></li>
+              <li class="task-item"><input type="checkbox" /><span class="task-text">읽지 않은 메시지 뱃지<br><span class="task-file">— GNB 또는 채팅 목록에 숫자 뱃지</span></span></li>
+              <li class="task-item"><input type="checkbox" /><span class="task-text">chatApi 함수<br><span class="task-file">api/chatApi.ts — getChatRooms, getMessages</span></span></li>
+            </ul>
+          </div>
+        </div>
+        <!-- Phase 5 TDD -->
+        <div class="tdd-phase-note">
+          <strong>🔴 테스트 먼저 작성 — 채팅방 접근 권한과 메시지 저장 로직 우선. WebSocket 통합 테스트는 @SpringBootTest 사용</strong>
+        </div>
+        <div class="task-grid" style="margin-bottom:20px;">
+          <div class="task-group">
+            <div class="task-group-header">
+              <span class="task-type-badge test-badge">BE 테스트</span>
+            </div>
+            <ul class="task-list">
+              <li class="test-item"><input type="checkbox" /><span class="task-text"><strong>MessageServiceTest</strong><br>saveMessage_success → Message DB 저장, 내용/발신자 확인<br>saveMessage_emptyContent_throwsException<br>getMessages_paginated → 최신순, pageSize 준수<br>getMessages_emptyRoom → 빈 리스트 반환</span></li>
+              <li class="test-item"><input type="checkbox" /><span class="task-text"><strong>ChatAuthorizationTest</strong> (핵심 보안!)<br>subscribe_asParticipant_success → 구독 허용<br>subscribe_asNonParticipant_throwsAccessDeniedException<br>sendMessage_asParticipant_success<br>sendMessage_asNonParticipant_throwsAccessDeniedException</span></li>
+              <li class="test-item"><input type="checkbox" /><span class="task-text"><strong>ChatRoomServiceTest</strong><br>getChatRooms_returnOnlyMyRooms → 내 채팅방만 반환<br>getChatRoom_byId_notParticipant_throwsForbidden<br>getChatRoomBySessionId_success</span></li>
+              <li class="test-item"><input type="checkbox" /><span class="task-text"><strong>WebSocket 통합 테스트</strong> (@SpringBootTest)<br>STOMP CONNECT with valid JWT → 연결 성공<br>STOMP CONNECT with invalid JWT → 연결 거부<br>메시지 전송 → /topic/chat/{roomId} 구독자 수신 확인</span></li>
+            </ul>
+          </div>
+          <div class="task-group">
+            <div class="task-group-header">
+              <span class="task-type-badge test-badge">FE 테스트</span>
+            </div>
+            <ul class="task-list">
+              <li class="test-item"><input type="checkbox" /><span class="task-text"><strong>useWebSocket.test.ts</strong><br>connect → SockJS/STOMP 연결 호출<br>disconnect → 연결 해제<br>onMessage → 수신 메시지 콜백 호출<br>sendMessage → STOMP publish 호출<br>네트워크 오류 → 재연결 시도</span></li>
+              <li class="test-item"><input type="checkbox" /><span class="task-text"><strong>ChatRoomPage.test.tsx</strong><br>메시지 목록 렌더링 (본인 메시지 우측, 상대 메시지 좌측)<br>Enter 키 → 메시지 전송<br>Shift+Enter → 줄바꿈<br>새 메시지 수신 → 자동 스크롤 하단<br>URL 텍스트 → 클릭 가능한 링크로 렌더링</span></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="dod-block">
+          <div class="dod-title">✅ 완료 기준</div>
+          <ul>
+            <li>두 브라우저 탭(내담자/상담사)을 열어 실시간 메시지 송수신 확인</li>
+            <li>페이지 새로고침 후 이전 메시지 이력 복원</li>
+            <li>채팅방 입장이 허용된 참여자만 메시지를 볼 수 있음 (보안)</li>
+            <li>ChatAuthorizationTest — 비참여자 접근 차단 테스트 통과</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Phase 6 — 리뷰·마무리 -->
+    <div class="phase-block">
+      <div class="phase-header" onclick="togglePhase('p6')" style="background:#FDF2F8;">
+        <div class="phase-header-left">
+          <div class="phase-number" style="background:#BE185D;">6</div>
+          <div class="phase-title-block">
+            <div class="phase-title" style="color:#831843;">Phase 6 — 리뷰 · 정산 · 마무리</div>
+            <div class="phase-duration" style="color:#EC4899;">예상 소요: 3일 · MVP 완성</div>
+          </div>
+        </div>
+        <div style="display:flex; gap:12px; align-items:center;">
+          <span class="phase-badge" style="background:#FCE7F3; color:#BE185D;">마무리</span>
+          <span class="phase-toggle" id="toggle-p6">▼</span>
+        </div>
+      </div>
+      <div class="phase-body" id="body-p6">
+        <div class="phase-goal">
+          <strong>이 Phase가 끝나면:</strong> 상담 완료 후 내담자가 익명 옵션으로 리뷰를 작성하고, 상담사가 정산 내역을 확인할 수 있다. 취소/환불 플로우가 완성된다.
+        </div>
+        <div class="task-grid">
+          <div class="task-group">
+            <div class="task-group-header">
+              <span class="task-type-badge be-badge">Backend</span>
+            </div>
+            <ul class="task-list">
+              <li class="task-item"><input type="checkbox" /><span class="task-text">Review 엔티티<br><span class="task-file">review/Review.java — sessionId, clientId, counselorId, rating(1-5), content, isAnonymous</span></span></li>
+              <li class="task-item"><input type="checkbox" /><span class="task-text">POST /api/v1/reviews<br><span class="task-file">— session.status = COMPLETED인 경우만, 1세션 1리뷰 제한</span></span></li>
+              <li class="task-item"><input type="checkbox" /><span class="task-text">GET /api/v1/reviews?counselorId={id}<br><span class="task-file">— 상담사 프로필에 노출, isAnonymous면 작성자명 숨김</span></span></li>
+              <li class="task-item"><input type="checkbox" /><span class="task-text">PATCH /api/v1/sessions/{id}/status<br><span class="task-file">— 상담사가 COMPLETED 처리</span></span></li>
+              <li class="task-item"><input type="checkbox" /><span class="task-text">GET /api/v1/counselors/me/earnings<br><span class="task-file">— 월별 세션 수, 총 금액, 수수료(20%) 공제 후 정산액</span></span></li>
+              <li class="task-item"><input type="checkbox" /><span class="task-text">POST /api/v1/sessions/{id}/cancel<br><span class="task-file">— 내담자 취소, 24h 기준 환불 금액 계산 → 토스 환불 API 호출</span></span></li>
+            </ul>
+          </div>
+          <div class="task-group">
+            <div class="task-group-header">
+              <span class="task-type-badge fe-badge">Frontend</span>
+            </div>
+            <ul class="task-list">
+              <li class="task-item"><input type="checkbox" /><span class="task-text">리뷰 작성 모달<br><span class="task-file">components/ReviewModal.tsx — 별점(1-5), 텍스트, 익명 토글</span></span></li>
+              <li class="task-item"><input type="checkbox" /><span class="task-text">세션 이력 페이지 (내담자)<br><span class="task-file">pages/client/SessionHistoryPage.tsx — 날짜, 상담사명, 상태 뱃지</span></span></li>
+              <li class="task-item"><input type="checkbox" /><span class="task-text">정산 내역 페이지 (상담사)<br><span class="task-file">pages/counselor/EarningsPage.tsx — 월별 수익 요약, 세션 목록</span></span></li>
+              <li class="task-item"><input type="checkbox" /><span class="task-text">마이페이지 (내담자)<br><span class="task-file">pages/client/MyPage.tsx — 예약 이력, 작성한 리뷰, 계정 설정</span></span></li>
+              <li class="task-item"><input type="checkbox" /><span class="task-text">상담사 대시보드 완성<br><span class="task-file">pages/counselor/DashboardPage.tsx — 신규 예약, 오늘 일정, 최근 채팅 요약</span></span></li>
+              <li class="task-item"><input type="checkbox" /><span class="task-text">취소/환불 UI<br><span class="task-file">— 세션 카드에 취소 버튼, 환불 예상액 표시</span></span></li>
+              <li class="task-item"><input type="checkbox" /><span class="task-text">reviewApi 함수<br><span class="task-file">api/reviewApi.ts — createReview, getReviews</span></span></li>
+            </ul>
+          </div>
+        </div>
+        <!-- Phase 6 TDD -->
+        <div class="tdd-phase-note">
+          <strong>🔴 테스트 먼저 작성 — 수수료 계산 로직과 리뷰 중복 방지는 단위 테스트로 꼼꼼히 검증</strong>
+        </div>
+        <div class="task-grid" style="margin-bottom:20px;">
+          <div class="task-group">
+            <div class="task-group-header">
+              <span class="task-type-badge test-badge">BE 테스트</span>
+            </div>
+            <ul class="task-list">
+              <li class="test-item"><input type="checkbox" /><span class="task-text"><strong>ReviewServiceTest</strong><br>createReview_completedSession_success → 리뷰 저장<br>createReview_notCompletedSession_throwsException → PENDING/CONFIRMED 세션<br>createReview_duplicateReview_throwsException → 동일 세션 두 번째 리뷰<br>createReview_anonymous_success → isAnonymous=true 저장<br>getReviews_anonymous_hideAuthorName → isAnonymous면 작성자 null</span></li>
+              <li class="test-item"><input type="checkbox" /><span class="task-text"><strong>EarningsServiceTest</strong><br>calculateEarnings_success → 수수료 20% 공제 정확성<br>calculateEarnings_60000won → 정산액 48,000원<br>calculateMonthlyEarnings → 월별 집계 정확성<br>calculateEarnings_noSessions → 0원 반환</span></li>
+              <li class="test-item"><input type="checkbox" /><span class="task-text"><strong>CancelServiceTest</strong><br>cancel_24hBefore_fullRefund → 100% 환불<br>cancel_within24h_halfRefund → 50% 환불<br>cancel_afterSession_noRefund → 0% 환불<br>cancel_confirmedSession → Session CANCELLED 상태</span></li>
+            </ul>
+          </div>
+          <div class="task-group">
+            <div class="task-group-header">
+              <span class="task-type-badge test-badge">FE 테스트</span>
+            </div>
+            <ul class="task-list">
+              <li class="test-item"><input type="checkbox" /><span class="task-text"><strong>ReviewModal.test.tsx</strong><br>별점 1-5 클릭 → 선택 상태 반영<br>텍스트 없이 submit → 제출 불가<br>익명 토글 ON → API body에 isAnonymous: true<br>제출 성공 → 모달 닫힘</span></li>
+              <li class="test-item"><input type="checkbox" /><span class="task-text"><strong>EarningsPage.test.tsx</strong><br>세션 목록 렌더링<br>금액에 20% 수수료 공제 후 금액 표시<br>월별 필터 변경 → 해당 월 데이터 로드</span></li>
+              <li class="test-item"><input type="checkbox" /><span class="task-text"><strong>SessionHistoryPage.test.tsx</strong><br>세션 카드 상태별 뱃지 (PENDING/CONFIRMED/COMPLETED)<br>COMPLETED 세션 → 리뷰 작성 버튼 표시<br>이미 리뷰 작성한 세션 → 리뷰 보기 버튼</span></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="dod-block">
+          <div class="dod-title">✅ 완료 기준</div>
+          <ul>
+            <li>상담 완료 → 내담자 리뷰 작성 → 상담사 프로필에 노출</li>
+            <li>익명 리뷰 시 작성자 이름 표시 안 됨</li>
+            <li>상담사 정산 내역에서 20% 수수료 공제 후 금액 확인</li>
+            <li>EarningsServiceTest — 수수료 계산 단위 테스트 통과</li>
+            <li>ReviewServiceTest — 중복 리뷰 방지, 미완료 세션 리뷰 불가 테스트 통과</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ Git 워크플로우 ══ -->
+  <section>
+    <div class="section-label">Git 브랜치 전략</div>
+    <div class="card-grid col-2">
+      <div class="card">
+        <h3 style="margin-bottom:16px">브랜치 구조</h3>
+        <div class="git-flow">
+          <div class="git-branch">
+            <div class="git-line" style="background:#F59E0B;"></div>
+            <span class="git-branch-name">main</span>
+            <span class="git-branch-desc">배포 가능 상태만. 직접 push 금지.</span>
+          </div>
+          <div class="git-branch">
+            <div class="git-line" style="background:#8B5CF6;"></div>
+            <span class="git-branch-name">develop</span>
+            <span class="git-branch-desc">통합 브랜치. PR → develop → main.</span>
+          </div>
+          <div class="git-branch">
+            <div class="git-line" style="background:#3B82F6;"></div>
+            <span class="git-branch-name">feat/p1-be-jwt-auth</span>
+            <span class="git-branch-desc">Backend 기능 — feat/p{n}-be-{name}</span>
+          </div>
+          <div class="git-branch">
+            <div class="git-line" style="background:#10B981;"></div>
+            <span class="git-branch-name">feat/p1-fe-login-page</span>
+            <span class="git-branch-desc">Frontend 기능 — feat/p{n}-fe-{name}</span>
+          </div>
+          <div class="git-branch">
+            <div class="git-line" style="background:#EF4444;"></div>
+            <span class="git-branch-name">fix/be-cors-config</span>
+            <span class="git-branch-desc">버그 수정 — fix/{scope}-{name}</span>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <h3 style="margin-bottom:16px">커밋 컨벤션</h3>
+        <table class="commit-table">
+          <thead>
+            <tr><th>태그</th><th>용도</th><th>예시</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="commit-tag" style="background:#DBEAFE; color:#1D4ED8;">feat(be)</span></td>
+              <td>BE 새 기능</td>
+              <td style="font-family:monospace; font-size:12px;">feat(be): 로그인 API 구현</td>
+            </tr>
+            <tr>
+              <td><span class="commit-tag" style="background:#DBEAFE; color:#1D4ED8;">feat(fe)</span></td>
+              <td>FE 새 기능</td>
+              <td style="font-family:monospace; font-size:12px;">feat(fe): 로그인 페이지 구현</td>
+            </tr>
+            <tr>
+              <td><span class="commit-tag" style="background:#FEE2E2; color:#DC2626;">fix(be)</span></td>
+              <td>버그 수정</td>
+              <td style="font-family:monospace; font-size:12px;">fix(be): JWT 만료 처리 오류</td>
+            </tr>
+            <tr>
+              <td><span class="commit-tag" style="background:#F3F4F6; color:#374151;">chore</span></td>
+              <td>설정, 의존성</td>
+              <td style="font-family:monospace; font-size:12px;">chore: Gradle 의존성 추가</td>
+            </tr>
+            <tr>
+              <td><span class="commit-tag" style="background:#F5F3FF; color:#7C3AED;">test(be)</span></td>
+              <td>테스트 코드</td>
+              <td style="font-family:monospace; font-size:12px;">test(be): 결제 Webhook 통합 테스트</td>
+            </tr>
+            <tr>
+              <td><span class="commit-tag" style="background:#FFF7ED; color:#C2410C;">refactor(be)</span></td>
+              <td>리팩토링</td>
+              <td style="font-family:monospace; font-size:12px;">refactor(be): PaymentService 분리</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ 환경변수 ══ -->
+  <section>
+    <div class="section-label">환경변수 관리</div>
+    <div class="card-grid col-2">
+      <div class="card">
+        <h3 style="margin-bottom:12px">Backend — .env (spring-dotenv 로드)</h3>
+        <p style="font-size:12px; color:var(--gray-600); margin-bottom:10px;">application-dev.yml은 <code>${env.VAR_NAME}</code>으로 참조. 실제 값은 <code>backend/.env</code>에만 존재.</p>
+        <table class="env-table">
+          <thead><tr><th>.env 키</th><th>설명</th></tr></thead>
+          <tbody>
+            <tr><td class="env-key">DB_USERNAME</td><td>MySQL 사용자명</td></tr>
+            <tr><td class="env-key">DB_PASSWORD</td><td>DB 비밀번호</td></tr>
+            <tr><td class="env-key">JWT_SECRET</td><td>JWT 서명 시크릿 (256bit+)</td></tr>
+            <tr><td class="env-key">S3_BUCKET</td><td>S3 버킷 이름</td></tr>
+            <tr><td class="env-key">AWS_ACCESS_KEY</td><td>IAM 액세스 키</td></tr>
+            <tr><td class="env-key">AWS_SECRET_KEY</td><td>IAM 시크릿 키</td></tr>
+            <tr><td class="env-key">MAIL_USERNAME</td><td>Gmail 계정</td></tr>
+            <tr><td class="env-key">MAIL_PASSWORD</td><td>Gmail App 비밀번호</td></tr>
+          </tbody>
+        </table>
+        <p style="font-size:12px; color:var(--danger); margin-top:10px;">⚠️ <code>.env</code>, <code>application-dev.yml</code> 모두 .gitignore 적용 — 커밋 금지</p>
+        <p style="font-size:12px; color:var(--gray-600); margin-top:6px;">템플릿: <code>backend/.env.example</code> (값 없음, 커밋 포함)</p>
+      </div>
+      <div class="card">
+        <h3 style="margin-bottom:12px">Frontend — .env.development</h3>
+        <table class="env-table">
+          <thead><tr><th>키</th><th>값 예시</th></tr></thead>
+          <tbody>
+            <tr><td class="env-key">VITE_API_URL</td><td>http://localhost:8080/api/v1</td></tr>
+            <tr><td class="env-key">VITE_WS_URL</td><td>http://localhost:8080/ws</td></tr>
+            <tr><td class="env-key">VITE_TOSS_CLIENT_KEY</td><td>test_ck_...</td></tr>
+          </tbody>
+        </table>
+        <div style="margin-top:20px;">
+          <h3 style="margin-bottom:12px">Frontend — .env.production</h3>
+          <table class="env-table">
+            <thead><tr><th>키</th><th>값</th></tr></thead>
+            <tbody>
+              <tr><td class="env-key">VITE_API_URL</td><td>https://api.mindfit.co.kr/api/v1</td></tr>
+              <tr><td class="env-key">VITE_WS_URL</td><td>https://api.mindfit.co.kr/ws</td></tr>
+              <tr><td class="env-key">VITE_TOSS_CLIENT_KEY</td><td>live_ck_...</td></tr>
+            </tbody>
+          </table>
+          <p style="font-size:12px; color:var(--danger); margin-top:10px;">⚠️ .gitignore에 .env* 파일 반드시 포함</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ 8주 타임라인 ══ -->
+  <section>
+    <div class="section-label">8주 개발 타임라인</div>
+    <div class="card" style="overflow-x:auto;">
+      <div class="timeline-grid" style="min-width:700px;">
+        <div class="tl-header"></div>
+        <div class="tl-header">1주</div>
+        <div class="tl-header">2주</div>
+        <div class="tl-header">3주</div>
+        <div class="tl-header">4주</div>
+        <div class="tl-header">5주</div>
+        <div class="tl-header">6주</div>
+        <div class="tl-header">7주</div>
+        <div class="tl-header">8주</div>
+
+        <div class="tl-label">P0 설정</div>
+        <div class="tl-cell tl-filled" style="background:#6B7280;">설정</div>
+        <div class="tl-cell tl-empty"></div>
+        <div class="tl-cell tl-empty"></div>
+        <div class="tl-cell tl-empty"></div>
+        <div class="tl-cell tl-empty"></div>
+        <div class="tl-cell tl-empty"></div>
+        <div class="tl-cell tl-empty"></div>
+        <div class="tl-cell tl-empty"></div>
+
+        <div class="tl-label">P1 인증</div>
+        <div class="tl-cell tl-filled" style="background:#1D4ED8; grid-column:span 1;">인증</div>
+        <div class="tl-cell tl-filled" style="background:#1D4ED8;">인증</div>
+        <div class="tl-cell tl-empty"></div>
+        <div class="tl-cell tl-empty"></div>
+        <div class="tl-cell tl-empty"></div>
+        <div class="tl-cell tl-empty"></div>
+        <div class="tl-cell tl-empty"></div>
+        <div class="tl-cell tl-empty"></div>
+
+        <div class="tl-label">P2 상담사</div>
+        <div class="tl-cell tl-empty"></div>
+        <div class="tl-cell tl-filled" style="background:#7C3AED;">온보딩</div>
+        <div class="tl-cell tl-filled" style="background:#7C3AED;">온보딩</div>
+        <div class="tl-cell tl-empty"></div>
+        <div class="tl-cell tl-empty"></div>
+        <div class="tl-cell tl-empty"></div>
+        <div class="tl-cell tl-empty"></div>
+        <div class="tl-cell tl-empty"></div>
+
+        <div class="tl-label">P3 탐색</div>
+        <div class="tl-cell tl-empty"></div>
+        <div class="tl-cell tl-empty"></div>
+        <div class="tl-cell tl-filled" style="background:#0369A1;">탐색</div>
+        <div class="tl-cell tl-filled" style="background:#0369A1;">예약</div>
+        <div class="tl-cell tl-filled" style="background:#0369A1;">문진표</div>
+        <div class="tl-cell tl-empty"></div>
+        <div class="tl-cell tl-empty"></div>
+        <div class="tl-cell tl-empty"></div>
+
+        <div class="tl-label">P4 결제</div>
+        <div class="tl-cell tl-empty"></div>
+        <div class="tl-cell tl-empty"></div>
+        <div class="tl-cell tl-empty"></div>
+        <div class="tl-cell tl-empty"></div>
+        <div class="tl-cell tl-filled" style="background:#C2410C;">결제</div>
+        <div class="tl-cell tl-filled" style="background:#C2410C;">결제</div>
+        <div class="tl-cell tl-empty"></div>
+        <div class="tl-cell tl-empty"></div>
+
+        <div class="tl-label">P5 채팅</div>
+        <div class="tl-cell tl-empty"></div>
+        <div class="tl-cell tl-empty"></div>
+        <div class="tl-cell tl-empty"></div>
+        <div class="tl-cell tl-empty"></div>
+        <div class="tl-cell tl-empty"></div>
+        <div class="tl-cell tl-filled" style="background:#15803D;">채팅</div>
+        <div class="tl-cell tl-filled" style="background:#15803D;">채팅</div>
+        <div class="tl-cell tl-empty"></div>
+
+        <div class="tl-label">P6 마무리</div>
+        <div class="tl-cell tl-empty"></div>
+        <div class="tl-cell tl-empty"></div>
+        <div class="tl-cell tl-empty"></div>
+        <div class="tl-cell tl-empty"></div>
+        <div class="tl-cell tl-empty"></div>
+        <div class="tl-cell tl-empty"></div>
+        <div class="tl-cell tl-filled" style="background:#BE185D;">리뷰</div>
+        <div class="tl-cell tl-filled" style="background:#BE185D;">완료</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ MVP 완료 기준 ══ -->
+  <section>
+    <div class="section-label">MVP 최종 완료 기준</div>
+    <div class="mvp-list">
+      <div class="mvp-item">
+        <div class="mvp-check">✓</div>
+        <div class="mvp-text">
+          <strong>상담사 등록 · 심사 플로우</strong>
+          <span>상담사가 자격증 서류를 업로드하면 관리자 UI에서 심사 후 승인 → 프로필 활성화</span>
+        </div>
+      </div>
+      <div class="mvp-item">
+        <div class="mvp-check">✓</div>
+        <div class="mvp-text">
+          <strong>내담자 탐색 · 예약</strong>
+          <span>전문분야/가격으로 상담사 필터링, 프로필 확인, 원하는 날짜/시간 예약</span>
+        </div>
+      </div>
+      <div class="mvp-item">
+        <div class="mvp-check">✓</div>
+        <div class="mvp-text">
+          <strong>문진표 작성 · 열람 권한 제어</strong>
+          <span>내담자는 예약 시 작성, 상담사는 결제 완료 후에만 열람 가능 (isAccessible 제어)</span>
+        </div>
+      </div>
+      <div class="mvp-item">
+        <div class="mvp-check">✓</div>
+        <div class="mvp-text">
+          <strong>결제 (토스페이먼츠)</strong>
+          <span>결제 완료 Webhook → 세션 CONFIRMED + 채팅방 자동 생성</span>
+        </div>
+      </div>
+      <div class="mvp-item">
+        <div class="mvp-check">✓</div>
+        <div class="mvp-text">
+          <strong>실시간 채팅 (WebSocket STOMP)</strong>
+          <span>내담자와 상담사 간 실시간 메시지, 줄 링크 공유, 이력 조회</span>
+        </div>
+      </div>
+      <div class="mvp-item">
+        <div class="mvp-check">✓</div>
+        <div class="mvp-text">
+          <strong>리뷰 시스템</strong>
+          <span>상담 완료 후 내담자가 별점 + 텍스트 리뷰 작성, 익명 옵션 제공</span>
+        </div>
+      </div>
+      <div class="mvp-item">
+        <div class="mvp-check">✓</div>
+        <div class="mvp-text">
+          <strong>취소 · 환불</strong>
+          <span>24시간 전 취소 시 전액, 이내 취소 시 50% 환불</span>
+        </div>
+      </div>
+      <div class="mvp-item">
+        <div class="mvp-check">✓</div>
+        <div class="mvp-text">
+          <strong>보안 · 역할 기반 접근 제어</strong>
+          <span>JWT 인증, ROLE_CLIENT / ROLE_COUNSELOR / ROLE_ADMIN 완전 분리</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<script>
+  // Phase 토글
+  function togglePhase(id) {
+    const body = document.getElementById('body-' + id);
+    const toggle = document.getElementById('toggle-' + id);
+    if (body.classList.contains('hidden')) {
+      body.classList.remove('hidden');
+      toggle.classList.add('open');
+    } else {
+      body.classList.add('hidden');
+      toggle.classList.remove('open');
+    }
+  }
+
+  // 진행률 계산
+  function updateProgress() {
+    const checkboxes = document.querySelectorAll('.task-item input[type="checkbox"]');
+    const total = checkboxes.length;
+    const checked = document.querySelectorAll('.task-item input[type="checkbox"]:checked').length;
+
+    document.getElementById('progressCount').textContent = checked + ' / ' + total + ' 완료';
+    document.getElementById('totalTaskCount').textContent = total + '개';
+    const pct = total > 0 ? Math.round((checked / total) * 100) : 0;
+    document.getElementById('progressBar').style.width = pct + '%';
+  }
+
+  // 체크박스 상태 저장
+  function saveState() {
+    const checkboxes = document.querySelectorAll('.task-item input[type="checkbox"]');
+    const state = {};
+    checkboxes.forEach((cb, i) => { state[i] = cb.checked; });
+    try { localStorage.setItem('mindfit_devplan', JSON.stringify(state)); } catch(e) {}
+  }
+
+  function loadState() {
+    try {
+      const saved = localStorage.getItem('mindfit_devplan');
+      if (!saved) return;
+      const state = JSON.parse(saved);
+      const checkboxes = document.querySelectorAll('.task-item input[type="checkbox"]');
+      checkboxes.forEach((cb, i) => {
+        if (state[i]) {
+          cb.checked = true;
+          cb.closest('.task-item').classList.add('checked');
+        }
+      });
+    } catch(e) {}
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    loadState();
+    updateProgress();
+
+    document.querySelectorAll('.task-item input[type="checkbox"]').forEach(cb => {
+      cb.addEventListener('change', function() {
+        this.closest('.task-item').classList.toggle('checked', this.checked);
+        updateProgress();
+        saveState();
+      });
+    });
+  });
+</script>
+</body>
+</html>
