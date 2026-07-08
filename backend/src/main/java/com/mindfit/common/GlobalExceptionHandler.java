@@ -18,7 +18,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<Void>> handleBusinessException(BusinessException e) {
         return ResponseEntity
                 .status(e.getErrorCode().getStatus())
-                .body(ApiResponse.error(e.getMessage()));
+                .body(ApiResponse.error(e.getErrorCode()));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -28,14 +28,14 @@ public class GlobalExceptionHandler {
                 .collect(Collectors.joining(", "));
         return ResponseEntity
                 .badRequest()
-                .body(ApiResponse.error(message));
+                .body(ApiResponse.error(ErrorCode.INVALID_INPUT, message));
     }
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ApiResponse<Void>> handleAccessDeniedException(AccessDeniedException e) {
         return ResponseEntity
                 .status(403)
-                .body(ApiResponse.error(ErrorCode.ACCESS_DENIED.getMessage()));
+                .body(ApiResponse.error(ErrorCode.ACCESS_DENIED));
     }
 
     @ExceptionHandler(Exception.class)
@@ -43,6 +43,6 @@ public class GlobalExceptionHandler {
         log.error("Unexpected exception occurred: ", e);
         return ResponseEntity
                 .internalServerError()
-                .body(ApiResponse.error(ErrorCode.INTERNAL_ERROR.getMessage()));
+                .body(ApiResponse.error(ErrorCode.INTERNAL_ERROR));
     }
 }
