@@ -5,6 +5,9 @@ docs/
 .claude/
 CLAUDE.md
 
+# dependencies
+node_modules/
+
 # macOS
 .DS_Store
 

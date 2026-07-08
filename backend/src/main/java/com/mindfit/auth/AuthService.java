@@ -5,6 +5,7 @@ import com.mindfit.auth.dto.SignupRequest;
 import com.mindfit.auth.dto.TokenResponse;
 import com.mindfit.common.BusinessException;
 import com.mindfit.common.ErrorCode;
+import com.mindfit.user.Role;
 import com.mindfit.user.User;
 import com.mindfit.user.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +25,9 @@ public class AuthService {
 
     @Transactional
     public TokenResponse signup(SignupRequest request) {
+        if (request.getRole() == Role.ROLE_ADMIN) {
+            throw new BusinessException(ErrorCode.FORBIDDEN_ROLE);
+        }
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new BusinessException(ErrorCode.DUPLICATE_EMAIL);
         }
@@ -69,13 +73,8 @@ public class AuthService {
             throw new BusinessException(ErrorCode.INVALID_TOKEN);
         }
 
-        String newAccessToken = jwtTokenProvider.generateAccessToken(userId, user.getRole().name());
-        return TokenResponse.builder()
-                .accessToken(newAccessToken)
-                .refreshToken(refreshToken)
-                .userId(userId)
-                .role(user.getRole().name())
-                .build();
+        // Refresh Token Rotation: access·refresh 토큰을 모두 새로 발급해 탈취 토큰 재사용을 차단한다
+        return generateTokenResponse(user);
     }
 
     @Transactional

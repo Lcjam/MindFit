@@ -44,7 +44,9 @@ class JwtAuthFilterTest {
     @Test
     @DisplayName("doFilterInternal: 유효하지 않은 토큰이면 인증을 건너뜀 → 보호 엔드포인트 401")
     void doFilterInternal_invalidToken_skipsAuthentication() throws Exception {
-        mockMvc.perform(get("/api/v1/protected")
+        // /api/v1/auth/** 는 permitAll이므로 auth 네임스페이스 밖 경로 사용
+        // 경로가 실제 컨트롤러에 존재하지 않아도 Security 필터가 라우팅 전에 처리한다
+        mockMvc.perform(get("/api/v1/users/me")
                         .header("Authorization", "Bearer invalid.token.here"))
                 .andExpect(status().isUnauthorized());
     }

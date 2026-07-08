@@ -99,6 +99,23 @@ class UserRepositoryTest {
     }
 
     @Test
+    @DisplayName("400자 길이의 refreshToken 저장 후 재조회 시 값이 잘리지 않는다")
+    void save_longRefreshToken_persistsWithoutTruncation() {
+        String longToken = "a".repeat(400);
+        User user = buildUser("refresh@mindfit.com");
+        user.updateRefreshToken(longToken);
+
+        User saved = userRepository.save(user);
+        userRepository.flush();
+
+        Optional<User> result = userRepository.findById(saved.getId());
+
+        assertThat(result).isPresent();
+        assertThat(result.get().getRefreshToken()).isEqualTo(longToken);
+        assertThat(result.get().getRefreshToken()).hasSize(400);
+    }
+
+    @Test
     @DisplayName("중복 이메일 저장 시 DataIntegrityViolationException 발생")
     void save_duplicateEmail_throwsConstraintViolation() {
         userRepository.save(buildUser("dup@mindfit.com"));

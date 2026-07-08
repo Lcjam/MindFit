@@ -38,6 +38,7 @@ public class User {
 
     private String emailVerifyToken;
 
+    @Column(length = 512)
     private String refreshToken;
 
     @Column(updatable = false)

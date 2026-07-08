@@ -1,4 +1,4 @@
-import apiClient from './axios'
+import apiClient, { plainAxios } from './axios'
 import { SignupRequest, LoginRequest, TokenResponse, ApiResponse } from '../types/auth'
 
 export async function signup(data: SignupRequest): Promise<TokenResponse> {
@@ -16,6 +16,7 @@ export async function logout(): Promise<void> {
 }
 
 export async function refresh(refreshToken: string): Promise<TokenResponse> {
-  const res = await apiClient.post<ApiResponse<TokenResponse>>('/auth/refresh', { refreshToken })
+  // 인터셉터 없는 plainAxios 사용 — 401 응답 시 refresh 인터셉터 재진입 무한루프 방지
+  const res = await plainAxios.post<ApiResponse<TokenResponse>>('/auth/refresh', { refreshToken })
   return res.data.data
 }
