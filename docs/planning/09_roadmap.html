@@ -1,0 +1,1232 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MindFit — 개발 로드맵 (09)</title>
+  <style>
+    /* ──────────────────────────────────────────
+       1. CSS 변수 & 리셋
+    ────────────────────────────────────────── */
+    :root {
+      --mvp-primary:   #2563EB;
+      --mvp-light:     #EFF6FF;
+      --mvp-border:    #BFDBFE;
+      --mvp-dark:      #1E40AF;
+
+      --v1-primary:    #16A34A;
+      --v1-light:      #F0FDF4;
+      --v1-border:     #BBF7D0;
+      --v1-dark:       #14532D;
+
+      --v2-primary:    #7C3AED;
+      --v2-light:      #F5F3FF;
+      --v2-border:     #DDD6FE;
+      --v2-dark:       #4C1D95;
+
+      --gray-50:  #F9FAFB;
+      --gray-100: #F3F4F6;
+      --gray-200: #E5E7EB;
+      --gray-300: #D1D5DB;
+      --gray-400: #9CA3AF;
+      --gray-500: #6B7280;
+      --gray-600: #4B5563;
+      --gray-700: #374151;
+      --gray-800: #1F2937;
+      --gray-900: #111827;
+
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 16px;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.05);
+      --shadow-md: 0 4px 12px rgba(0,0,0,.10);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+      background: var(--gray-50);
+      color: var(--gray-800);
+      line-height: 1.65;
+      font-size: 15px;
+    }
+
+    /* ──────────────────────────────────────────
+       2. 헤더
+    ────────────────────────────────────────── */
+    .doc-header {
+      background: linear-gradient(135deg, #1E3A8A 0%, #3730A3 50%, #5B21B6 100%);
+      color: #fff;
+      padding: 56px 40px 48px;
+      position: relative;
+      overflow: hidden;
+    }
+    .doc-header::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .doc-header-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      position: relative;
+    }
+    .doc-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.25);
+      border-radius: 20px;
+      padding: 4px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+      margin-bottom: 18px;
+    }
+    .doc-header h1 {
+      font-size: 36px;
+      font-weight: 800;
+      letter-spacing: -.02em;
+      margin-bottom: 10px;
+    }
+    .doc-header p {
+      font-size: 16px;
+      opacity: .82;
+      max-width: 620px;
+    }
+    .header-meta {
+      display: flex;
+      gap: 24px;
+      margin-top: 28px;
+      flex-wrap: wrap;
+    }
+    .header-meta-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .header-meta-item .label {
+      font-size: 11px;
+      opacity: .65;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+    }
+    .header-meta-item .value {
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    /* ──────────────────────────────────────────
+       3. 레이아웃
+    ────────────────────────────────────────── */
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 48px 40px;
+    }
+
+    section { margin-bottom: 64px; }
+
+    .section-title {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--gray-900);
+      margin-bottom: 8px;
+      letter-spacing: -.02em;
+    }
+    .section-desc {
+      font-size: 14px;
+      color: var(--gray-500);
+      margin-bottom: 28px;
+    }
+
+    /* ──────────────────────────────────────────
+       4. 타임라인 바
+    ────────────────────────────────────────── */
+    .timeline-bar {
+      background: #fff;
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius-lg);
+      padding: 32px;
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 36px;
+    }
+    .timeline-bar-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--gray-500);
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+    .timeline-track {
+      display: flex;
+      height: 52px;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      border: 1px solid var(--gray-200);
+    }
+    .timeline-segment {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      font-weight: 700;
+      font-size: 13px;
+      color: #fff;
+      gap: 2px;
+      position: relative;
+    }
+    .timeline-segment .seg-label { font-size: 11px; opacity: .85; }
+    .seg-mvp  { background: var(--mvp-primary); flex: 8; }
+    .seg-v1   { background: var(--v1-primary);  flex: 6; }
+    .seg-v2   { background: var(--v2-primary);  flex: 8; }
+
+    .timeline-weeks {
+      display: flex;
+      margin-top: 12px;
+    }
+    .timeline-week-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .week-ticks {
+      display: flex;
+      width: 100%;
+    }
+    .week-tick {
+      flex: 1;
+      text-align: center;
+      font-size: 10px;
+      color: var(--gray-400);
+      padding-top: 6px;
+      border-top: 2px solid var(--gray-200);
+      font-weight: 600;
+    }
+    .week-tick.mvp-tick  { border-color: var(--mvp-primary); color: var(--mvp-primary); }
+    .week-tick.v1-tick   { border-color: var(--v1-primary);  color: var(--v1-primary); }
+    .week-tick.v2-tick   { border-color: var(--v2-primary);  color: var(--v2-primary); }
+
+    .timeline-weeks-row {
+      display: grid;
+      grid-template-columns: repeat(22, 1fr);
+      gap: 0;
+      margin-top: 8px;
+      width: 100%;
+    }
+    .wk {
+      text-align: center;
+      font-size: 10px;
+      color: var(--gray-400);
+      padding: 4px 0 4px;
+      border-top: 1.5px solid transparent;
+      font-weight: 500;
+    }
+    .wk.mvp { border-color: var(--mvp-primary); color: var(--mvp-dark); }
+    .wk.v1  { border-color: var(--v1-primary);  color: var(--v1-dark); }
+    .wk.v2  { border-color: var(--v2-primary);  color: var(--v2-dark); }
+
+    /* Legend */
+    .timeline-legend {
+      display: flex;
+      gap: 24px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .legend-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+
+    /* ──────────────────────────────────────────
+       5. Phase 섹션
+    ────────────────────────────────────────── */
+    .phase-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 20px;
+      padding: 28px 32px;
+      border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+      border: 1px solid;
+      border-bottom: none;
+    }
+    .phase-header.mvp { background: var(--mvp-light); border-color: var(--mvp-border); }
+    .phase-header.v1  { background: var(--v1-light);  border-color: var(--v1-border); }
+    .phase-header.v2  { background: var(--v2-light);  border-color: var(--v2-border); }
+
+    .phase-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 52px;
+      height: 52px;
+      border-radius: var(--radius-md);
+      font-size: 13px;
+      font-weight: 800;
+      flex-shrink: 0;
+      letter-spacing: -.01em;
+    }
+    .phase-badge.mvp { background: var(--mvp-primary); color: #fff; }
+    .phase-badge.v1  { background: var(--v1-primary);  color: #fff; }
+    .phase-badge.v2  { background: var(--v2-primary);  color: #fff; }
+
+    .phase-header-text h2 {
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -.02em;
+      margin-bottom: 4px;
+    }
+    .phase-header-text h2.mvp { color: var(--mvp-dark); }
+    .phase-header-text h2.v1  { color: var(--v1-dark); }
+    .phase-header-text h2.v2  { color: var(--v2-dark); }
+
+    .phase-header-text p {
+      font-size: 13px;
+      color: var(--gray-600);
+    }
+
+    .phase-meta {
+      margin-left: auto;
+      text-align: right;
+      flex-shrink: 0;
+    }
+    .phase-meta .duration {
+      font-size: 22px;
+      font-weight: 800;
+    }
+    .phase-meta .duration.mvp { color: var(--mvp-primary); }
+    .phase-meta .duration.v1  { color: var(--v1-primary); }
+    .phase-meta .duration.v2  { color: var(--v2-primary); }
+    .phase-meta .dur-label {
+      font-size: 11px;
+      color: var(--gray-400);
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+
+    .phase-body {
+      border: 1px solid;
+      border-top: none;
+      border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+      padding: 28px 32px;
+      background: #fff;
+    }
+    .phase-body.mvp { border-color: var(--mvp-border); }
+    .phase-body.v1  { border-color: var(--v1-border); }
+    .phase-body.v2  { border-color: var(--v2-border); }
+
+    .goal-box {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 14px 18px;
+      border-radius: var(--radius-md);
+      margin-bottom: 28px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .goal-box.mvp { background: var(--mvp-light); color: var(--mvp-dark); border-left: 4px solid var(--mvp-primary); }
+    .goal-box.v1  { background: var(--v1-light);  color: var(--v1-dark);  border-left: 4px solid var(--v1-primary); }
+    .goal-box.v2  { background: var(--v2-light);  color: var(--v2-dark);  border-left: 4px solid var(--v2-primary); }
+    .goal-box .goal-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+
+    /* ──────────────────────────────────────────
+       6. 주차 그리드
+    ────────────────────────────────────────── */
+    .week-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .week-card {
+      border-radius: var(--radius-md);
+      border: 1px solid var(--gray-200);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+      background: #fff;
+    }
+    .week-card-header {
+      padding: 12px 18px;
+      font-size: 13px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .week-card-header.mvp { background: var(--mvp-primary); color: #fff; }
+    .week-card-header.v1  { background: var(--v1-primary);  color: #fff; }
+    .week-card-header.v2  { background: var(--v2-primary);  color: #fff; }
+
+    .week-card-header .week-num {
+      background: rgba(255,255,255,0.2);
+      border-radius: 4px;
+      padding: 2px 8px;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .04em;
+    }
+
+    .week-card-body {
+      padding: 16px 18px;
+    }
+    .task-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+    .task-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 9px;
+      font-size: 13px;
+      color: var(--gray-700);
+      line-height: 1.5;
+    }
+    .task-check {
+      width: 16px;
+      height: 16px;
+      border-radius: 4px;
+      border: 2px solid var(--gray-300);
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .task-check.mvp { border-color: var(--mvp-primary); }
+    .task-check.v1  { border-color: var(--v1-primary); }
+    .task-check.v2  { border-color: var(--v2-primary); }
+
+    /* ──────────────────────────────────────────
+       7. 마일스톤 & KPI
+    ────────────────────────────────────────── */
+    .milestone-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+    .milestone-card {
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow-md);
+    }
+    .milestone-card-header {
+      padding: 20px 24px 16px;
+      color: #fff;
+      font-weight: 800;
+    }
+    .milestone-card-header.mvp { background: linear-gradient(135deg, var(--mvp-primary), #3B82F6); }
+    .milestone-card-header.v1  { background: linear-gradient(135deg, var(--v1-primary), #22C55E); }
+    .milestone-card-header.v2  { background: linear-gradient(135deg, var(--v2-primary), #A855F7); }
+    .milestone-phase-label {
+      font-size: 11px;
+      opacity: .75;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      margin-bottom: 4px;
+    }
+    .milestone-phase-title {
+      font-size: 18px;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+    .milestone-phase-sub {
+      font-size: 12px;
+      opacity: .8;
+    }
+
+    .milestone-card-body {
+      background: #fff;
+      border: 1px solid var(--gray-200);
+      border-top: none;
+      padding: 20px 24px;
+      border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+    }
+    .kpi-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .kpi-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 13px;
+      color: var(--gray-700);
+      line-height: 1.5;
+    }
+    .kpi-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      margin-top: 5px;
+    }
+    .kpi-dot.mvp { background: var(--mvp-primary); }
+    .kpi-dot.v1  { background: var(--v1-primary); }
+    .kpi-dot.v2  { background: var(--v2-primary); }
+
+    /* ──────────────────────────────────────────
+       8. 리스크 테이블
+    ────────────────────────────────────────── */
+    .risk-table-wrap {
+      background: #fff;
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+    }
+    table.risk-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .risk-table thead tr {
+      background: var(--gray-800);
+      color: #fff;
+    }
+    .risk-table th {
+      padding: 14px 20px;
+      text-align: left;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+    }
+    .risk-table td {
+      padding: 14px 20px;
+      font-size: 13.5px;
+      color: var(--gray-700);
+      border-bottom: 1px solid var(--gray-100);
+      vertical-align: top;
+    }
+    .risk-table tbody tr:last-child td { border-bottom: none; }
+    .risk-table tbody tr:hover { background: var(--gray-50); }
+
+    .risk-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .03em;
+    }
+    .risk-high { background: #FEE2E2; color: #991B1B; }
+    .risk-mid  { background: #FEF3C7; color: #92400E; }
+    .risk-low  { background: #D1FAE5; color: #065F46; }
+
+    /* ──────────────────────────────────────────
+       9. 구분선 / 유틸
+    ────────────────────────────────────────── */
+    .divider {
+      height: 1px;
+      background: var(--gray-200);
+      margin: 48px 0;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 9px;
+      border-radius: 10px;
+      font-size: 11px;
+      font-weight: 600;
+      background: var(--gray-100);
+      color: var(--gray-600);
+      margin-right: 4px;
+    }
+
+    /* ──────────────────────────────────────────
+       10. 푸터
+    ────────────────────────────────────────── */
+    .doc-footer {
+      background: var(--gray-800);
+      color: var(--gray-400);
+      padding: 28px 40px;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .doc-footer a { color: var(--gray-300); text-decoration: none; }
+    .doc-footer strong { color: #fff; }
+  </style>
+</head>
+<body>
+
+<div style="max-width:1100px;margin:20px auto 0;padding:14px 20px;background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;color:#92400E;font-family:'Pretendard','Apple SD Gothic Neo','Noto Sans KR',sans-serif;font-size:14px;">
+  ⚠️ <strong>실행 기준은 <a href="12_master-plan.html" style="color:#92400E">12번 마스터 플랜</a></strong> — 이 문서는 2026-07-07 이전 계획으로 이력 보존용이다. 일정·태그·리스크는 12번 §8~§10을 따른다.
+</div>
+
+<!-- ══════════════════════════════════════════════
+     HEADER
+════════════════════════════════════════════════ -->
+<header class="doc-header">
+  <div class="doc-header-inner">
+    <div class="doc-badge">
+      <span>&#128197;</span>
+      기획 문서 09
+    </div>
+    <h1>개발 로드맵</h1>
+    <p>MVP → v1.0 → v2.0 3단계 개발 계획. 핵심 루프 검증부터 운영 품질 확보, 성장·확장까지 22주간의 여정.</p>
+    <div class="header-meta">
+      <div class="header-meta-item">
+        <span class="label">총 개발 기간</span>
+        <span class="value">22주</span>
+      </div>
+      <div class="header-meta-item">
+        <span class="label">MVP</span>
+        <span class="value">8주 (Week 1–8)</span>
+      </div>
+      <div class="header-meta-item">
+        <span class="label">v1.0</span>
+        <span class="value">+6주 (Week 9–14)</span>
+      </div>
+      <div class="header-meta-item">
+        <span class="label">v2.0</span>
+        <span class="value">+8주 (Week 15–22)</span>
+      </div>
+      <div class="header-meta-item">
+        <span class="label">기준일</span>
+        <span class="value">2026-05-24</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ══════════════════════════════════════════════
+     MAIN
+════════════════════════════════════════════════ -->
+<div class="container">
+
+  <!-- ─── 전체 타임라인 바 ─── -->
+  <section>
+    <div class="section-title">전체 타임라인</div>
+    <div class="section-desc">22주 개발 일정 전체를 한눈에 — 각 Phase별 색상으로 구분합니다.</div>
+
+    <div class="timeline-bar">
+      <div class="timeline-bar-title">Phase 진행 타임라인</div>
+      <div class="timeline-track">
+        <div class="timeline-segment seg-mvp">
+          <span>MVP</span>
+          <span class="seg-label">Week 1 – 8</span>
+        </div>
+        <div class="timeline-segment seg-v1">
+          <span>v1.0</span>
+          <span class="seg-label">Week 9 – 14</span>
+        </div>
+        <div class="timeline-segment seg-v2">
+          <span>v2.0</span>
+          <span class="seg-label">Week 15 – 22</span>
+        </div>
+      </div>
+
+      <!-- Week 눈금 -->
+      <div class="timeline-weeks-row">
+        <div class="wk mvp">W1</div>
+        <div class="wk mvp">W2</div>
+        <div class="wk mvp">W3</div>
+        <div class="wk mvp">W4</div>
+        <div class="wk mvp">W5</div>
+        <div class="wk mvp">W6</div>
+        <div class="wk mvp">W7</div>
+        <div class="wk mvp">W8</div>
+        <div class="wk v1">W9</div>
+        <div class="wk v1">W10</div>
+        <div class="wk v1">W11</div>
+        <div class="wk v1">W12</div>
+        <div class="wk v1">W13</div>
+        <div class="wk v1">W14</div>
+        <div class="wk v2">W15</div>
+        <div class="wk v2">W16</div>
+        <div class="wk v2">W17</div>
+        <div class="wk v2">W18</div>
+        <div class="wk v2">W19</div>
+        <div class="wk v2">W20</div>
+        <div class="wk v2">W21</div>
+        <div class="wk v2">W22</div>
+      </div>
+
+      <div class="timeline-legend">
+        <div class="legend-item">
+          <div class="legend-dot" style="background: var(--mvp-primary);"></div>
+          <span style="color: var(--mvp-dark);">MVP — 핵심 루프 검증 (8주)</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background: var(--v1-primary);"></div>
+          <span style="color: var(--v1-dark);">v1.0 — 운영 품질 확보 (+6주)</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background: var(--v2-primary);"></div>
+          <span style="color: var(--v2-dark);">v2.0 — 성장 & 확장 (+8주)</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ─── MVP PHASE ─── -->
+  <section>
+    <div class="section-title">Phase 1 — MVP</div>
+    <div class="section-desc">상담사 가입부터 채팅 상담·리뷰까지 핵심 루프를 최소한의 기능으로 구현합니다.</div>
+
+    <div class="phase-header mvp">
+      <div class="phase-badge mvp">MVP</div>
+      <div class="phase-header-text">
+        <h2 class="mvp">핵심 루프 검증</h2>
+        <p>상담사 가입 → 관리자 승인 → 내담자 예약·결제 → 채팅 상담 → 리뷰까지 한 바퀴 돌아가는 최소 루프 구현</p>
+      </div>
+      <div class="phase-meta">
+        <div class="duration mvp">8주</div>
+        <div class="dur-label">Week 1 – 8</div>
+      </div>
+    </div>
+
+    <div class="phase-body mvp">
+      <div class="goal-box mvp">
+        <span class="goal-icon">&#127945;</span>
+        <span>목표: 상담사 5명 이상 승인, 내담자 → 상담사 → 채팅 전체 플로우 E2E 작동, 결제 → 문진표 열람 연동 작동</span>
+      </div>
+
+      <div class="week-grid">
+
+        <!-- Week 1-2 -->
+        <div class="week-card">
+          <div class="week-card-header mvp">
+            <span class="week-num">W 1–2</span>
+            프로젝트 기반 구축
+          </div>
+          <div class="week-card-body">
+            <ul class="task-list">
+              <li><div class="task-check mvp"></div>개발 환경 셋업 (Spring Boot 3.x + React 18 + MySQL 8 Docker Compose)</li>
+              <li><div class="task-check mvp"></div>DB 스키마 확정 및 마이그레이션 (Flyway / Liquibase)</li>
+              <li><div class="task-check mvp"></div>JWT 인증 구조 구현 (signup / login / refresh / email-verify)</li>
+              <li><div class="task-check mvp"></div>역할별 사용자 구조 (ROLE_CLIENT, ROLE_COUNSELOR, ROLE_ADMIN)</li>
+              <li><div class="task-check mvp"></div>REST API 기본 구조 + 에러 응답 표준화</li>
+              <li><div class="task-check mvp"></div>React 프로젝트 셋업 (Vite + TypeScript + Tailwind + React Router)</li>
+              <li><div class="task-check mvp"></div>공통 컴포넌트 (레이아웃, Protected Route, Axios 인터셉터)</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Week 3-4 -->
+        <div class="week-card">
+          <div class="week-card-header mvp">
+            <span class="week-num">W 3–4</span>
+            상담사 온보딩 &amp; 관리자 심사
+          </div>
+          <div class="week-card-body">
+            <ul class="task-list">
+              <li><div class="task-check mvp"></div>상담사 가입 폼 + 서류 업로드 (AWS S3 연동)</li>
+              <li><div class="task-check mvp"></div>관리자 심사 UI (서류 뷰어, 승인 / 거절 버튼)</li>
+              <li><div class="task-check mvp"></div>상담사 프로필 편집 화면 (승인 후 활성화)</li>
+              <li><div class="task-check mvp"></div>가용 시간 설정 (주간 반복 스케줄)</li>
+              <li><div class="task-check mvp"></div>상담사 목록 공개 API 구현</li>
+              <li><div class="task-check mvp"></div>내담자용 상담사 탐색 화면 (기본 리스트)</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Week 5-6 -->
+        <div class="week-card">
+          <div class="week-card-header mvp">
+            <span class="week-num">W 5–6</span>
+            내담자 예약 · 문진표 · 결제
+          </div>
+          <div class="week-card-body">
+            <ul class="task-list">
+              <li><div class="task-check mvp"></div>상담사 탐색 필터 (우울 / 번아웃, 가격, 상담 방식)</li>
+              <li><div class="task-check mvp"></div>상담사 프로필 상세 페이지</li>
+              <li><div class="task-check mvp"></div>날짜·시간 선택 + 문진표 작성 UI</li>
+              <li><div class="task-check mvp"></div>결제 연동 (토스페이먼츠 SDK + Webhook 처리)</li>
+              <li><div class="task-check mvp"></div>결제 완료 시 채팅방 자동 생성 + 문진표 접근 권한 부여</li>
+              <li><div class="task-check mvp"></div>상담사 문진표 열람 기능</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Week 7-8 -->
+        <div class="week-card">
+          <div class="week-card-header mvp">
+            <span class="week-num">W 7–8</span>
+            채팅 + 리뷰 + 통합 테스트
+          </div>
+          <div class="week-card-body">
+            <ul class="task-list">
+              <li><div class="task-check mvp"></div>WebSocket 채팅 구현 (STOMP, Spring + SockJS 클라이언트)</li>
+              <li><div class="task-check mvp"></div>채팅 이력 DB 저장 및 조회 API</li>
+              <li><div class="task-check mvp"></div>세션 완료 처리 + 리뷰 작성 (익명 옵션 포함)</li>
+              <li><div class="task-check mvp"></div>예약 수락 / 거절 (상담사 액션)</li>
+              <li><div class="task-check mvp"></div>핵심 플로우 E2E 통합 테스트</li>
+              <li><div class="task-check mvp"></div>초기 배포 (AWS EC2 + RDS, HTTPS / SSL)</li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ─── v1.0 PHASE ─── -->
+  <section>
+    <div class="section-title">Phase 2 — v1.0</div>
+    <div class="section-desc">실제 운영 가능한 수준의 안정성과 사용자 경험을 완성합니다.</div>
+
+    <div class="phase-header v1">
+      <div class="phase-badge v1">v1.0</div>
+      <div class="phase-header-text">
+        <h2 class="v1">운영 품질 확보</h2>
+        <p>취소·환불 자동화, 이메일 알림, 정산 내역, 반응형 최적화로 실 서비스 운영 수준에 도달</p>
+      </div>
+      <div class="phase-meta">
+        <div class="duration v1">+6주</div>
+        <div class="dur-label">Week 9 – 14</div>
+      </div>
+    </div>
+
+    <div class="phase-body v1">
+      <div class="goal-box v1">
+        <span class="goal-icon">&#9989;</span>
+        <span>목표: 환불 자동화 100% 커버, 이메일 알림 모든 트리거 동작, 모바일 웹 주요 화면 반응형 완성</span>
+      </div>
+
+      <div class="week-grid">
+
+        <!-- Week 9-10 -->
+        <div class="week-card">
+          <div class="week-card-header v1">
+            <span class="week-num">W 9–10</span>
+            취소·환불 자동화 + 알림
+          </div>
+          <div class="week-card-body">
+            <ul class="task-list">
+              <li><div class="task-check v1"></div>취소 정책 적용 (24시간 기준 전액 / 50% 환불)</li>
+              <li><div class="task-check v1"></div>토스페이먼츠 부분 환불 API 연동</li>
+              <li><div class="task-check v1"></div>이메일 알림 (Spring Mail): 상담사 신규 예약 수신</li>
+              <li><div class="task-check v1"></div>이메일 알림: 내담자 예약 확정 / 거절 통보</li>
+              <li><div class="task-check v1"></div>이메일 알림: 상담사 심사 승인 / 거절 통보</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Week 11-12 -->
+        <div class="week-card">
+          <div class="week-card-header v1">
+            <span class="week-num">W 11–12</span>
+            정산 내역 + 리뷰 고도화
+          </div>
+          <div class="week-card-body">
+            <ul class="task-list">
+              <li><div class="task-check v1"></div>상담사 수익 정산 내역 UI (세션별 / 월별 조회)</li>
+              <li><div class="task-check v1"></div>정산 계좌 등록 기능</li>
+              <li><div class="task-check v1"></div>리뷰 목록 페이지 + 상담사 답글 기능</li>
+              <li><div class="task-check v1"></div>리뷰 익명 표시 처리 완성 (닉네임 마스킹)</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Week 13-14 -->
+        <div class="week-card" style="grid-column: 1 / -1;">
+          <div class="week-card-header v1">
+            <span class="week-num">W 13–14</span>
+            관리자 강화 + 반응형 최적화 + 성능 튜닝
+          </div>
+          <div class="week-card-body">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0 32px;">
+              <ul class="task-list">
+                <li><div class="task-check v1"></div>관리자 통계 대시보드 (가입자 수, 세션 수, 매출)</li>
+                <li><div class="task-check v1"></div>분쟁 처리 기능 (강제 환불 실행)</li>
+                <li><div class="task-check v1"></div>회원 관리 (계정 정지 / 탈퇴 처리)</li>
+              </ul>
+              <ul class="task-list">
+                <li><div class="task-check v1"></div>반응형 웹 (모바일 브라우저 주요 화면 최적화)</li>
+                <li><div class="task-check v1"></div>검색 필터 고도화 (가격 범위, 상담 방식, 정렬)</li>
+                <li><div class="task-check v1"></div>성능 최적화 (N+1 쿼리 해결, DB 인덱스 튜닝)</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ─── v2.0 PHASE ─── -->
+  <section>
+    <div class="section-title">Phase 3 — v2.0</div>
+    <div class="section-desc">사용자 규모 확장과 모바일 앱 출시로 플랫폼을 성장·확장합니다.</div>
+
+    <div class="phase-header v2">
+      <div class="phase-badge v2">v2.0</div>
+      <div class="phase-header-text">
+        <h2 class="v2">성장 &amp; 확장</h2>
+        <p>AI 추천, React Native 모바일 앱, 구독 플랜, B2B 기반으로 플랫폼 스케일업</p>
+      </div>
+      <div class="phase-meta">
+        <div class="duration v2">+8주</div>
+        <div class="dur-label">Week 15 – 22</div>
+      </div>
+    </div>
+
+    <div class="phase-body v2">
+      <div class="goal-box v2">
+        <span class="goal-icon">&#128640;</span>
+        <span>목표: iOS / Android 앱 스토어 제출, 푸시 알림 작동, 가입 상담사 30명 / 월 세션 100건 이상</span>
+      </div>
+
+      <div class="week-grid">
+
+        <!-- Week 15-16 -->
+        <div class="week-card">
+          <div class="week-card-header v2">
+            <span class="week-num">W 15–16</span>
+            AI 매칭 기반 설계
+          </div>
+          <div class="week-card-body">
+            <ul class="task-list">
+              <li><div class="task-check v2"></div>문진표 답변 기반 상담사 추천 로직 설계</li>
+              <li><div class="task-check v2"></div>기본 매칭 알고리즘 (전문 분야 + 가격 + 평점 가중치)</li>
+              <li><div class="task-check v2"></div>추천 결과 A/B 테스트 구조 설계</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Week 17-18 -->
+        <div class="week-card">
+          <div class="week-card-header v2">
+            <span class="week-num">W 17–18</span>
+            React Native 앱 시작
+          </div>
+          <div class="week-card-body">
+            <ul class="task-list">
+              <li><div class="task-check v2"></div>모바일 앱 프로젝트 셋업 (React Native + Expo / bare)</li>
+              <li><div class="task-check v2"></div>공통 API 레이어 재활용 구조 적용</li>
+              <li><div class="task-check v2"></div>핵심 화면 구현: 상담사 탐색, 예약, 채팅</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Week 19-20 -->
+        <div class="week-card">
+          <div class="week-card-header v2">
+            <span class="week-num">W 19–20</span>
+            앱 기능 완성
+          </div>
+          <div class="week-card-body">
+            <ul class="task-list">
+              <li><div class="task-check v2"></div>푸시 알림 연동 (FCM)</li>
+              <li><div class="task-check v2"></div>앱 내 결제 (인앱 결제 or 웹뷰 연동)</li>
+              <li><div class="task-check v2"></div>모바일 채팅 UX 최적화 (키보드 핸들링, 스크롤)</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Week 21-22 -->
+        <div class="week-card">
+          <div class="week-card-header v2">
+            <span class="week-num">W 21–22</span>
+            확장 기능 + 스토어 제출
+          </div>
+          <div class="week-card-body">
+            <ul class="task-list">
+              <li><div class="task-check v2"></div>전문 분야 확장 (불안, 관계, 트라우마 카테고리)</li>
+              <li><div class="task-check v2"></div>정기 구독 플랜 (월 N회 패키지)</li>
+              <li><div class="task-check v2"></div>B2B 기업 연동 기반 설계 (EAP API)</li>
+              <li><div class="task-check v2"></div>App Store / Google Play Store 제출 준비 및 심사</li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ─── 마일스톤 & KPI ─── -->
+  <section>
+    <div class="section-title">마일스톤 &amp; KPI</div>
+    <div class="section-desc">각 Phase 완료 기준과 핵심 성과 지표입니다.</div>
+
+    <div class="milestone-grid">
+
+      <!-- MVP -->
+      <div class="milestone-card">
+        <div class="milestone-card-header mvp">
+          <div class="milestone-phase-label">Phase 1</div>
+          <div class="milestone-phase-title">MVP 완료 기준</div>
+          <div class="milestone-phase-sub">Week 8 종료 시점</div>
+        </div>
+        <div class="milestone-card-body">
+          <ul class="kpi-list">
+            <li class="kpi-item">
+              <div class="kpi-dot mvp"></div>
+              상담사 5명 이상 관리자 승인 완료 상태 확인
+            </li>
+            <li class="kpi-item">
+              <div class="kpi-dot mvp"></div>
+              내담자 → 상담사 탐색 → 예약 → 결제 → 채팅 전체 E2E 플로우 작동
+            </li>
+            <li class="kpi-item">
+              <div class="kpi-dot mvp"></div>
+              결제 완료 시 문진표 열람 권한 자동 부여 연동 작동
+            </li>
+            <li class="kpi-item">
+              <div class="kpi-dot mvp"></div>
+              HTTPS 배포 완료 (AWS EC2 + RDS)
+            </li>
+            <li class="kpi-item">
+              <div class="kpi-dot mvp"></div>
+              핵심 플로우 E2E 테스트 통과
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- v1.0 -->
+      <div class="milestone-card">
+        <div class="milestone-card-header v1">
+          <div class="milestone-phase-label">Phase 2</div>
+          <div class="milestone-phase-title">v1.0 완료 기준</div>
+          <div class="milestone-phase-sub">Week 14 종료 시점</div>
+        </div>
+        <div class="milestone-card-body">
+          <ul class="kpi-list">
+            <li class="kpi-item">
+              <div class="kpi-dot v1"></div>
+              취소·환불 자동화 100% 커버 (토스페이먼츠 부분 환불 포함)
+            </li>
+            <li class="kpi-item">
+              <div class="kpi-dot v1"></div>
+              이메일 알림 모든 트리거 (예약·승인·거절) 정상 발송
+            </li>
+            <li class="kpi-item">
+              <div class="kpi-dot v1"></div>
+              모바일 웹 주요 화면 반응형 완성
+            </li>
+            <li class="kpi-item">
+              <div class="kpi-dot v1"></div>
+              관리자 통계 대시보드 운영 가능 상태
+            </li>
+            <li class="kpi-item">
+              <div class="kpi-dot v1"></div>
+              N+1 쿼리 해소 및 인덱스 튜닝 완료
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- v2.0 -->
+      <div class="milestone-card">
+        <div class="milestone-card-header v2">
+          <div class="milestone-phase-label">Phase 3</div>
+          <div class="milestone-phase-title">v2.0 완료 기준</div>
+          <div class="milestone-phase-sub">Week 22 종료 시점</div>
+        </div>
+        <div class="milestone-card-body">
+          <ul class="kpi-list">
+            <li class="kpi-item">
+              <div class="kpi-dot v2"></div>
+              iOS / Android 앱 스토어 제출 및 심사 통과
+            </li>
+            <li class="kpi-item">
+              <div class="kpi-dot v2"></div>
+              FCM 푸시 알림 정상 작동 확인
+            </li>
+            <li class="kpi-item">
+              <div class="kpi-dot v2"></div>
+              가입 승인 상담사 30명 이상 확보
+            </li>
+            <li class="kpi-item">
+              <div class="kpi-dot v2"></div>
+              월 세션 100건 이상 달성
+            </li>
+            <li class="kpi-item">
+              <div class="kpi-dot v2"></div>
+              문진표 기반 AI 추천 베타 운영
+            </li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ─── 리스크 & 대응 ─── -->
+  <section>
+    <div class="section-title">리스크 &amp; 대응 전략</div>
+    <div class="section-desc">식별된 주요 리스크와 사전 대응 방안입니다.</div>
+
+    <div class="risk-table-wrap">
+      <table class="risk-table">
+        <thead>
+          <tr>
+            <th style="width: 220px;">리스크</th>
+            <th style="width: 90px;">가능성</th>
+            <th style="width: 100px;">영향도</th>
+            <th>대응 전략</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <strong>상담사 자격 서류 위조</strong><br/>
+              <span style="font-size: 12px; color: var(--gray-500);">자격증·학위 위조로 인한 신뢰 손상</span>
+            </td>
+            <td><span class="risk-badge risk-mid">중</span></td>
+            <td><span class="risk-badge risk-high">높음</span></td>
+            <td>초기엔 관리자 수동 심사 철저히 진행. 스케일 이후 NICE 자격 검증 API 또는 학교·기관 직접 확인 프로세스 도입 검토.</td>
+          </tr>
+          <tr>
+            <td>
+              <strong>WebSocket 채팅 확장성</strong><br/>
+              <span style="font-size: 12px; color: var(--gray-500);">동시 접속 급증 시 단일 서버 병목</span>
+            </td>
+            <td><span class="risk-badge risk-mid">중</span></td>
+            <td><span class="risk-badge risk-mid">중간</span></td>
+            <td>MVP는 단일 서버 STOMP로 시작. 트래픽 증가 지표 모니터링 후 Redis Pub/Sub + 다중 서버 구조로 전환. 세션 수 기준 알람 설정.</td>
+          </tr>
+          <tr>
+            <td>
+              <strong>결제 Webhook 누락</strong><br/>
+              <span style="font-size: 12px; color: var(--gray-500);">토스페이먼츠 Webhook 미수신으로 결제 상태 불일치</span>
+            </td>
+            <td><span class="risk-badge risk-low">저</span></td>
+            <td><span class="risk-badge risk-high">높음</span></td>
+            <td>Webhook 재시도 로직 구현 + 주기적 결제 상태 폴링 배치 추가. 멱등성 키(Idempotency Key) 적용으로 중복 처리 방지.</td>
+          </tr>
+          <tr>
+            <td>
+              <strong>의료법 경계 문제</strong><br/>
+              <span style="font-size: 12px; color: var(--gray-500);">"치료" 표현으로 인한 의료법 위반 리스크</span>
+            </td>
+            <td><span class="risk-badge risk-mid">중</span></td>
+            <td><span class="risk-badge risk-high">높음</span></td>
+            <td>전 서비스에서 "상담" 언어만 일관되게 사용, "치료·진단" 표현 금지. 법률 자문 1회 이상 필수 수행. 이용 약관에 서비스 범위 명시.</td>
+          </tr>
+          <tr>
+            <td>
+              <strong>개인정보 유출</strong><br/>
+              <span style="font-size: 12px; color: var(--gray-500);">상담 내용·문진표 등 민감 데이터 노출</span>
+            </td>
+            <td><span class="risk-badge risk-low">저</span></td>
+            <td><span class="risk-badge risk-high">높음</span></td>
+            <td>상담 데이터 및 문진표 암호화 저장. S3 프리사인드 URL로 파일 접근 제어. 정기적 보안 감사 및 OWASP Top 10 기준 점검.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ─── MVP 제외 / v1.0 이후 ─── -->
+  <section>
+    <div class="section-title">범위 관리 — MVP 제외 항목</div>
+    <div class="section-desc">MVP 범위를 명확히 경계짓기 위한 제외 기능 목록입니다.</div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+
+      <div style="background: #fff; border: 1px solid var(--gray-200); border-radius: var(--radius-lg); padding: 24px; box-shadow: var(--shadow-sm);">
+        <div style="font-size: 13px; font-weight: 700; color: var(--v1-dark); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 14px;">
+          v1.0 이후 추가 (MVP 제외)
+        </div>
+        <ul class="task-list">
+          <li>
+            <div style="width: 8px; height: 8px; background: var(--gray-300); border-radius: 50%; flex-shrink:0; margin-top: 6px;"></div>
+            취소 / 환불 자동화
+          </li>
+          <li>
+            <div style="width: 8px; height: 8px; background: var(--gray-300); border-radius: 50%; flex-shrink:0; margin-top: 6px;"></div>
+            이메일 알림 시스템
+          </li>
+          <li>
+            <div style="width: 8px; height: 8px; background: var(--gray-300); border-radius: 50%; flex-shrink:0; margin-top: 6px;"></div>
+            상담사 정산 내역 UI
+          </li>
+          <li>
+            <div style="width: 8px; height: 8px; background: var(--gray-300); border-radius: 50%; flex-shrink:0; margin-top: 6px;"></div>
+            관리자 통계 대시보드
+          </li>
+          <li>
+            <div style="width: 8px; height: 8px; background: var(--gray-300); border-radius: 50%; flex-shrink:0; margin-top: 6px;"></div>
+            반응형 웹 최적화 (모바일 브라우저)
+          </li>
+        </ul>
+      </div>
+
+      <div style="background: #fff; border: 1px solid var(--gray-200); border-radius: var(--radius-lg); padding: 24px; box-shadow: var(--shadow-sm);">
+        <div style="font-size: 13px; font-weight: 700; color: var(--v2-dark); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 14px;">
+          v2.0 이후 추가
+        </div>
+        <ul class="task-list">
+          <li>
+            <div style="width: 8px; height: 8px; background: var(--gray-300); border-radius: 50%; flex-shrink:0; margin-top: 6px;"></div>
+            React Native 모바일 앱 (iOS / Android)
+          </li>
+          <li>
+            <div style="width: 8px; height: 8px; background: var(--gray-300); border-radius: 50%; flex-shrink:0; margin-top: 6px;"></div>
+            AI 상담사 추천 (문진표 기반)
+          </li>
+          <li>
+            <div style="width: 8px; height: 8px; background: var(--gray-300); border-radius: 50%; flex-shrink:0; margin-top: 6px;"></div>
+            그룹 상담 기능
+          </li>
+          <li>
+            <div style="width: 8px; height: 8px; background: var(--gray-300); border-radius: 50%; flex-shrink:0; margin-top: 6px;"></div>
+            구독 플랜 (월 N회 패키지)
+          </li>
+          <li>
+            <div style="width: 8px; height: 8px; background: var(--gray-300); border-radius: 50%; flex-shrink:0; margin-top: 6px;"></div>
+            전문 분야 확장 (불안, 관계, 트라우마)
+          </li>
+          <li>
+            <div style="width: 8px; height: 8px; background: var(--gray-300); border-radius: 50%; flex-shrink:0; margin-top: 6px;"></div>
+            B2B 기업 연동 (EAP API)
+          </li>
+        </ul>
+      </div>
+
+    </div>
+  </section>
+
+</div>
+
+<!-- ══════════════════════════════════════════════
+     FOOTER
+════════════════════════════════════════════════ -->
+<footer class="doc-footer">
+  <div>
+    <strong>MindFit</strong> &mdash; 기획 문서 09 / 개발 로드맵
+  </div>
+  <div style="display: flex; gap: 24px; align-items: center;">
+    <span>최종 업데이트: 2026-05-24</span>
+    <span>버전: 1.0.0</span>
+    <span>작성: MindFit 기획팀</span>
+  </div>
+</footer>
+
+</body>
+</html>

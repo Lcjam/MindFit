@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MindFit — 사용자 페르소나 (User Personas)</title>
+  <style>
+    :root {
+      --primary:     #4F6EF7;
+      --primary-dk:  #3751D4;
+      --counselor-a: #7C5CBF; /* 수련 석사 */
+      --counselor-b: #2E86AB; /* 개업 준비 상담사 */
+      --client-a:    #E07B39; /* 번아웃 직장인 */
+      --client-b:    #C0392B; /* 우울증 초기 직장인 */
+      --accent:      #6EDDC6;
+      --bg:          #F4F6FB;
+      --surface:     #FFFFFF;
+      --border:      #E2E8F0;
+      --text:        #1A202C;
+      --muted:       #718096;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      font-size: 15px;
+    }
+
+    /* ── Header ── */
+    header {
+      background: linear-gradient(135deg, #3751D4 0%, #6B42C8 100%);
+      color: #fff;
+      padding: 56px 40px 48px;
+    }
+    header .badge {
+      display: inline-block;
+      background: rgba(255,255,255,0.18);
+      border: 1px solid rgba(255,255,255,0.35);
+      border-radius: 20px;
+      padding: 4px 14px;
+      font-size: 12px;
+      letter-spacing: 0.06em;
+      margin-bottom: 18px;
+    }
+    header h1 { font-size: 32px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 10px; }
+    header p  { font-size: 15px; opacity: 0.82; max-width: 620px; }
+    header .meta {
+      margin-top: 24px;
+      display: flex;
+      gap: 24px;
+      font-size: 13px;
+      opacity: 0.72;
+    }
+    header .meta span::before { content: "· "; }
+
+    /* ── Layout ── */
+    main {
+      max-width: 1140px;
+      margin: 0 auto;
+      padding: 52px 24px 80px;
+    }
+
+    /* ── Group header ── */
+    .group-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-top: 60px;
+      margin-bottom: 28px;
+      padding-bottom: 16px;
+      border-bottom: 2px solid var(--border);
+    }
+    .group-header:first-of-type { margin-top: 0; }
+    .group-icon {
+      width: 50px; height: 50px;
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px;
+      flex-shrink: 0;
+    }
+    .group-header h2 { font-size: 22px; font-weight: 800; }
+    .group-header p  { font-size: 13px; color: var(--muted); margin-top: 3px; }
+
+    /* ── Persona grid ── */
+    .persona-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(480px, 1fr));
+      gap: 28px;
+      margin-bottom: 12px;
+    }
+
+    /* ── Persona card ── */
+    .persona-card {
+      background: var(--surface);
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      overflow: hidden;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.05);
+    }
+    .persona-header {
+      padding: 28px 28px 22px;
+      color: #fff;
+      position: relative;
+    }
+    .persona-header .p-badge {
+      display: inline-block;
+      background: rgba(255,255,255,0.25);
+      border: 1px solid rgba(255,255,255,0.4);
+      border-radius: 20px;
+      padding: 3px 12px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      margin-bottom: 14px;
+    }
+    .persona-header .avatar {
+      font-size: 52px;
+      margin-bottom: 10px;
+      display: block;
+    }
+    .persona-header h3 {
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: -0.3px;
+    }
+    .persona-header .sub {
+      font-size: 14px;
+      opacity: 0.85;
+      margin-top: 4px;
+    }
+
+    /* color themes per persona */
+    .p1 .persona-header { background: linear-gradient(135deg, #7C5CBF 0%, #5B3FA0 100%); }
+    .p2 .persona-header { background: linear-gradient(135deg, #2E86AB 0%, #1A5F7A 100%); }
+    .p3 .persona-header { background: linear-gradient(135deg, #E07B39 0%, #C05A20 100%); }
+    .p4 .persona-header { background: linear-gradient(135deg, #C0392B 0%, #922B21 100%); }
+
+    .p1 .section-bar { background: #7C5CBF; }
+    .p2 .section-bar { background: #2E86AB; }
+    .p3 .section-bar { background: #E07B39; }
+    .p4 .section-bar { background: #C0392B; }
+
+    /* ── Card body ── */
+    .persona-body { padding: 0 28px 28px; }
+
+    .section-block { margin-top: 20px; }
+    .section-block:first-child { margin-top: 24px; }
+
+    .section-bar {
+      width: 3px;
+      border-radius: 2px;
+      flex-shrink: 0;
+      align-self: stretch;
+    }
+    .section-label-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+    .section-label {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+      opacity: 0.55;
+      margin-bottom: 6px;
+    }
+    .section-content {
+      font-size: 14px;
+      color: var(--text);
+      line-height: 1.7;
+    }
+
+    /* ── Tag list ── */
+    .tag-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+    .ptag {
+      display: inline-block;
+      border-radius: 8px;
+      padding: 4px 10px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .p1 .ptag { background: #F0EBFA; color: #6040A0; }
+    .p2 .ptag { background: #E6F4FB; color: #1A5F7A; }
+    .p3 .ptag { background: #FEF3EB; color: #A04010; }
+    .p4 .ptag { background: #FDEEED; color: #8B2020; }
+
+    /* ── Pain points ── */
+    .pain-list { list-style: none; margin-top: 6px; }
+    .pain-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      font-size: 13.5px;
+      padding: 5px 0;
+    }
+    .pain-list li::before {
+      content: "•";
+      font-size: 16px;
+      flex-shrink: 0;
+      margin-top: -1px;
+    }
+    .p1 .pain-list li::before { color: #7C5CBF; }
+    .p2 .pain-list li::before { color: #2E86AB; }
+    .p3 .pain-list li::before { color: #E07B39; }
+    .p4 .pain-list li::before { color: #C0392B; }
+
+    /* ── Scenario ── */
+    .scenario-steps {
+      display: flex;
+      gap: 0;
+      margin-top: 8px;
+      flex-wrap: wrap;
+    }
+    .s-step {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      font-size: 12.5px;
+    }
+    .s-step .bubble {
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .s-step .arrow {
+      font-size: 14px;
+      color: var(--muted);
+      padding: 0 4px;
+      flex-shrink: 0;
+    }
+    .p1 .s-step .bubble { background: #F0EBFA; color: #6040A0; }
+    .p2 .s-step .bubble { background: #E6F4FB; color: #1A5F7A; }
+    .p3 .s-step .bubble { background: #FEF3EB; color: #A04010; }
+    .p4 .s-step .bubble { background: #FDEEED; color: #8B2020; }
+
+    /* ── Design implications ── */
+    .implication-box {
+      border-radius: 12px;
+      padding: 16px 18px;
+      margin-top: 6px;
+    }
+    .p1 .implication-box { background: #F8F5FE; border-left: 4px solid #7C5CBF; }
+    .p2 .implication-box { background: #F0F8FD; border-left: 4px solid #2E86AB; }
+    .p3 .implication-box { background: #FFF8F4; border-left: 4px solid #E07B39; }
+    .p4 .implication-box { background: #FFF5F5; border-left: 4px solid #C0392B; }
+    .implication-box li {
+      font-size: 13px;
+      padding: 3px 0;
+      list-style: none;
+    }
+    .implication-box li::before { content: "→ "; font-weight: 700; }
+
+    /* ── Fear box ── */
+    .fear-box {
+      background: #F8F9FA;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin-top: 6px;
+      font-size: 13.5px;
+    }
+    .fear-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 4px 0;
+    }
+    .fear-item .fi { font-size: 15px; flex-shrink: 0; }
+
+    /* ── Summary bar ── */
+    .summary-bar {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      margin: 48px 0 0;
+    }
+    .summary-cell {
+      background: var(--surface);
+      padding: 20px 16px;
+      text-align: center;
+    }
+    .summary-cell .sc-emoji { font-size: 28px; margin-bottom: 6px; }
+    .summary-cell .sc-label { font-size: 11px; color: var(--muted); font-weight: 600; margin-bottom: 4px; }
+    .summary-cell .sc-val   { font-size: 13px; font-weight: 700; }
+
+    /* ── Footer ── */
+    footer {
+      text-align: center;
+      padding: 32px;
+      font-size: 12px;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      margin-top: 60px;
+    }
+
+    @media (max-width: 720px) {
+      header { padding: 36px 20px 32px; }
+      header h1 { font-size: 24px; }
+      main { padding: 32px 14px 60px; }
+      .persona-grid { grid-template-columns: 1fr; }
+      .summary-bar { grid-template-columns: repeat(2, 1fr); }
+      .scenario-steps { flex-direction: column; gap: 4px; }
+      .s-step .arrow { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="badge">RESEARCH · DOCUMENT 03</div>
+  <h1>사용자 페르소나 (User Personas)</h1>
+  <p>상담사 2종 · 내담자 2종 — MindFit의 핵심 사용자를 구체적 인물로 정의하고 제품 설계 방향을 도출합니다</p>
+  <div class="meta">
+    <span>MindFit 심리상담 마켓플레이스</span>
+    <span>작성일: 2026년 5월</span>
+    <span>총 페르소나 4종</span>
+  </div>
+</header>
+
+<main>
+
+  <!-- ══════════════════════════════════════════
+       GROUP A — 상담사 페르소나
+  ══════════════════════════════════════════ -->
+  <div class="group-header">
+    <div class="group-icon" style="background:#F0EBFA;">🧑‍⚕️</div>
+    <div>
+      <h2>공급자 — 상담사 페르소나 (Counselor)</h2>
+      <p>MindFit에 서비스를 등록하고 내담자와 연결되는 공급 측 사용자</p>
+    </div>
+  </div>
+
+  <div class="persona-grid">
+
+    <!-- ──── P1: 박지은 (수련 중 석사생) ──── -->
+    <div class="persona-card p1">
+      <div class="persona-header">
+        <div class="p-badge">COUNSELOR P1</div>
+        <span class="avatar">🎓</span>
+        <h3>박지은</h3>
+        <div class="sub">26세 · 상담심리학과 석사 2년차 재학생 · 서울</div>
+      </div>
+
+      <div class="persona-body">
+
+        <div class="section-block">
+          <div class="section-label-row">
+            <div class="section-bar"></div>
+            <div style="flex:1">
+              <div class="section-label">기본 정보</div>
+              <div class="tag-list">
+                <span class="ptag">석사 재학 중</span>
+                <span class="ptag">수련 시간 채우기 필요</span>
+                <span class="ptag">임상 경험 부족</span>
+                <span class="ptag">마케팅 역량 없음</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-block">
+          <div class="section-label-row">
+            <div class="section-bar"></div>
+            <div style="flex:1">
+              <div class="section-label">현재 상황</div>
+              <div class="section-content">
+                석사 과정에서 임상 수련 시간을 채워야 하는 압박을 받고 있습니다. 수련을 위한 내담자를 구하는 방법은 지도교수의 소개 외에는 거의 없는 상태입니다. 학교 실습실에서 몇 케이스를 진행했지만 수는 부족하고, 스스로 내담자를 모집하기엔 마케팅 방법을 전혀 모릅니다.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-block">
+          <div class="section-label-row">
+            <div class="section-bar"></div>
+            <div style="flex:1">
+              <div class="section-label">목표</div>
+              <ul class="pain-list">
+                <li>졸업 전 임상 수련 시간(규정 시간) 충족</li>
+                <li>실제 내담자와의 케이스 경험 다양화</li>
+                <li>용돈 수준의 소정의 수입 확보</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-block">
+          <div class="section-label-row">
+            <div class="section-bar"></div>
+            <div style="flex:1">
+              <div class="section-label">고통점 (Pain Points)</div>
+              <ul class="pain-list">
+                <li>마케팅·영업 역량이 전무 — "어디에 올려야 하는지조차 모름"</li>
+                <li>SNS에 상담사 홍보 게시글을 올리기가 어색하고 두려움</li>
+                <li>저렴하게 세션을 제공할 의향은 있지만, 알릴 채널이 없음</li>
+                <li>수련 감독 지도교수 외의 외부 네트워크 전무</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-block">
+          <div class="section-label-row">
+            <div class="section-bar"></div>
+            <div style="flex:1">
+              <div class="section-label">두려움 / 장벽</div>
+              <div class="fear-box">
+                <div class="fear-item"><span class="fi">😰</span><span>내 실력이 검증되지 않은 상태에서 내담자를 맞을 수 있을까?</span></div>
+                <div class="fear-item"><span class="fi">📋</span><span>플랫폼 가입 서류(학위·자격) 준비가 복잡하지 않을까?</span></div>
+                <div class="fear-item"><span class="fi">💸</span><span>수련생인데 적절한 가격대가 얼마인지 모름</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-block">
+          <div class="section-label-row">
+            <div class="section-bar"></div>
+            <div style="flex:1">
+              <div class="section-label">MindFit 사용 시나리오</div>
+              <div class="scenario-steps">
+                <div class="s-step"><div class="bubble">학회 공지에서 MindFit 발견</div><div class="arrow">→</div></div>
+                <div class="s-step"><div class="bubble">석사 재학 증명서·수련 증명 업로드</div><div class="arrow">→</div></div>
+                <div class="s-step"><div class="bubble">관리자 승인 완료</div><div class="arrow">→</div></div>
+                <div class="s-step"><div class="bubble">프로필 작성 (전문 분야, 소개글)</div><div class="arrow">→</div></div>
+                <div class="s-step"><div class="bubble">세션 가격 30,000원 설정</div><div class="arrow">→</div></div>
+                <div class="s-step"><div class="bubble">첫 내담자 신청 수신 → 채팅 상담 시작</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-block">
+          <div class="section-label-row">
+            <div class="section-bar"></div>
+            <div style="flex:1">
+              <div class="section-label">이 페르소나를 위한 설계 시사점</div>
+              <div class="implication-box">
+                <li>서류 업로드 UI를 단순하게 — 단계별 가이드와 예시 파일 제공</li>
+                <li>"수련 중 상담사" 배지를 투명하게 표시해 내담자 기대치 조정</li>
+                <li>가격 설정 가이드라인 (수련생 권장 가격 범위) 제공</li>
+                <li>수련 시간 자동 집계 기능으로 실제 니즈 충족</li>
+                <li>초기 3개월 수수료 무료 또는 최저 수수료로 온보딩 허들 제거</li>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ──── P2: 이민준 (개업 준비 상담사) ──── -->
+    <div class="persona-card p2">
+      <div class="persona-header">
+        <div class="p-badge">COUNSELOR P2</div>
+        <span class="avatar">💼</span>
+        <h3>이민준</h3>
+        <div class="sub">32세 · 상담심리학 석사 졸업 + 2급 상담심리사 자격 · 서울</div>
+      </div>
+
+      <div class="persona-body">
+
+        <div class="section-block">
+          <div class="section-label-row">
+            <div class="section-bar"></div>
+            <div style="flex:1">
+              <div class="section-label">기본 정보</div>
+              <div class="tag-list">
+                <span class="ptag">석사 졸업</span>
+                <span class="ptag">2급 상담심리사</span>
+                <span class="ptag">상담센터 3년 근무</span>
+                <span class="ptag">독립 준비 중</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-block">
+          <div class="section-label-row">
+            <div class="section-bar"></div>
+            <div style="flex:1">
+              <div class="section-label">현재 상황</div>
+              <div class="section-content">
+                상담센터 소속으로 3년간 일하며 안정적인 케이스를 경험했지만, 센터 운영 방침과 낮은 수익 분배율에 불만이 생겼습니다. 독립 개업을 꿈꾸지만, 초기 사무실 임대비와 마케팅 비용을 감당하기가 어렵습니다. 고정 내담자를 먼저 확보한 뒤 독립하고 싶습니다.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-block">
+          <div class="section-label-row">
+            <div class="section-bar"></div>
+            <div style="flex:1">
+              <div class="section-label">목표</div>
+              <ul class="pain-list">
+                <li>고정 내담자 다수 확보 → 안정적 월 수입 실현</li>
+                <li>개인 브랜드(전문성) 구축 및 리뷰 축적</li>
+                <li>초기 고정비 없이 클라이언트 베이스 확장</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-block">
+          <div class="section-label-row">
+            <div class="section-bar"></div>
+            <div style="flex:1">
+              <div class="section-label">고통점 (Pain Points)</div>
+              <ul class="pain-list">
+                <li>개인 사무실 임대 시 월 150만 원 이상의 고정비 부담</li>
+                <li>SNS 홍보(인스타그램, 블로그)에 많은 시간과 에너지 소요</li>
+                <li>신규 내담자에게 신뢰를 구축하는 데 시간이 필요</li>
+                <li>현재 센터에서 확보한 내담자를 그대로 이관할 수 없음</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-block">
+          <div class="section-label-row">
+            <div class="section-bar"></div>
+            <div style="flex:1">
+              <div class="section-label">두려움 / 장벽</div>
+              <div class="fear-box">
+                <div class="fear-item"><span class="fi">📉</span><span>독립 초기에 수입이 불안정해지는 것에 대한 두려움</span></div>
+                <div class="fear-item"><span class="fi">⭐</span><span>리뷰가 없는 초기 상태에서 내담자를 유치할 수 있을까?</span></div>
+                <div class="fear-item"><span class="fi">💻</span><span>플랫폼 수수료가 너무 높으면 수익성이 낮아질 것</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-block">
+          <div class="section-label-row">
+            <div class="section-bar"></div>
+            <div style="flex:1">
+              <div class="section-label">MindFit 사용 시나리오</div>
+              <div class="scenario-steps">
+                <div class="s-step"><div class="bubble">지인 추천으로 MindFit 가입</div><div class="arrow">→</div></div>
+                <div class="s-step"><div class="bubble">자격증·경력 서류 업로드 및 승인</div><div class="arrow">→</div></div>
+                <div class="s-step"><div class="bubble">상세 프로필·전문 분야 작성</div><div class="arrow">→</div></div>
+                <div class="s-step"><div class="bubble">70,000원/세션 설정</div><div class="arrow">→</div></div>
+                <div class="s-step"><div class="bubble">리뷰 누적 → 검색 상단 노출</div><div class="arrow">→</div></div>
+                <div class="s-step"><div class="bubble">정기 내담자 5+ 확보 후 독립 결심</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-block">
+          <div class="section-label-row">
+            <div class="section-bar"></div>
+            <div style="flex:1">
+              <div class="section-label">이 페르소나를 위한 설계 시사점</div>
+              <div class="implication-box">
+                <li>상담사 프로필 페이지를 마치 개인 브랜드 페이지처럼 설계 (포트폴리오 느낌)</li>
+                <li>리뷰·평점 시스템을 신뢰 자산으로 — 누적될수록 노출 우선순위 상승</li>
+                <li>정기 내담자(장기 계약) 기능으로 안정적 수입 구조 지원</li>
+                <li>수수료 구조를 투명하게 공개 (예: 거래액의 15%)</li>
+                <li>대시보드에서 수입, 상담 건수, 리뷰 현황 한눈에 파악 가능</li>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div><!-- /persona-grid -->
+
+
+  <!-- ══════════════════════════════════════════
+       GROUP B — 내담자 페르소나
+  ══════════════════════════════════════════ -->
+  <div class="group-header">
+    <div class="group-icon" style="background:#FEF3EB;">🙍</div>
+    <div>
+      <h2>수요자 — 내담자 페르소나 (Client)</h2>
+      <p>우울증·번아웃을 겪는 직장인 — MindFit 1차 집중 타겟</p>
+    </div>
+  </div>
+
+  <div class="persona-grid">
+
+    <!-- ──── P3: 김태현 (번아웃 직장인) ──── -->
+    <div class="persona-card p3">
+      <div class="persona-header">
+        <div class="p-badge">CLIENT P3</div>
+        <span class="avatar">😔</span>
+        <h3>김태현</h3>
+        <div class="sub">29세 · IT 스타트업 3년차 개발자 · 서울</div>
+      </div>
+
+      <div class="persona-body">
+
+        <div class="section-block">
+          <div class="section-label-row">
+            <div class="section-bar"></div>
+            <div style="flex:1">
+              <div class="section-label">기본 정보</div>
+              <div class="tag-list">
+                <span class="ptag">번아웃 의심</span>
+                <span class="ptag">상담 경험 없음</span>
+                <span class="ptag">심리상담 낙인 우려</span>
+                <span class="ptag">익명성 민감</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-block">
+          <div class="section-label-row">
+            <div class="section-bar"></div>
+            <div style="flex:1">
+              <div class="section-label">현재 상황</div>
+              <div class="section-content">
+                "그냥 좀 쉬면 낫겠지"라고 스스로를 설득하고 있지만, 3개월째 주말에도 의욕이 없고 무기력합니다. 평소 좋아하던 게임도 재미없고, 출근 직전에 가슴이 답답해집니다. 번아웃이라는 걸 어렴풋이 알지만, 회사에 알려질까 봐 EAP 상담을 사용하기도 두렵습니다.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-block">
+          <div class="section-label-row">
+            <div class="section-bar"></div>
+            <div style="flex:1">
+              <div class="section-label">목표</div>
+              <ul class="pain-list">
+                <li>"지금 내 상태가 뭔지" 전문가에게 한번 들어보고 싶음</li>
+                <li>상담이라기보다 "전문가에게 내 얘기를 털어놓는" 경험</li>
+                <li>일상 회복 — 다시 퇴근 후 취미를 즐길 수 있는 상태</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-block">
+          <div class="section-label-row">
+            <div class="section-bar"></div>
+            <div style="flex:1">
+              <div class="section-label">고통점 (Pain Points)</div>
+              <ul class="pain-list">
+                <li>직장 동료나 지인이 알게 될까 봐 두려움 — 철저한 익명성 필요</li>
+                <li>내 데이터가 어디에 저장되는지, 상담 내용이 유출되지 않을지 불안</li>
+                <li>상담이 "비쌀 것 같다"는 막연한 선입견</li>
+                <li>예약 절차가 복잡하면 그냥 포기함 — 첫 진입 장벽이 높음</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-block">
+          <div class="section-label-row">
+            <div class="section-bar"></div>
+            <div style="flex:1">
+              <div class="section-label">두려움 / 장벽</div>
+              <div class="fear-box">
+                <div class="fear-item"><span class="fi">🔐</span><span>"직장 동료가 내가 상담받는 걸 알게 되면 어떡하지?"</span></div>
+                <div class="fear-item"><span class="fi">📂</span><span>"내 상담 내용이 저장되고 해킹되면 어떡하지?"</span></div>
+                <div class="fear-item"><span class="fi">💳</span><span>"1회 상담에 10만 원 이상 하면 부담스럽다"</span></div>
+                <div class="fear-item"><span class="fi">🤔</span><span>"나 진짜 심각한 거 아니지? 그냥 예민한 건 아닐까?"</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-block">
+          <div class="section-label-row">
+            <div class="section-bar"></div>
+            <div style="flex:1">
+              <div class="section-label">MindFit 사용 시나리오</div>
+              <div class="scenario-steps">
+                <div class="s-step"><div class="bubble">블라인드에서 "번아웃 상담" 글 보고 MindFit 유입</div><div class="arrow">→</div></div>
+                <div class="s-step"><div class="bubble">카카오 로그인 (3초)</div><div class="arrow">→</div></div>
+                <div class="s-step"><div class="bubble">"번아웃" 필터 검색</div><div class="arrow">→</div></div>
+                <div class="s-step"><div class="bubble">리뷰 많은 상담사 프로필 열람</div><div class="arrow">→</div></div>
+                <div class="s-step"><div class="bubble">문진표 작성 (5분)</div><div class="arrow">→</div></div>
+                <div class="s-step"><div class="bubble">카카오페이 결제 → 채팅 상담 시작</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-block">
+          <div class="section-label-row">
+            <div class="section-bar"></div>
+            <div style="flex:1">
+              <div class="section-label">이 페르소나를 위한 설계 시사점</div>
+              <div class="implication-box">
+                <li>익명성 강조 — 홈 화면에 "닉네임 사용, 상담 내용 상담사만 열람" 명시</li>
+                <li>간편 소셜 로그인(카카오·네이버) 우선 — 가입 절차 3단계 이내</li>
+                <li>저가 옵션(수련 상담사 3만~5만원) 메인에 노출</li>
+                <li>톤앤매너: "가볍게 시작하세요" — 심각한 느낌 배제, 자기관리 포지셔닝</li>
+                <li>첫 상담 할인 쿠폰(예: 50% OFF) 자동 지급으로 첫 경험 유도</li>
+                <li>개인정보처리 방침을 쉬운 언어로 요약해 상단 노출</li>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ──── P4: 최수연 (우울증 초기 직장인) ──── -->
+    <div class="persona-card p4">
+      <div class="persona-header">
+        <div class="p-badge">CLIENT P4</div>
+        <span class="avatar">😞</span>
+        <h3>최수연</h3>
+        <div class="sub">33세 · 마케팅 팀장 · 경기도 판교</div>
+      </div>
+
+      <div class="persona-body">
+
+        <div class="section-block">
+          <div class="section-label-row">
+            <div class="section-bar"></div>
+            <div style="flex:1">
+              <div class="section-label">기본 정보</div>
+              <div class="tag-list">
+                <span class="ptag">우울증 초기 의심</span>
+                <span class="ptag">상담 필요성 인지</span>
+                <span class="ptag">시작 못하는 상태</span>
+                <span class="ptag">낙인 두려움 강함</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-block">
+          <div class="section-label-row">
+            <div class="section-bar"></div>
+            <div style="flex:1">
+              <div class="section-label">현재 상황</div>
+              <div class="section-content">
+                6개월째 의욕 저하, 수면 문제(잠들기 어려움), 업무 집중력 저하가 이어지고 있습니다. 팀장으로서 겉으로는 멀쩡해 보이지만 내면은 지쳐 있습니다. "심리상담을 받아야겠다"는 생각은 수십 번 했지만, 막상 행동으로 옮기지 못했습니다. "나 우울증인가?" 라는 생각이 오히려 무서워서 확인하고 싶지 않습니다.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-block">
+          <div class="section-label-row">
+            <div class="section-bar"></div>
+            <div style="flex:1">
+              <div class="section-label">목표</div>
+              <ul class="pain-list">
+                <li>지금의 의욕 저하·수면 문제 상태 개선</li>
+                <li>업무에서의 집중력·활력 회복</li>
+                <li>"나 우울증인가요?"에 대한 전문적 안심 — 진단보다 안심을 원함</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-block">
+          <div class="section-label-row">
+            <div class="section-bar"></div>
+            <div style="flex:1">
+              <div class="section-label">고통점 (Pain Points)</div>
+              <ul class="pain-list">
+                <li>심리상담 받는다는 사실 자체를 팀원이나 주변에 들키기 싫음</li>
+                <li>정보 탐색에 시간을 많이 쏟지만 첫 예약은 계속 미룸</li>
+                <li>상담사 선택 기준을 모름 — "누가 나에게 맞는지" 알 수 없음</li>
+                <li>직장 때문에 낮 시간 상담 불가 — 저녁·주말 상담 상담사 필요</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-block">
+          <div class="section-label-row">
+            <div class="section-bar"></div>
+            <div style="flex:1">
+              <div class="section-label">두려움 / 장벽</div>
+              <div class="fear-box">
+                <div class="fear-item"><span class="fi">💊</span><span>"상담받으면 약을 처방받게 되는 건가? 정신과랑 같은 건가?"</span></div>
+                <div class="fear-item"><span class="fi">😬</span><span>"상담사가 나를 너무 심각하게 볼까? 오버리액션할까?"</span></div>
+                <div class="fear-item"><span class="fi">🏷️</span><span>"우울증이라는 딱지가 붙으면 커리어에 영향 있지 않을까?"</span></div>
+                <div class="fear-item"><span class="fi">🗓️</span><span>"바쁜데 예약·관리까지 신경 써야 한다면 포기할 것 같다"</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-block">
+          <div class="section-label-row">
+            <div class="section-bar"></div>
+            <div style="flex:1">
+              <div class="section-label">MindFit 사용 시나리오</div>
+              <div class="scenario-steps">
+                <div class="s-step"><div class="bubble">네이버에서 "우울증 상담" 검색 → MindFit 유입</div><div class="arrow">→</div></div>
+                <div class="s-step"><div class="bubble">"심리상담은 정신과가 아닙니다" 랜딩 문구로 안심</div><div class="arrow">→</div></div>
+                <div class="s-step"><div class="bubble">우울·번아웃 필터 → 저녁·주말 가능 상담사 검색</div><div class="arrow">→</div></div>
+                <div class="s-step"><div class="bubble">상담사 소개글 읽으며 안심</div><div class="arrow">→</div></div>
+                <div class="s-step"><div class="bubble">간단 문진표 작성</div><div class="arrow">→</div></div>
+                <div class="s-step"><div class="bubble">채팅 상담 시작 → 2회기 후 정기 상담 전환</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-block">
+          <div class="section-label-row">
+            <div class="section-bar"></div>
+            <div style="flex:1">
+              <div class="section-label">이 페르소나를 위한 설계 시사점</div>
+              <div class="implication-box">
+                <li>랜딩 페이지 첫 메시지: "심리상담은 정신과가 아닙니다 — 약 처방 없이, 대화로 시작합니다"</li>
+                <li>가입 단계 3단계 이내 — 결정에서 첫 상담까지 10분 안에 완료</li>
+                <li>상담사 프로필에 "이런 분들께 적합합니다" 섹션으로 매칭 기준 명확화</li>
+                <li>가용 시간 필터(저녁 6시 이후, 주말 가능) 검색 제공</li>
+                <li>"첫 상담에서 어떤 일이 일어나나요?" FAQ 콘텐츠로 두려움 사전 해소</li>
+                <li>상담 기록은 내담자 본인과 해당 상담사 외 열람 불가 명시</li>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div><!-- /persona-grid -->
+
+  <!-- ══════════════════════════════════════════
+       요약 바
+  ══════════════════════════════════════════ -->
+  <div class="summary-bar">
+    <div class="summary-cell">
+      <div class="sc-emoji">🎓</div>
+      <div class="sc-label">P1 박지은 (상담사)</div>
+      <div class="sc-val">수련 시간 + 첫 내담자</div>
+    </div>
+    <div class="summary-cell">
+      <div class="sc-emoji">💼</div>
+      <div class="sc-label">P2 이민준 (상담사)</div>
+      <div class="sc-val">브랜딩 + 고정 내담자</div>
+    </div>
+    <div class="summary-cell">
+      <div class="sc-emoji">😔</div>
+      <div class="sc-label">P3 김태현 (내담자)</div>
+      <div class="sc-val">익명성 + 간편 진입</div>
+    </div>
+    <div class="summary-cell">
+      <div class="sc-emoji">😞</div>
+      <div class="sc-label">P4 최수연 (내담자)</div>
+      <div class="sc-val">낙인 해소 + 낮은 장벽</div>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  MindFit 심리상담 마켓플레이스 · 기획 문서 03 — 사용자 페르소나 · 내부 기획 자료 · 2026년 5월
+</footer>
+
+</body>
+</html>

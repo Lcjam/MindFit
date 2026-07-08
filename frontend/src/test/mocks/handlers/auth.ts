@@ -1,13 +1,16 @@
 import { http, HttpResponse } from 'msw'
+import type { components } from '../../../types/api.gen'
 
-const MOCK_TOKEN_RESPONSE = {
+type TokenResponse = components['schemas']['TokenResponse']
+
+const MOCK_TOKEN_RESPONSE: TokenResponse = {
   accessToken: 'mock-access-token',
   refreshToken: 'mock-refresh-token',
   userId: 1,
   role: 'ROLE_CLIENT',
 }
 
-export const handlers = [
+export const authHandlers = [
   http.get('/api/v1/health', () =>
     HttpResponse.json({ success: true, data: { status: 'UP', service: 'MindFit API' } })
   ),

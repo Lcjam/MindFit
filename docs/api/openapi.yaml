@@ -1,0 +1,1817 @@
+openapi: 3.0.3
+info:
+  title: MindFit API
+  description: |
+    심리상담 버티컬 마켓플레이스 MindFit의 API 계약.
+    SoT(Source of Truth) — 여기 없는 엔드포인트/필드는 구현 금지 (ADR-13).
+    상세 근거: docs/planning/12_master-plan.html §5(계약 원문) · §3(ADR).
+  version: "0.1.0"
+servers:
+  - url: /api/v1
+
+tags:
+  - name: P1-auth
+    description: 인증 (기구현 소급 기재)
+  - name: P2-onboarding
+    description: 상담사 온보딩 · 관리자 심사
+  - name: P3-discovery-booking
+    description: 탐색 · 예약 · 문진표
+  - name: P4-payment
+    description: 결제 · 수락/거절
+  - name: P5-chat
+    description: 채팅 (ADR-9 REST 송신 · ADR-10 커서 페이징)
+  - name: P6-review-settlement
+    description: 리뷰 · 정산 · 취소 · 분쟁
+
+security:
+  - bearerAuth: []
+
+paths:
+  # ============================================================
+  # P1 — Auth (기구현 소급 기재)
+  # ============================================================
+  /health:
+    get:
+      tags: [P1-auth]
+      summary: 헬스체크
+      security: []
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiResponseEnvelope"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/HealthStatus"
+
+  /auth/signup:
+    post:
+      tags: [P1-auth]
+      summary: 회원가입
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SignupRequest"
+      responses:
+        "201":
+          description: 회원가입 성공
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiResponseEnvelope"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/TokenResponse"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "409":
+          description: DUPLICATE_EMAIL
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/login:
+    post:
+      tags: [P1-auth]
+      summary: 로그인
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: 로그인 성공
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiResponseEnvelope"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/TokenResponse"
+        "401":
+          description: INVALID_CREDENTIALS
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/refresh:
+    post:
+      tags: [P1-auth]
+      summary: 토큰 갱신
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RefreshRequest"
+      responses:
+        "200":
+          description: 갱신 성공
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiResponseEnvelope"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/TokenResponse"
+        "401":
+          description: INVALID_TOKEN | EXPIRED_TOKEN
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/logout:
+    post:
+      tags: [P1-auth]
+      summary: 로그아웃
+      responses:
+        "200":
+          description: 로그아웃 성공
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseEnvelope"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  # ============================================================
+  # P2 — 상담사 온보딩 · 관리자 심사 (+P1 이월)
+  # ============================================================
+  /users/me:
+    get:
+      tags: [P2-onboarding]
+      summary: 내 정보 조회 (전 역할)
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiResponseEnvelope"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/UserMeResponse"
+        "404":
+          description: USER_NOT_FOUND
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /counselors/credentials:
+    post:
+      tags: [P2-onboarding]
+      summary: 자격 증빙 업로드 (ROLE_COUNSELOR)
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                type:
+                  type: string
+                  enum: [ENROLLMENT, DEGREE, LICENSE, ID]
+                file:
+                  type: string
+                  format: binary
+                  description: pdf/jpg/png, 최대 10MB
+      responses:
+        "201":
+          description: PENDING 상태로 접수
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiResponseEnvelope"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/CredentialUploadResponse"
+        "400":
+          description: FILE_EMPTY | INVALID_FILE_TYPE | FILE_TOO_LARGE
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "502":
+          description: FILE_UPLOAD_FAILED
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /counselors/me/profile:
+    get:
+      tags: [P2-onboarding]
+      summary: 내 프로필 조회 (ROLE_COUNSELOR)
+      responses:
+        "200":
+          description: 프로필 + status
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiResponseEnvelope"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/CounselorProfileResponse"
+        "404":
+          description: COUNSELOR_NOT_FOUND
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    put:
+      tags: [P2-onboarding]
+      summary: 내 프로필 수정 (ROLE_COUNSELOR, status==APPROVED만 허용)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CounselorProfileUpdateRequest"
+      responses:
+        "200":
+          description: 수정 성공
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiResponseEnvelope"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/CounselorProfileResponse"
+        "400":
+          description: INVALID_INPUT (금칙어 — ADR-8)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: PROFILE_NOT_APPROVED
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /admin/credentials:
+    get:
+      tags: [P2-onboarding]
+      summary: 자격 심사 대기열 조회 (ROLE_ADMIN)
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [PENDING, APPROVED, REJECTED]
+        - $ref: "#/components/parameters/PageParam"
+        - $ref: "#/components/parameters/SizeParam"
+      responses:
+        "200":
+          description: 심사 항목 페이지 (presigned URL 포함)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiResponseEnvelope"
+                  - type: object
+                    properties:
+                      data:
+                        allOf:
+                          - $ref: "#/components/schemas/PageMeta"
+                          - type: object
+                            properties:
+                              content:
+                                type: array
+                                items:
+                                  $ref: "#/components/schemas/CredentialListItem"
+
+  /admin/credentials/{id}:
+    patch:
+      tags: [P2-onboarding]
+      summary: 자격 심사 처리 (ROLE_ADMIN)
+      parameters:
+        - $ref: "#/components/parameters/IdParam"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CredentialReviewRequest"
+      responses:
+        "200":
+          description: 승인 시 프로필 APPROVED + 이메일 발송
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseEnvelope"
+        "400":
+          description: REJECT_REASON_REQUIRED
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: CREDENTIAL_NOT_FOUND
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: CREDENTIAL_ALREADY_REVIEWED
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  # ============================================================
+  # P3 — 탐색 · 예약 · 문진표
+  # ============================================================
+  /counselors:
+    get:
+      tags: [P3-discovery-booking]
+      summary: 상담사 탐색 (permitAll, APPROVED + is_listed만 노출)
+      security: []
+      parameters:
+        - name: specialty
+          in: query
+          schema:
+            type: string
+        - name: priceMin
+          in: query
+          schema:
+            type: integer
+        - name: priceMax
+          in: query
+          schema:
+            type: integer
+        - name: availableDate
+          in: query
+          schema:
+            type: string
+            format: date
+        - $ref: "#/components/parameters/PageParam"
+        - $ref: "#/components/parameters/SizeParam"
+      responses:
+        "200":
+          description: 상담사 목록 페이지
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiResponseEnvelope"
+                  - type: object
+                    properties:
+                      data:
+                        allOf:
+                          - $ref: "#/components/schemas/PageMeta"
+                          - type: object
+                            properties:
+                              content:
+                                type: array
+                                items:
+                                  $ref: "#/components/schemas/CounselorSearchItem"
+
+  /counselors/{id}:
+    get:
+      tags: [P3-discovery-booking]
+      summary: 상담사 상세 (permitAll)
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/IdParam"
+      responses:
+        "200":
+          description: 프로필 + 평점 요약
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiResponseEnvelope"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/CounselorDetailResponse"
+        "404":
+          description: COUNSELOR_NOT_FOUND
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /counselors/me/availability:
+    put:
+      tags: [P3-discovery-booking]
+      summary: 내 가용시간 전체 치환 (ROLE_COUNSELOR)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AvailabilityUpsertRequest"
+      responses:
+        "200":
+          description: 치환 성공
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseEnvelope"
+        "400":
+          description: INVALID_TIME_RANGE
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /counselors/{id}/availability:
+    get:
+      tags: [P3-discovery-booking]
+      summary: 상담사 가용 슬롯 조회 (permitAll, 기예약 제외)
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/IdParam"
+        - name: date
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+      responses:
+        "200":
+          description: 날짜별 슬롯 목록
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiResponseEnvelope"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/AvailabilitySlotsResponse"
+        "404":
+          description: COUNSELOR_NOT_FOUND
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /sessions:
+    post:
+      tags: [P3-discovery-booking]
+      summary: 예약 생성 (ROLE_CLIENT)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SessionCreateRequest"
+      responses:
+        "201":
+          description: PENDING_PAYMENT 상태로 생성
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiResponseEnvelope"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/SessionCreateResponse"
+        "400":
+          description: SESSION_PAST_TIME
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: SESSION_TIME_CONFLICT (ADR-2) | COUNSELOR_NOT_APPROVED
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    get:
+      tags: [P3-discovery-booking]
+      summary: 내 예약 목록 조회 (ROLE_CLIENT/ROLE_COUNSELOR, 역할은 토큰에서 판별)
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+        - $ref: "#/components/parameters/PageParam"
+        - $ref: "#/components/parameters/SizeParam"
+      responses:
+        "200":
+          description: 본인 예약 페이지
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiResponseEnvelope"
+                  - type: object
+                    properties:
+                      data:
+                        allOf:
+                          - $ref: "#/components/schemas/PageMeta"
+                          - type: object
+                            properties:
+                              content:
+                                type: array
+                                items:
+                                  $ref: "#/components/schemas/SessionListItem"
+
+  /questionnaires:
+    post:
+      tags: [P3-discovery-booking]
+      summary: 문진표 작성 (ROLE_CLIENT, 본인 세션)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/QuestionnaireCreateRequest"
+      responses:
+        "201":
+          description: isAccessible=false로 생성
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiResponseEnvelope"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/QuestionnaireCreateResponse"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          description: QUESTIONNAIRE_ALREADY_SUBMITTED
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /questionnaires/{sessionId}:
+    get:
+      tags: [P3-discovery-booking]
+      summary: 문진표 조회 (ADR-3 접근 매트릭스 — CLIENT 본인/ADMIN/COUNSELOR(isAccessible) 분기)
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiResponseEnvelope"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/QuestionnaireResponse"
+        "403":
+          description: QUESTIONNAIRE_NOT_ACCESSIBLE
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: QUESTIONNAIRE_NOT_FOUND
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  # ============================================================
+  # P4 — 결제 · 수락/거절
+  # ============================================================
+  /payments/initialize:
+    post:
+      tags: [P4-payment]
+      summary: 결제 초기화 (ROLE_CLIENT, 본인 세션. 금액은 서버가 상담사 가격에서 계산)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [sessionId]
+              properties:
+                sessionId:
+                  type: integer
+                  format: int64
+      responses:
+        "201":
+          description: 결제 주문 생성
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiResponseEnvelope"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/PaymentInitializeResponse"
+        "404":
+          description: SESSION_NOT_FOUND
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: PAYMENT_ALREADY_COMPLETED
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /payments/confirm:
+    post:
+      tags: [P4-payment]
+      summary: 결제 승인 확정 (ROLE_CLIENT, ADR-4 이중 금액검증 + 멱등)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PaymentConfirmRequest"
+      responses:
+        "200":
+          description: 승인 완료 — session AWAITING_CONFIRM + ChatRoom 생성 + questionnaire.isAccessible=true
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiResponseEnvelope"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/PaymentConfirmResponse"
+        "400":
+          description: PAYMENT_AMOUNT_MISMATCH (토스 호출 전 1차 검증 실패 — 토스 미호출)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: PAYMENT_NOT_FOUND 이후 상태 충돌 또는 paymentKey 불일치
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "502":
+          description: PAYMENT_GATEWAY_ERROR
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "504":
+          description: PAYMENT_GATEWAY_TIMEOUT
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /payments/webhook:
+    post:
+      tags: [P4-payment]
+      summary: 토스 웹훅 수신 (permitAll + 서명검증, PaymentCompletionProcessor를 confirm과 공유 — ADR-4)
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: 토스페이먼츠 웹훅 페이로드 (PG사 스펙 그대로)
+      responses:
+        "200":
+          description: 항상 200 (PG 재시도 폭주 방지). 서명 불일치만 예외
+        "401":
+          description: INVALID_WEBHOOK_SIGNATURE
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /sessions/{id}/confirm:
+    patch:
+      tags: [P4-payment]
+      summary: 상담 요청 수락 (ROLE_COUNSELOR 본인, ADR-0 AWAITING_CONFIRM → CONFIRMED)
+      parameters:
+        - $ref: "#/components/parameters/IdParam"
+      responses:
+        "200":
+          description: CONFIRMED로 전이
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseEnvelope"
+        "409":
+          description: INVALID_SESSION_STATUS
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /sessions/{id}/reject:
+    patch:
+      tags: [P4-payment]
+      summary: 상담 요청 거절 (ROLE_COUNSELOR 본인 → REJECTED + 전액 refunds INSERT + 이메일)
+      parameters:
+        - $ref: "#/components/parameters/IdParam"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [rejectReason]
+              properties:
+                rejectReason:
+                  type: string
+      responses:
+        "200":
+          description: REJECTED로 전이
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseEnvelope"
+        "400":
+          description: REJECT_REASON_REQUIRED
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: INVALID_SESSION_STATUS
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /admin/payments/{id}/refund:
+    post:
+      tags: [P4-payment]
+      summary: 관리자 강제 환불 (ROLE_ADMIN, 부분환불 지원, Idempotency-Key)
+      parameters:
+        - $ref: "#/components/parameters/IdParam"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                amount:
+                  type: integer
+                  description: 미지정 시 전액
+      responses:
+        "200":
+          description: 환불 처리 완료
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseEnvelope"
+        "400":
+          description: REFUND_AMOUNT_EXCEEDED
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "502":
+          description: REFUND_FAILED
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  # ============================================================
+  # P5 — 채팅 (ADR-9 REST 송신 · ADR-10 커서 페이징)
+  # ============================================================
+  /chat-rooms:
+    get:
+      tags: [P5-chat]
+      summary: 내 채팅방 목록 (참여자)
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiResponseEnvelope"
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/ChatRoomListItem"
+
+  /chat-rooms/{id}/messages:
+    get:
+      tags: [P5-chat]
+      summary: 메시지 이력 조회 (커서 기반 — ADR-10)
+      parameters:
+        - $ref: "#/components/parameters/IdParam"
+        - name: before
+          in: query
+          description: 이 messageId보다 이전 메시지를 조회 (미지정 시 최신부터)
+          schema:
+            type: integer
+            format: int64
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 30
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiResponseEnvelope"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/ChatMessageListResponse"
+        "403":
+          description: NOT_CHAT_PARTICIPANT
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: CHAT_ROOM_NOT_FOUND
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    post:
+      tags: [P5-chat]
+      summary: 메시지 전송 (참여자, REST 송신 — ADR-9. WebSocket 송신 경로는 폐기)
+      parameters:
+        - $ref: "#/components/parameters/IdParam"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChatMessageSendRequest"
+      responses:
+        "201":
+          description: 저장 후 /topic/chat/{roomId}로 브로드캐스트
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiResponseEnvelope"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/ChatMessage"
+        "400":
+          description: EMPTY_MESSAGE
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: NOT_CHAT_PARTICIPANT
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  # WebSocket — OpenAPI 3.0은 STOMP를 직접 표현하지 않음. 계약은 문서화만.
+  # CONNECT /ws — Bearer(STOMP 헤더) 인증, SockJS fallback, 무효 토큰은 연결 거부
+  # SUBSCRIBE /topic/chat/{roomId} — 참여자만, 수신 전용 (송신은 위 REST POST)
+
+  # ============================================================
+  # P6 — 리뷰 · 정산 · 취소 · 분쟁
+  # ============================================================
+  /reviews:
+    post:
+      tags: [P6-review-settlement]
+      summary: 리뷰 작성 (ROLE_CLIENT, 본인 COMPLETED 세션, 금칙어 검증 — ADR-8)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReviewCreateRequest"
+      responses:
+        "201":
+          description: 작성 완료
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseEnvelope"
+        "400":
+          description: SESSION_NOT_COMPLETED
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: REVIEW_ALREADY_EXISTS
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    get:
+      tags: [P6-review-settlement]
+      summary: 리뷰 목록 조회 (permitAll, 익명 시 authorName null)
+      security: []
+      parameters:
+        - name: counselorId
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - $ref: "#/components/parameters/PageParam"
+        - $ref: "#/components/parameters/SizeParam"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiResponseEnvelope"
+                  - type: object
+                    properties:
+                      data:
+                        allOf:
+                          - $ref: "#/components/schemas/PageMeta"
+                          - type: object
+                            properties:
+                              content:
+                                type: array
+                                items:
+                                  $ref: "#/components/schemas/ReviewListItem"
+
+  /sessions/{id}/status:
+    patch:
+      tags: [P6-review-settlement]
+      summary: 상담 완료 처리 (ROLE_COUNSELOR, CONFIRMED → COMPLETED만. 자동완료 스케줄러 병행)
+      parameters:
+        - $ref: "#/components/parameters/IdParam"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status:
+                  type: string
+                  enum: [COMPLETED]
+      responses:
+        "200":
+          description: COMPLETED로 전이
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseEnvelope"
+        "409":
+          description: INVALID_SESSION_STATUS
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /counselors/me/earnings:
+    get:
+      tags: [P6-review-settlement]
+      summary: 내 정산 내역 (ROLE_COUNSELOR)
+      parameters:
+        - name: month
+          in: query
+          required: true
+          schema:
+            type: string
+            example: "2026-07"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiResponseEnvelope"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/EarningsResponse"
+
+  /sessions/{id}/cancel:
+    post:
+      tags: [P6-review-settlement]
+      summary: 예약 취소 (ROLE_CLIENT 또는 ROLE_COUNSELOR — 환불율은 §5 취소 환불율 표)
+      parameters:
+        - $ref: "#/components/parameters/IdParam"
+      responses:
+        "200":
+          description: 취소 처리 완료
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiResponseEnvelope"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/SessionCancelResponse"
+        "409":
+          description: SESSION_ALREADY_CANCELLED | INVALID_SESSION_STATUS
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /sessions/{id}/report-no-show:
+    post:
+      tags: [P6-review-settlement]
+      summary: 노쇼 신고 (ROLE_CLIENT, 시작시각 경과 후)
+      parameters:
+        - $ref: "#/components/parameters/IdParam"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                description:
+                  type: string
+      responses:
+        "201":
+          description: 분쟁 접수 (OPEN)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiResponseEnvelope"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/NoShowReportResponse"
+        "400":
+          description: SESSION_NOT_STARTED
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: DISPUTE_ALREADY_EXISTS
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /admin/disputes:
+    get:
+      tags: [P6-review-settlement]
+      summary: 분쟁 목록 조회 (ROLE_ADMIN)
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [OPEN, RESOLVED_REFUND, RESOLVED_REJECT]
+        - $ref: "#/components/parameters/PageParam"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiResponseEnvelope"
+                  - type: object
+                    properties:
+                      data:
+                        allOf:
+                          - $ref: "#/components/schemas/PageMeta"
+                          - type: object
+                            properties:
+                              content:
+                                type: array
+                                items:
+                                  $ref: "#/components/schemas/DisputeListItem"
+
+  /admin/disputes/{id}:
+    patch:
+      tags: [P6-review-settlement]
+      summary: 분쟁 해결 (ROLE_ADMIN — REFUND 시 전액환불 실행 + 페널티 기록, ADR-7)
+      parameters:
+        - $ref: "#/components/parameters/IdParam"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [resolution]
+              properties:
+                resolution:
+                  type: string
+                  enum: [REFUND, REJECT]
+                resolutionNote:
+                  type: string
+      responses:
+        "200":
+          description: 해결 처리 완료
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseEnvelope"
+        "409":
+          description: DISPUTE_ALREADY_RESOLVED
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    IdParam:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+    PageParam:
+      name: page
+      in: query
+      schema:
+        type: integer
+        default: 0
+    SizeParam:
+      name: size
+      in: query
+      schema:
+        type: integer
+        default: 20
+
+  responses:
+    ValidationError:
+      description: INVALID_INPUT — 요청 필드 검증 실패
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    Unauthorized:
+      description: INVALID_TOKEN | EXPIRED_TOKEN
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    Forbidden:
+      description: ACCESS_DENIED | FORBIDDEN_ROLE
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+
+  schemas:
+    # ---------- 공통 ----------
+    ApiResponseEnvelope:
+      type: object
+      description: 성공 응답 공통 래퍼. data는 각 엔드포인트별로 오버라이드됨.
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          nullable: true
+        data:
+          type: object
+          nullable: true
+
+    ErrorResponse:
+      type: object
+      description: 실패 응답 공통 포맷 (P1.5부터 code 필드 추가 — GlobalExceptionHandler)
+      properties:
+        success:
+          type: boolean
+          example: false
+        code:
+          type: string
+          description: ErrorCode enum name (예 SESSION_TIME_CONFLICT)
+        message:
+          type: string
+      required: [success, code, message]
+
+    PageMeta:
+      type: object
+      properties:
+        page:
+          type: integer
+        size:
+          type: integer
+        totalElements:
+          type: integer
+        totalPages:
+          type: integer
+
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+          example: UP
+        service:
+          type: string
+          example: MindFit API
+
+    # ---------- P1 Auth ----------
+    SignupRequest:
+      type: object
+      required: [email, password, name, role]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 8
+          maxLength: 20
+        name:
+          type: string
+        birthDate:
+          type: string
+          format: date
+          nullable: true
+        role:
+          type: string
+          enum: [ROLE_CLIENT, ROLE_COUNSELOR]
+          description: ROLE_ADMIN 가입은 서버에서 차단됨
+
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+
+    RefreshRequest:
+      type: object
+      required: [refreshToken]
+      properties:
+        refreshToken:
+          type: string
+
+    TokenResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string
+        refreshToken:
+          type: string
+        userId:
+          type: integer
+          format: int64
+        role:
+          type: string
+          enum: [ROLE_CLIENT, ROLE_COUNSELOR, ROLE_ADMIN]
+
+    # ---------- P2 온보딩 ----------
+    UserMeResponse:
+      type: object
+      properties:
+        userId:
+          type: integer
+          format: int64
+        email:
+          type: string
+        name:
+          type: string
+        role:
+          type: string
+          enum: [ROLE_CLIENT, ROLE_COUNSELOR, ROLE_ADMIN]
+
+    CredentialUploadResponse:
+      type: object
+      properties:
+        credentialId:
+          type: integer
+          format: int64
+        status:
+          type: string
+          enum: [PENDING]
+
+    CounselorProfileResponse:
+      type: object
+      properties:
+        userId:
+          type: integer
+          format: int64
+        bio:
+          type: string
+        photoUrl:
+          type: string
+        pricePerSession:
+          type: integer
+        status:
+          type: string
+          enum: [PENDING, APPROVED, REJECTED]
+        specialties:
+          type: array
+          items:
+            type: string
+        approachTypes:
+          type: array
+          items:
+            type: string
+        sessionTypes:
+          type: array
+          items:
+            type: string
+            enum: [CHAT, VIDEO_LINK]
+
+    CounselorProfileUpdateRequest:
+      type: object
+      properties:
+        bio:
+          type: string
+        photoUrl:
+          type: string
+        pricePerSession:
+          type: integer
+        specialtyIds:
+          type: array
+          items:
+            type: integer
+            format: int64
+        approachTypeIds:
+          type: array
+          items:
+            type: integer
+            format: int64
+        sessionTypes:
+          type: array
+          items:
+            type: string
+            enum: [CHAT, VIDEO_LINK]
+
+    CredentialListItem:
+      type: object
+      properties:
+        credentialId:
+          type: integer
+          format: int64
+        counselorId:
+          type: integer
+          format: int64
+        counselorName:
+          type: string
+        type:
+          type: string
+          enum: [ENROLLMENT, DEGREE, LICENSE, ID]
+        fileUrl:
+          type: string
+          description: presigned URL
+        status:
+          type: string
+          enum: [PENDING, APPROVED, REJECTED]
+        createdAt:
+          type: string
+          format: date-time
+
+    CredentialReviewRequest:
+      type: object
+      required: [action]
+      properties:
+        action:
+          type: string
+          enum: [APPROVE, REJECT]
+        rejectReason:
+          type: string
+          description: action=REJECT일 때 필수
+
+    # ---------- P3 탐색·예약·문진표 ----------
+    CounselorSearchItem:
+      type: object
+      properties:
+        counselorId:
+          type: integer
+          format: int64
+        name:
+          type: string
+        photoUrl:
+          type: string
+        specialties:
+          type: array
+          items:
+            type: string
+        pricePerSession:
+          type: integer
+        ratingAvg:
+          type: number
+          format: float
+        reviewCount:
+          type: integer
+
+    CounselorDetailResponse:
+      allOf:
+        - $ref: "#/components/schemas/CounselorSearchItem"
+        - type: object
+          properties:
+            bio:
+              type: string
+            approachTypes:
+              type: array
+              items:
+                type: string
+            sessionTypes:
+              type: array
+              items:
+                type: string
+
+    AvailabilityUpsertRequest:
+      type: object
+      properties:
+        slots:
+          type: array
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+                enum: [WEEKLY, SPECIFIC]
+              dayOfWeek:
+                type: string
+                nullable: true
+              date:
+                type: string
+                format: date
+                nullable: true
+              startTime:
+                type: string
+                example: "14:00"
+              endTime:
+                type: string
+                example: "15:00"
+              isBlocked:
+                type: boolean
+
+    AvailabilitySlotsResponse:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+        slots:
+          type: array
+          items:
+            type: object
+            properties:
+              startTime:
+                type: string
+              endTime:
+                type: string
+              available:
+                type: boolean
+
+    SessionCreateRequest:
+      type: object
+      required: [counselorId, scheduledAt, durationMin, sessionType]
+      properties:
+        counselorId:
+          type: integer
+          format: int64
+        scheduledAt:
+          type: string
+          format: date-time
+        durationMin:
+          type: integer
+        sessionType:
+          type: string
+          enum: [CHAT, VIDEO_LINK]
+
+    SessionCreateResponse:
+      type: object
+      properties:
+        sessionId:
+          type: integer
+          format: int64
+        status:
+          type: string
+          enum: [PENDING_PAYMENT]
+        amount:
+          type: integer
+
+    SessionListItem:
+      type: object
+      properties:
+        sessionId:
+          type: integer
+          format: int64
+        counselorId:
+          type: integer
+          format: int64
+        clientId:
+          type: integer
+          format: int64
+        scheduledAt:
+          type: string
+          format: date-time
+        status:
+          $ref: "#/components/schemas/SessionStatus"
+
+    SessionStatus:
+      type: string
+      enum:
+        - PENDING_PAYMENT
+        - AWAITING_CONFIRM
+        - CONFIRMED
+        - COMPLETED
+        - REJECTED
+        - CANCELLED_BY_CLIENT
+        - CANCELLED_BY_COUNSELOR
+        - NO_SHOW
+      description: ADR-0 상태머신 (§3 참조)
+
+    QuestionnaireCreateRequest:
+      type: object
+      required: [sessionId, mainConcern, severity]
+      properties:
+        sessionId:
+          type: integer
+          format: int64
+        mainConcern:
+          type: string
+          maxLength: 1000
+        severity:
+          type: integer
+          minimum: 1
+          maximum: 5
+        durationText:
+          type: string
+        priorExperience:
+          type: string
+        goal:
+          type: string
+        additionalNote:
+          type: string
+
+    QuestionnaireCreateResponse:
+      type: object
+      properties:
+        questionnaireId:
+          type: integer
+          format: int64
+        isAccessible:
+          type: boolean
+          example: false
+
+    QuestionnaireResponse:
+      allOf:
+        - $ref: "#/components/schemas/QuestionnaireCreateRequest"
+        - type: object
+          properties:
+            questionnaireId:
+              type: integer
+              format: int64
+            isAccessible:
+              type: boolean
+            submittedAt:
+              type: string
+              format: date-time
+
+    # ---------- P4 결제 ----------
+    PaymentInitializeResponse:
+      type: object
+      properties:
+        paymentId:
+          type: integer
+          format: int64
+        orderId:
+          type: string
+        amount:
+          type: integer
+          description: 서버가 상담사 가격에서 계산 (클라이언트 입력 무시)
+        orderName:
+          type: string
+
+    PaymentConfirmRequest:
+      type: object
+      required: [paymentKey, orderId, amount]
+      properties:
+        paymentKey:
+          type: string
+        orderId:
+          type: string
+        amount:
+          type: integer
+
+    PaymentConfirmResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [COMPLETED]
+        chatRoomId:
+          type: integer
+          format: int64
+
+    # ---------- P5 채팅 ----------
+    ChatRoomListItem:
+      type: object
+      properties:
+        roomId:
+          type: integer
+          format: int64
+        partnerName:
+          type: string
+        lastMessage:
+          type: string
+          nullable: true
+        unreadCount:
+          type: integer
+
+    ChatMessage:
+      type: object
+      properties:
+        messageId:
+          type: integer
+          format: int64
+        chatRoomId:
+          type: integer
+          format: int64
+        senderId:
+          type: integer
+          format: int64
+        content:
+          type: string
+        messageType:
+          type: string
+          enum: [TEXT, IMAGE, LINK]
+        clientMessageId:
+          type: string
+          description: 클라이언트 생성 UUID — 중복 제거용 (ADR-9)
+        createdAt:
+          type: string
+          format: date-time
+
+    ChatMessageListResponse:
+      type: object
+      properties:
+        messages:
+          type: array
+          items:
+            $ref: "#/components/schemas/ChatMessage"
+        hasNext:
+          type: boolean
+
+    ChatMessageSendRequest:
+      type: object
+      required: [content, messageType, clientMessageId]
+      properties:
+        content:
+          type: string
+        messageType:
+          type: string
+          enum: [TEXT, IMAGE, LINK]
+        clientMessageId:
+          type: string
+          format: uuid
+
+    # ---------- P6 리뷰·정산·분쟁 ----------
+    ReviewCreateRequest:
+      type: object
+      required: [sessionId, rating]
+      properties:
+        sessionId:
+          type: integer
+          format: int64
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+        content:
+          type: string
+        isAnonymous:
+          type: boolean
+          default: false
+
+    ReviewListItem:
+      type: object
+      properties:
+        reviewId:
+          type: integer
+          format: int64
+        authorName:
+          type: string
+          nullable: true
+          description: isAnonymous=true면 null
+        rating:
+          type: integer
+        content:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    EarningsResponse:
+      type: object
+      properties:
+        sessionCount:
+          type: integer
+        grossAmount:
+          type: integer
+        fee:
+          type: integer
+          description: 수수료 20%
+        netAmount:
+          type: integer
+          description: 정산액 = 금액 × 0.8
+        sessions:
+          type: array
+          items:
+            $ref: "#/components/schemas/SessionListItem"
+
+    SessionCancelResponse:
+      type: object
+      properties:
+        refundAmount:
+          type: integer
+        refundRate:
+          type: number
+          format: float
+          description: "CLIENT 24h 이상 전=1.0 / 24h 미만=0.5 / 시작 후=취소 불가. COUNSELOR=시점 무관 1.0"
+
+    NoShowReportResponse:
+      type: object
+      properties:
+        disputeId:
+          type: integer
+          format: int64
+        status:
+          type: string
+          enum: [OPEN]
+
+    DisputeListItem:
+      type: object
+      properties:
+        disputeId:
+          type: integer
+          format: int64
+        sessionId:
+          type: integer
+          format: int64
+        reporterId:
+          type: integer
+          format: int64
+        description:
+          type: string
+        status:
+          type: string
+          enum: [OPEN, RESOLVED_REFUND, RESOLVED_REJECT]
+        createdAt:
+          type: string
+          format: date-time

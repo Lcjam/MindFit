@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MindFit — 서비스 개요 기획서</title>
+  <style>
+    :root {
+      --primary:     #4F6EF7;
+      --primary-dark:#3451D1;
+      --accent:      #7C3AED;
+      --success:     #059669;
+      --warning:     #D97706;
+      --bg:          #F8F9FC;
+      --surface:     #FFFFFF;
+      --border:      #E4E8F0;
+      --text:        #1A1D2E;
+      --text-sub:    #5A6070;
+      --text-muted:  #9299A8;
+      --radius:      12px;
+      --shadow:      0 2px 12px rgba(79,110,247,.08);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      font-size: 15px;
+    }
+    /* ── 헤더 ── */
+    header {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+      color: #fff;
+      padding: 56px 40px 48px;
+    }
+    header .doc-meta {
+      font-size: 12px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      opacity: .75;
+      margin-bottom: 14px;
+    }
+    header h1 {
+      font-size: 36px;
+      font-weight: 800;
+      letter-spacing: -.02em;
+      line-height: 1.2;
+    }
+    header .subtitle {
+      margin-top: 10px;
+      font-size: 17px;
+      opacity: .85;
+      max-width: 620px;
+    }
+    header .tags {
+      margin-top: 22px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    header .tag {
+      background: rgba(255,255,255,.18);
+      border: 1px solid rgba(255,255,255,.3);
+      border-radius: 99px;
+      padding: 4px 14px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    /* ── 레이아웃 ── */
+    main {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 48px 24px 80px;
+    }
+    section { margin-bottom: 56px; }
+    /* ── 섹션 제목 ── */
+    .section-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--primary);
+      margin-bottom: 8px;
+    }
+    h2 {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--text);
+      margin-bottom: 20px;
+      padding-bottom: 14px;
+      border-bottom: 2px solid var(--border);
+    }
+    h3 {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 10px;
+      margin-top: 4px;
+    }
+    p { color: var(--text-sub); margin-bottom: 12px; }
+    /* ── 정의 박스 ── */
+    .definition-box {
+      background: linear-gradient(135deg, #EEF2FF 0%, #F5F0FF 100%);
+      border-left: 4px solid var(--primary);
+      border-radius: var(--radius);
+      padding: 24px 28px;
+      margin-bottom: 20px;
+    }
+    .definition-box .def-title {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--primary);
+      margin-bottom: 8px;
+    }
+    .definition-box p {
+      font-size: 16px;
+      color: var(--text);
+      font-weight: 600;
+      margin: 0;
+    }
+    .definition-box .detail {
+      font-size: 14px;
+      font-weight: 400;
+      color: var(--text-sub);
+      margin-top: 8px;
+    }
+    /* ── 카드 그리드 ── */
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 18px;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: var(--shadow);
+    }
+    .card .card-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      margin-bottom: 14px;
+    }
+    .card.blue   .card-icon { background: #EEF2FF; }
+    .card.green  .card-icon { background: #ECFDF5; }
+    .card.purple .card-icon { background: #F5F0FF; }
+    .card.orange .card-icon { background: #FFF7ED; }
+    /* ── 문제 카드 (공급/수요) ── */
+    .problem-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    @media (max-width: 640px) {
+      .problem-grid { grid-template-columns: 1fr; }
+    }
+    .problem-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: var(--shadow);
+    }
+    .problem-card .role-badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      padding: 4px 12px;
+      border-radius: 99px;
+      margin-bottom: 14px;
+    }
+    .problem-card.supply .role-badge { background: #EEF2FF; color: var(--primary); }
+    .problem-card.demand .role-badge { background: #ECFDF5; color: var(--success); }
+    .problem-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+    }
+    .problem-list li {
+      padding-left: 20px;
+      position: relative;
+      font-size: 14px;
+      color: var(--text-sub);
+      line-height: 1.6;
+    }
+    .problem-list li::before {
+      content: '→';
+      position: absolute;
+      left: 0;
+      color: var(--text-muted);
+      font-size: 12px;
+      top: 2px;
+    }
+    /* ── 핵심 가치 ── */
+    .value-cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+    }
+    @media (max-width: 640px) {
+      .value-cards { grid-template-columns: 1fr; }
+    }
+    .value-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px 22px;
+      box-shadow: var(--shadow);
+      text-align: center;
+    }
+    .value-card .num {
+      font-size: 32px;
+      font-weight: 900;
+      color: var(--border);
+      margin-bottom: 6px;
+    }
+    .value-card .v-title {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+    .value-card p {
+      font-size: 13px;
+      color: var(--text-sub);
+      margin: 0;
+    }
+    /* ── 포지셔닝 표 ── */
+    .comparison-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--surface);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      font-size: 14px;
+    }
+    .comparison-table thead tr {
+      background: var(--primary);
+      color: #fff;
+    }
+    .comparison-table th {
+      padding: 14px 18px;
+      text-align: left;
+      font-weight: 700;
+      font-size: 13px;
+    }
+    .comparison-table td {
+      padding: 13px 18px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-sub);
+      vertical-align: top;
+    }
+    .comparison-table tbody tr:last-child td { border-bottom: none; }
+    .comparison-table tbody tr:nth-child(even) td { background: #FAFBFD; }
+    .comparison-table .highlight td { background: #EEF2FF !important; }
+    .comparison-table .highlight td:first-child { font-weight: 700; color: var(--primary); }
+    .badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 99px;
+    }
+    .badge-blue   { background: #EEF2FF; color: var(--primary); }
+    .badge-green  { background: #ECFDF5; color: var(--success); }
+    .badge-orange { background: #FFF7ED; color: var(--warning); }
+    /* ── 인사이트 박스 ── */
+    .insight-box {
+      background: #1A1D2E;
+      color: #fff;
+      border-radius: var(--radius);
+      padding: 28px 32px;
+      margin-bottom: 20px;
+    }
+    .insight-box .insight-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: #7C9AFF;
+      margin-bottom: 10px;
+    }
+    .insight-box .insight-quote {
+      font-size: 18px;
+      font-weight: 700;
+      line-height: 1.5;
+      margin-bottom: 14px;
+    }
+    .insight-box p {
+      font-size: 14px;
+      color: rgba(255,255,255,.65);
+      margin: 0;
+    }
+    /* ── 언어 전략 ── */
+    .lang-compare {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 16px;
+      align-items: center;
+    }
+    .lang-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      text-align: center;
+    }
+    .lang-box.avoid { border-color: #FCA5A5; background: #FFF5F5; }
+    .lang-box.use   { border-color: #6EE7B7; background: #F0FDF9; }
+    .lang-box .lang-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .lang-box.avoid .lang-label { color: #DC2626; }
+    .lang-box.use   .lang-label { color: var(--success); }
+    .lang-box .words {
+      font-size: 20px;
+      font-weight: 800;
+    }
+    .lang-box.avoid .words { color: #DC2626; text-decoration: line-through; }
+    .lang-box.use   .words { color: var(--success); }
+    .lang-arrow { font-size: 28px; color: var(--text-muted); text-align: center; }
+    /* ── MVP / 로드맵 ── */
+    .scope-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    @media (max-width: 640px) {
+      .scope-grid { grid-template-columns: 1fr; }
+    }
+    .scope-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: var(--shadow);
+    }
+    .scope-card .scope-badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      padding: 4px 12px;
+      border-radius: 99px;
+      margin-bottom: 16px;
+    }
+    .scope-card.mvp .scope-badge   { background: #EEF2FF; color: var(--primary); }
+    .scope-card.future .scope-badge { background: #F5F0FF; color: var(--accent); }
+    .scope-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .scope-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      font-size: 14px;
+      color: var(--text-sub);
+    }
+    .scope-list li .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      margin-top: 7px;
+      flex-shrink: 0;
+    }
+    .scope-card.mvp .dot    { background: var(--primary); }
+    .scope-card.future .dot { background: var(--accent); }
+    /* ── 푸터 ── */
+    footer {
+      text-align: center;
+      padding: 32px 24px;
+      font-size: 12px;
+      color: var(--text-muted);
+      border-top: 1px solid var(--border);
+    }
+  </style>
+</head>
+<body>
+
+<!-- ──────────────────── 헤더 ──────────────────── -->
+<header>
+  <div class="doc-meta">MindFit Planning Docs · Document 01</div>
+  <h1>서비스 개요</h1>
+  <p class="subtitle">심리상담 전문가 마켓플레이스 MindFit의 서비스 정의, 포지셔닝, 핵심 가치 및 MVP 범위 기획서</p>
+  <div class="tags">
+    <span class="tag">서비스 기획</span>
+    <span class="tag">포지셔닝</span>
+    <span class="tag">마켓플레이스</span>
+    <span class="tag">멘탈헬스</span>
+    <span class="tag">v0.1 Draft</span>
+  </div>
+</header>
+
+<main>
+
+  <!-- ① 서비스 정의 -->
+  <section>
+    <div class="section-label">Section 01</div>
+    <h2>서비스 정의</h2>
+
+    <div class="definition-box">
+      <div class="def-title">한 줄 정의</div>
+      <p>MindFit은 검증된 심리상담 전문가와 도움이 필요한 내담자를 연결하는 <strong>심리상담 버티컬 마켓플레이스</strong>입니다.</p>
+      <p class="detail">배달의민족·쿠팡이츠가 음식 공급자(식당)와 수요자(소비자)를 연결하듯, MindFit은 공급자(임상·상담심리 전문 상담사)와 수요자(우울·번아웃 등을 겪는 직장인)를 디지털 플랫폼으로 연결합니다. 자체 채팅 시스템을 기반으로 텍스트 상담 또는 Zoom 링크 공유를 통한 화상 상담을 지원합니다.</p>
+    </div>
+
+    <div class="card-grid">
+      <div class="card blue">
+        <div class="card-icon">🏗️</div>
+        <h3>플랫폼 구조</h3>
+        <p>양면 시장(Two-sided Marketplace). 상담사와 내담자 두 고객 집단 모두를 위한 가치를 창출하며, 플랫폼이 중간에서 신뢰·결제·커뮤니케이션 인프라를 제공합니다.</p>
+      </div>
+      <div class="card green">
+        <div class="card-icon">💬</div>
+        <h3>상담 진행 방식</h3>
+        <p>자체 채팅 시스템(실시간) 기반. 상담사가 Zoom 링크를 채팅으로 공유하거나 텍스트 상담으로 진행합니다. 외부 화상회의 API는 연동하지 않습니다.</p>
+      </div>
+      <div class="card purple">
+        <div class="card-icon">📋</div>
+        <h3>문진표 시스템</h3>
+        <p>내담자가 상담 신청 시 문진표를 작성하며, 결제 완료 후 해당 상담사만 열람 가능합니다. 개인정보 보호와 신뢰 형성의 핵심 장치입니다.</p>
+      </div>
+      <div class="card orange">
+        <div class="card-icon">🎓</div>
+        <h3>상담사 자격 검증</h3>
+        <p>임상·상담심리 석사 이상 학위 보유자만 등록 가능. 자격증·학위 서류를 업로드하면 관리자가 직접 승인합니다. 플랫폼 신뢰의 핵심 차별점입니다.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ② 해결하는 문제 -->
+  <section>
+    <div class="section-label">Section 02</div>
+    <h2>해결하는 문제</h2>
+
+    <div class="problem-grid">
+      <div class="problem-card supply">
+        <div class="role-badge">공급 측 — 상담사</div>
+        <h3>상담사가 겪는 문제</h3>
+        <ul class="problem-list">
+          <li>개인 상담사의 마케팅·홍보 역량 부재 — 임상 전문가가 마케팅을 별도로 배워야 하는 구조</li>
+          <li>클라이언트 예약·결제·일정 관리를 모두 개인이 수동으로 처리</li>
+          <li>신뢰 없는 초기 내담자 확보의 어려움 — 온라인 후기·신뢰 시스템 부재</li>
+          <li>자격을 갖춘 전문가와 무자격자가 온라인에서 혼재 — 전문성 희석</li>
+          <li>소규모 개인 개업 시 초기 고정비(공간 임대 등) 부담</li>
+        </ul>
+      </div>
+      <div class="problem-card demand">
+        <div class="role-badge">수요 측 — 내담자</div>
+        <h3>내담자가 겪는 문제</h3>
+        <ul class="problem-list">
+          <li>어떤 상담사가 실제로 자격을 갖췄는지 검증 불가 — 사기·부실 상담 위험</li>
+          <li>상담 예약 프로세스의 높은 마찰 — 전화 문의, 이메일, 긴 대기 시간</li>
+          <li>가격 정보 불투명 — 상담 전까지 비용을 알기 어려움</li>
+          <li>우울·번아웃 상태에서 "상담받겠다"는 결심을 실행으로 연결하는 행동력 저하</li>
+          <li>멘탈 케어에 대한 사회적 낙인(stigma) — 상담을 받는다는 사실이 알려질까 하는 두려움</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ③ 핵심 가치 -->
+  <section>
+    <div class="section-label">Section 03</div>
+    <h2>핵심 가치 3가지</h2>
+
+    <div class="value-cards">
+      <div class="value-card">
+        <div class="num">01</div>
+        <div class="v-title">접근성 (Accessibility)</div>
+        <p>웹·모바일 웹을 통해 언제 어디서나 상담사를 탐색하고 즉시 예약 가능. 복잡한 절차 없이 몇 번의 탭으로 상담 예약 완료. 행동력이 저하된 사용자도 진입할 수 있는 초저마찰 UX.</p>
+      </div>
+      <div class="value-card">
+        <div class="v-title" style="margin-top:38px;">신뢰 (Trust &amp; Verification)</div>
+        <div class="num" style="margin-top:0;">02</div>
+        <div class="v-title">신뢰 (Trust &amp; Verification)</div>
+        <p>임상·상담심리 석사 이상 + 관리자 서류 승인 시스템으로 자격 미달 상담사 원천 차단. 투명한 가격 공개, 리뷰 시스템으로 선택의 근거 제공.</p>
+      </div>
+      <div class="value-card">
+        <div class="v-title" style="margin-top:38px;">프라이버시 (Privacy)</div>
+        <div class="num" style="margin-top:0;">03</div>
+        <div class="v-title">프라이버시 (Privacy)</div>
+        <p>문진표는 결제 완료 후 해당 상담사만 열람 가능. 익명성 보장, 낙인 감소 설계. 상담 기록과 개인정보를 엄격히 보호하여 사용자가 심리적 안전감을 느끼도록 설계.</p>
+      </div>
+    </div>
+    <!-- 중복 카드 제거를 위해 JS 없이 정적으로 올바르게 3개만 표시 -->
+  </section>
+
+  <!-- ④ 포지셔닝 비교 -->
+  <section>
+    <div class="section-label">Section 04</div>
+    <h2>경쟁 포지셔닝</h2>
+
+    <table class="comparison-table">
+      <thead>
+        <tr>
+          <th>구분</th>
+          <th>마인드카페</th>
+          <th>트로스트</th>
+          <th>MindFit</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>핵심 포지셔닝</strong></td>
+          <td>콘텐츠·커뮤니티 중심</td>
+          <td>채팅 상담 중심</td>
+          <td>전문 자격 상담사 마켓플레이스</td>
+        </tr>
+        <tr>
+          <td><strong>주요 서비스</strong></td>
+          <td>정서 관리 콘텐츠, 커뮤니티, 상담 연결</td>
+          <td>구독형 텍스트 채팅 상담</td>
+          <td>상담사 탐색 → 예약 → 결제 → 채팅/화상 상담</td>
+        </tr>
+        <tr>
+          <td><strong>상담사 자격 기준</strong></td>
+          <td>다양한 수준 (낮음~중간)</td>
+          <td>심리사 자격 확인 (중간)</td>
+          <td><span class="badge badge-blue">임상·상담심리 석사 이상 + 서류 심사 (높음)</span></td>
+        </tr>
+        <tr>
+          <td><strong>수익 모델</strong></td>
+          <td>B2C 구독 + 광고</td>
+          <td>B2C 구독</td>
+          <td>세션 중개 수수료 (20%)</td>
+        </tr>
+        <tr>
+          <td><strong>가격 투명성</strong></td>
+          <td>낮음</td>
+          <td>정액제 (중간)</td>
+          <td><span class="badge badge-green">상담사 자율 책정, 사전 공개</span></td>
+        </tr>
+        <tr>
+          <td><strong>프라이버시 설계</strong></td>
+          <td>보통</td>
+          <td>보통</td>
+          <td><span class="badge badge-blue">문진표 접근 권한 분리, 익명성 강조</span></td>
+        </tr>
+        <tr class="highlight">
+          <td><strong>핵심 차별점</strong></td>
+          <td>풍부한 콘텐츠 생태계</td>
+          <td>낮은 진입 장벽의 채팅</td>
+          <td>자격 검증 + 투명한 마켓플레이스 구조</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ⑤ 언어 전략 -->
+  <section>
+    <div class="section-label">Section 05</div>
+    <h2>언어 전략 — "치료"가 아닌 "상담"</h2>
+
+    <div class="lang-compare" style="margin-bottom: 20px;">
+      <div class="lang-box avoid">
+        <div class="lang-label">사용 금지</div>
+        <div class="words">치료 / 진료 / 처방</div>
+      </div>
+      <div class="lang-arrow">→</div>
+      <div class="lang-box use">
+        <div class="lang-label">사용 권장</div>
+        <div class="words">상담 / 코칭 / 대화</div>
+      </div>
+    </div>
+
+    <div class="card-grid">
+      <div class="card blue">
+        <div class="card-icon">⚖️</div>
+        <h3>의료법 저촉 회피</h3>
+        <p>"치료", "진료", "처방" 등의 표현은 의료법상 의사·정신건강의학과 전문의의 영역입니다. MindFit은 의료 서비스가 아닌 심리 상담 서비스임을 명확히 해야 규제 리스크를 피할 수 있습니다.</p>
+      </div>
+      <div class="card green">
+        <div class="card-icon">🏷️</div>
+        <h3>낙인(Stigma) 감소</h3>
+        <p>"치료"라는 단어는 "나는 병자다"라는 인식을 유발해 잠재 사용자의 진입 장벽을 높입니다. "상담", "코칭", "대화"는 일상적이고 긍정적인 자기 계발 프레임으로 접근성을 높입니다.</p>
+      </div>
+      <div class="card purple">
+        <div class="card-icon">💡</div>
+        <h3>카피라이팅 원칙</h3>
+        <p>모든 UI 문구, 마케팅 텍스트, 이메일에서 의료적 언어를 배제합니다. "마음이 힘들 때, 전문가와 대화하세요" 방향으로 통일합니다.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ⑥ 핵심 인사이트 -->
+  <section>
+    <div class="section-label">Section 06</div>
+    <h2>핵심 UX 인사이트</h2>
+
+    <div class="insight-box">
+      <div class="insight-label">Core Insight</div>
+      <div class="insight-quote">"우울·번아웃 사용자는 행동력이 저하되어 있다. UX 마찰을 극단적으로 줄이지 않으면 이탈한다."</div>
+      <p>우리의 핵심 타겟(우울·번아웃 직장인)은 정상적인 컨디션의 사용자가 아닙니다. 회원가입 절차가 길면 포기하고, 결제 단계가 복잡하면 이탈하며, 상담사 탐색이 어려우면 "나중에 하지 뭐"라고 미루게 됩니다. 그 "나중"은 오지 않을 수 있습니다.</p>
+    </div>
+
+    <div class="card-grid">
+      <div class="card blue">
+        <div class="card-icon">⚡</div>
+        <h3>3분 예약 원칙</h3>
+        <p>첫 방문 후 3분 이내에 상담사를 선택하고 예약을 완료할 수 있어야 합니다. 불필요한 정보 입력, 복잡한 인증 절차는 모두 제거 대상입니다.</p>
+      </div>
+      <div class="card green">
+        <div class="card-icon">🎯</div>
+        <h3>결정 피로 최소화</h3>
+        <p>상담사 목록에 너무 많은 선택지를 주면 오히려 결정하지 못합니다. 개인화 추천·필터·태그를 활용해 적정 수의 상담사를 빠르게 매칭합니다.</p>
+      </div>
+      <div class="card purple">
+        <div class="card-icon">🛡️</div>
+        <h3>심리적 안전감 제공</h3>
+        <p>문진표 내용이 상담사 외 타인에게 공개되지 않는다는 점을 UI에서 명시적으로 보여줘야 합니다. 불안 요소를 사전에 해소하는 것이 전환율에 직접 영향을 줍니다.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ⑦ MVP vs 향후 확장 -->
+  <section>
+    <div class="section-label">Section 07</div>
+    <h2>MVP 범위 vs 향후 확장</h2>
+
+    <div class="scope-grid">
+      <div class="scope-card mvp">
+        <span class="scope-badge">MVP — 핵심 기능</span>
+        <ul class="scope-list">
+          <li><span class="dot"></span>상담사 회원가입 + 자격 서류 업로드 + 관리자 승인</li>
+          <li><span class="dot"></span>내담자 회원가입 + 프로필 설정</li>
+          <li><span class="dot"></span>상담사 탐색 (키워드·태그·가격 필터)</li>
+          <li><span class="dot"></span>상담사 프로필 상세 페이지 (자격증, 소개, 가격, 리뷰)</li>
+          <li><span class="dot"></span>상담 신청 + 문진표 작성</li>
+          <li><span class="dot"></span>결제 처리 (PG 연동)</li>
+          <li><span class="dot"></span>자체 실시간 채팅 시스템</li>
+          <li><span class="dot"></span>상담 후 리뷰 작성</li>
+          <li><span class="dot"></span>상담사 정산 (수수료 20% 공제 후 정산)</li>
+          <li><span class="dot"></span>관리자 대시보드 (상담사 승인/관리, 정산 관리)</li>
+        </ul>
+      </div>
+      <div class="scope-card future">
+        <span class="scope-badge">향후 확장 방향</span>
+        <ul class="scope-list">
+          <li><span class="dot"></span>AI 기반 상담사 매칭 추천 알고리즘</li>
+          <li><span class="dot"></span>B2B EAP(Employee Assistance Program) 기업 계약</li>
+          <li><span class="dot"></span>정기 구독 플랜 (월 N회 상담 패키지)</li>
+          <li><span class="dot"></span>프리미엄 상담사 노출(Featured Listing) 광고 상품</li>
+          <li><span class="dot"></span>그룹 상담 / 워크숍 예약 기능</li>
+          <li><span class="dot"></span>심리 검사 도구 연동 (PHQ-9, GAD-7 등)</li>
+          <li><span class="dot"></span>상담 일지 / 진행 기록 관리</li>
+          <li><span class="dot"></span>네이티브 앱 (iOS / Android)</li>
+          <li><span class="dot"></span>다국어 지원 (영어, 일본어)</li>
+          <li><span class="dot"></span>보험사·복지 포인트 연동 결제</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  MindFit Planning Docs · Document 01 — Service Overview · Draft v0.1 · 2026-05-24<br>
+  이 문서는 MindFit 내부 기획 전용 자료로, 외부 공개를 금합니다.
+</footer>
+
+</body>
+</html>
