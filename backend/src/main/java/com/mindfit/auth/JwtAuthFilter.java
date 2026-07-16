@@ -1,5 +1,6 @@
 package com.mindfit.auth;
 
+import com.mindfit.common.ErrorCode;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -32,19 +33,30 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         String token = extractToken(request);
 
-        if (StringUtils.hasText(token) && jwtTokenProvider.validateToken(token)) {
-            Long userId = jwtTokenProvider.getUserIdFromToken(token);
-            String role  = jwtTokenProvider.getRoleFromToken(token);
+        if (StringUtils.hasText(token)) {
+            JwtTokenProvider.TokenStatus status = jwtTokenProvider.validate(token);
+            switch (status) {
+                case VALID -> {
+                    Long userId = jwtTokenProvider.getUserIdFromToken(token);
+                    String role = jwtTokenProvider.getRoleFromToken(token);
 
-            UsernamePasswordAuthenticationToken authentication =
-                    new UsernamePasswordAuthenticationToken(
-                            userId,
-                            null,
-                            List.of(new SimpleGrantedAuthority(role))
-                    );
+                    UsernamePasswordAuthenticationToken authentication =
+                            new UsernamePasswordAuthenticationToken(
+                                    userId,
+                                    null,
+                                    List.of(new SimpleGrantedAuthority(role))
+                            );
 
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                }
+                // 만료/무효는 인증을 설정하지 않고, 401 진입점이 계약 code를 내려주도록 구분값을 전달한다.
+                case EXPIRED -> request.setAttribute(
+                        RestAuthenticationEntryPoint.AUTH_ERROR_CODE_ATTR, ErrorCode.EXPIRED_TOKEN);
+                case INVALID -> request.setAttribute(
+                        RestAuthenticationEntryPoint.AUTH_ERROR_CODE_ATTR, ErrorCode.INVALID_TOKEN);
+            }
         }
+        // 완전 무토큰 케이스는 attribute 미설정 → 진입점이 INVALID_TOKEN 기본 처리.
 
         filterChain.doFilter(request, response);
     }

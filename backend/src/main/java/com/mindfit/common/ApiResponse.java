@@ -25,10 +25,6 @@ public class ApiResponse<T> {
         return new ApiResponse<>(true, null, message, data);
     }
 
-    public static ApiResponse<Void> error(String message) {
-        return new ApiResponse<>(false, null, message, null);
-    }
-
     public static ApiResponse<Void> error(ErrorCode errorCode) {
         return new ApiResponse<>(false, errorCode.name(), errorCode.getMessage(), null);
     }

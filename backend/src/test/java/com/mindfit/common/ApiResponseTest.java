@@ -31,17 +31,6 @@ class ApiResponseTest {
     }
 
     @Test
-    @DisplayName("error(String message): success=false, code는 null, message는 전달값, data는 null")
-    void error_messageOnly_successFalseAndCodeNull() {
-        ApiResponse<Void> response = ApiResponse.error("동적 에러 메시지");
-
-        assertThat(response.isSuccess()).isFalse();
-        assertThat(response.getCode()).isNull();
-        assertThat(response.getMessage()).isEqualTo("동적 에러 메시지");
-        assertThat(response.getData()).isNull();
-    }
-
-    @Test
     @DisplayName("error(ErrorCode): success=false, code는 enum name, message는 ErrorCode의 message")
     void error_errorCode_setsCodeAndMessageFromErrorCode() {
         ApiResponse<Void> response = ApiResponse.error(ErrorCode.INVALID_CREDENTIALS);

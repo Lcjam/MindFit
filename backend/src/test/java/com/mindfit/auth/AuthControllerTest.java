@@ -26,7 +26,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(AuthController.class)
-@Import({SecurityConfig.class, JwtAuthFilter.class, JwtTokenProvider.class})
+@Import({SecurityConfig.class, JwtAuthFilter.class, JwtTokenProvider.class, RestAuthenticationEntryPoint.class})
 @TestPropertySource(properties = {
         "jwt.secret=test-secret-key-mindfit-2024-very-long-secret-key-for-hs256-testing",
         "jwt.access-token-expiry=1800000",

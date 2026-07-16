@@ -13,6 +13,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -29,20 +30,16 @@ class SecurityConfigTest {
     // ──────────────── B4) logout 인증 요구 ────────────────
 
     @Test
-    @DisplayName("logout: 토큰 없이 POST /api/v1/auth/logout → Security 레이어에서 401 거부")
+    @DisplayName("logout: 토큰 없이 POST /api/v1/auth/logout → Security 레이어에서 401 거부(계약 ErrorResponse)")
     void logout_withoutToken_returns401AtSecurityLayer() throws Exception {
+        // logout은 authenticated 경로이므로 무토큰이면 Security 진입점이 먼저 차단한다.
+        // 진입점은 계약(ErrorResponse: success/code/message)에 맞는 JSON을 반환해야 하며,
+        // 무토큰은 INVALID_TOKEN으로 처리된다.
         mockMvc.perform(post("/api/v1/auth/logout"))
                 .andExpect(status().isUnauthorized())
-                // logout이 permitAll이면 요청이 컨트롤러까지 도달해
-                // GlobalExceptionHandler가 ApiResponse(JSON, "success" 필드 포함)를 내려준다.
-                // authenticated로 분리되면 Security 진입점이 sendError(401)로 먼저 차단하므로
-                // ApiResponse JSON 본문이 존재하지 않아야 한다.
-                .andExpect(result -> {
-                    String body = result.getResponse().getContentAsString();
-                    assertThat(body)
-                            .as("Security 레이어에서 차단되어 컨트롤러 ApiResponse 본문이 없어야 한다")
-                            .doesNotContain("\"success\"");
-                });
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.code").value("INVALID_TOKEN"))
+                .andExpect(jsonPath("$.message").isNotEmpty());
     }
 
     @Test

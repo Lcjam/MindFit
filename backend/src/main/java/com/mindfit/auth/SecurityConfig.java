@@ -17,7 +17,6 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import jakarta.servlet.http.HttpServletResponse;
 import java.util.Arrays;
 import java.util.List;
 
@@ -28,6 +27,7 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
+    private final RestAuthenticationEntryPoint restAuthenticationEntryPoint;
 
     // @RequiredArgsConstructor 대상에서 제외되도록 final이 아니어야 한다.
     // CORS 허용 origin은 시크릿이 아니므로 base 설정(application.yml)에 기본값을 둔다.
@@ -49,8 +49,8 @@ public class SecurityConfig {
             )
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
             .exceptionHandling(ex -> ex
-                .authenticationEntryPoint((request, response, authException) ->
-                        response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized"))
+                // 401 시 계약(ErrorResponse: success/code/message) JSON을 직접 반환한다.
+                .authenticationEntryPoint(restAuthenticationEntryPoint)
             );
         return http.build();
     }

@@ -68,17 +68,36 @@ public class JwtTokenProvider {
     }
 
     /**
+     * 토큰 검증 결과. 만료(EXPIRED)와 그 외 무효(INVALID)를 구분한다.
+     */
+    public enum TokenStatus {
+        VALID, EXPIRED, INVALID
+    }
+
+    /**
      * 토큰 유효성 검증.
      *
      * @return 유효하면 true, 그 외(만료·변조·형식 오류 등) false
      */
     public boolean validateToken(String token) {
+        return validate(token) == TokenStatus.VALID;
+    }
+
+    /**
+     * 토큰을 검증하고 만료/무효를 구분한 상태를 반환한다.
+     *
+     * @return VALID(유효) / EXPIRED(만료) / INVALID(변조·형식 오류 등)
+     */
+    public TokenStatus validate(String token) {
         try {
             parseClaims(token);
-            return true;
+            return TokenStatus.VALID;
+        } catch (ExpiredJwtException e) {
+            log.debug("JWT expired: {}", e.getMessage());
+            return TokenStatus.EXPIRED;
         } catch (JwtException | IllegalArgumentException e) {
             log.debug("JWT validation failed: {}", e.getMessage());
-            return false;
+            return TokenStatus.INVALID;
         }
     }
 

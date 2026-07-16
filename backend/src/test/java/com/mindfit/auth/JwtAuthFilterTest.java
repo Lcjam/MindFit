@@ -3,12 +3,16 @@ package com.mindfit.auth;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -21,6 +25,11 @@ class JwtAuthFilterTest {
 
     @Autowired
     private JwtTokenProvider jwtTokenProvider;
+
+    @Value("${jwt.secret}")
+    private String jwtSecret;
+
+    private static final String PROTECTED_PATH = "/api/v1/users/me";
 
     // ──────────────── doFilterInternal ────────────────
 
@@ -49,5 +58,47 @@ class JwtAuthFilterTest {
         mockMvc.perform(get("/api/v1/users/me")
                         .header("Authorization", "Bearer invalid.token.here"))
                 .andExpect(status().isUnauthorized());
+    }
+
+    // ──────────────── 401 계약(ErrorResponse) 준수 ────────────────
+
+    @Test
+    @DisplayName("401: 무토큰으로 보호 엔드포인트 접근 → ApiResponse JSON(success=false, code=INVALID_TOKEN)")
+    void doFilterInternal_missingToken_returns401WithInvalidTokenBody() throws Exception {
+        mockMvc.perform(get(PROTECTED_PATH))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.code").value("INVALID_TOKEN"))
+                .andExpect(jsonPath("$.message").isNotEmpty());
+    }
+
+    @Test
+    @DisplayName("401: 만료 토큰으로 보호 엔드포인트 접근 → code=EXPIRED_TOKEN")
+    void doFilterInternal_expiredToken_returns401WithExpiredTokenBody() throws Exception {
+        // 앱과 동일한 secret으로 서명하되 즉시 만료되는 토큰을 생성한다.
+        JwtTokenProvider shortLived = new JwtTokenProvider(jwtSecret, 1L, 1L);
+        String expired = shortLived.generateAccessToken(1L, "ROLE_CLIENT");
+        Thread.sleep(10); // 만료 대기
+
+        mockMvc.perform(get(PROTECTED_PATH)
+                        .header("Authorization", "Bearer " + expired))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.code").value("EXPIRED_TOKEN"))
+                .andExpect(jsonPath("$.message").isNotEmpty());
+    }
+
+    @Test
+    @DisplayName("401: 위조/무효 토큰으로 보호 엔드포인트 접근 → code=INVALID_TOKEN")
+    void doFilterInternal_invalidToken_returns401WithInvalidTokenBody() throws Exception {
+        mockMvc.perform(get(PROTECTED_PATH)
+                        .header("Authorization", "Bearer invalid.token.here"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.code").value("INVALID_TOKEN"))
+                .andExpect(jsonPath("$.message").isNotEmpty());
     }
 }
